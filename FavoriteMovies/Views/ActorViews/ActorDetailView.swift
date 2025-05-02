@@ -1,22 +1,22 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ActorDetailView: View {
     @Bindable var castMember: CastMember
     @State var isNew: Bool
-    
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
-    
+
     init(castMember: CastMember, isNew: Bool = false) {
         self.castMember = castMember
         self.isNew = isNew
     }
-    
+
     var body: some View {
         Form {
             TextField("Actor name", text: $castMember.actorName)
-            
+
             if !castMember.movies.isEmpty {
                 Section("Movies") {
                     ForEach(castMember.movies) { movie in
@@ -34,7 +34,7 @@ struct ActorDetailView: View {
                     dismiss()
                 }
             }
-            
+
             ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") {
                     context.delete(castMember)
@@ -43,8 +43,9 @@ struct ActorDetailView: View {
             }
         }
     }
-    
-    //MARK: Private interface
+
+    // MARK: Private interface
+
     private func deleteMovie(indexes: IndexSet) {
         for index in indexes {
             context.delete(castMember.movies[index])

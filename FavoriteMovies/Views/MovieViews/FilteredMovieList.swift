@@ -3,7 +3,7 @@ import SwiftUI
 struct FilteredMovieList: View {
     @State private var searchText: String = ""
     @State var isFilteredByReleaseDate: Bool = false
-    
+
     var body: some View {
         NavigationSplitView {
             MoviesList(filterText: searchText, sortBy: isFilteredByReleaseDate ? .releaseDate : .title)

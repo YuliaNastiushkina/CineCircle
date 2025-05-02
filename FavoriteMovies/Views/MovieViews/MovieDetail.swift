@@ -1,29 +1,29 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct MovieDetail: View {
     @Bindable var movie: Movie
     let isNew: Bool
-    
+
     init(movie: Movie, isNew: Bool = false) {
         self.movie = movie
         self.isNew = isNew
     }
-    
+
     var sortedFriends: [Friend] {
         movie.favoritedBy.sorted { first, second in
             first.name < second.name
         }
     }
-    
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
-    
+
     var body: some View {
         Form {
             TextField("Title", text: $movie.title)
-            DatePicker("Release Date", selection: $movie.releaseDate,  displayedComponents: .date)
-            
+            DatePicker("Release Date", selection: $movie.releaseDate, displayedComponents: .date)
+
             if !movie.favoritedBy.isEmpty {
                 Section("Favorited by") {
                     ForEach(sortedFriends) { friend in
@@ -32,14 +32,13 @@ struct MovieDetail: View {
                     .onDelete(perform: deleteFriend)
                 }
             }
-            
+
             if !movie.cast.isEmpty {
                 Section("Cast") {
                     ForEach(movie.cast) { member in
                         Text(member.actorName)
                     }
                 }
-
             }
         }
         .navigationTitle(isNew ? "New movie" : "Movie's Details")
@@ -51,7 +50,7 @@ struct MovieDetail: View {
                         dismiss()
                     }
                 }
-                
+
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         context.delete(movie)
@@ -61,8 +60,9 @@ struct MovieDetail: View {
             }
         }
     }
-    
-    //MARK: Private interface
+
+    // MARK: Private interface
+
     private func deleteFriend(indexes: IndexSet) {
         for index in indexes {
             context.delete(movie.favoritedBy[index])

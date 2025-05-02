@@ -1,11 +1,11 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ActorListView: View {
     @Query(sort: \CastMember.actorName) private var actors: [CastMember]
     @State var newActor: CastMember?
     @Environment(\.modelContext) private var context
-    
+
     var body: some View {
         Group {
             if !actors.isEmpty {
@@ -37,14 +37,15 @@ struct ActorListView: View {
             .interactiveDismissDisabled()
         }
     }
-    
-    //MARK: Private interface
+
+    // MARK: Private interface
+
     private func addActor() {
         let newActor = CastMember(actorName: "")
         context.insert(newActor)
         self.newActor = newActor
     }
-    
+
     private func deleteActor(indexes: IndexSet) {
         for index in indexes {
             context.delete(actors[index])

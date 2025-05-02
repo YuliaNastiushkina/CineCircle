@@ -6,11 +6,11 @@ struct ContentView: View {
             Tab("Friends", systemImage: "person.and.person") {
                 FilteredFriendList()
             }
-            
+
             Tab("Movies", systemImage: "film.stack") {
                 FilteredMovieList()
             }
-            
+
             Tab("Actors", systemImage: "person.crop.square.badge.video.fill") {
                 ActorListView()
             }

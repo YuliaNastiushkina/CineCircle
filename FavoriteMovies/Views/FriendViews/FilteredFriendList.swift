@@ -1,9 +1,9 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct FilteredFriendList: View {
     @State var searchText: String = ""
-    
+
     var body: some View {
         NavigationSplitView {
             FriendsList(nameFilter: searchText)
