@@ -52,6 +52,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BAACA5FA2DC124BD002627F6 /* Build configuration list for PBXNativeTarget "FavoriteMovies" */;
 			buildPhases = (
+				BA6718F52DCBD03100FC6643 /* ShellScript */,
 				BAACA5EB2DC124BB002627F6 /* Sources */,
 				BAACA5EC2DC124BB002627F6 /* Frameworks */,
 				BAACA5ED2DC124BB002627F6 /* Resources */,
@@ -134,6 +135,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]\nthen\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif command -v swiftlint >/dev/null 2>&1\nthen\n    swiftlint\nelse\n    echo \"warning: `swiftlint` not found. Install it via Homebrew: https://brew.sh\"\nfi\n\nif [[ \"$(uname -m)\" == arm64 ]]\nthen\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif command -v swiftformat >/dev/null 2>&1\nthen\n    swiftformat .\nelse\n    echo \"warning: `swiftformat` not found. Install it via Homebrew: https://brew.sh\"\nfi\n";
+		};
+		BA6718F52DCBD03100FC6643 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Scripts/generate_keys.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
