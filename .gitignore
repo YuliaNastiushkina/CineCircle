@@ -12,4 +12,7 @@ xcuserdata/
 
 ##Secrets
 .env
-APIKeys.swift
+**/APIKeys.swift
+
+## Others
+gyb.py
