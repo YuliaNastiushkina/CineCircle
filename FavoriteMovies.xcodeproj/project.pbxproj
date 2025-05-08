@@ -6,11 +6,27 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		BA4289A42DCD1EAF008FECCD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BAACA5E72DC124BB002627F6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BAACA5EE2DC124BB002627F6;
+			remoteInfo = FavoriteMovies;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		BA4289A02DCD1EAF008FECCD /* APIManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = APIManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAACA5EF2DC124BB002627F6 /* FavoriteMovies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FavoriteMovies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		BA4289A12DCD1EAF008FECCD /* APIManagerTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = APIManagerTests;
+			sourceTree = "<group>";
+		};
 		BAACA5F12DC124BB002627F6 /* FavoriteMovies */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = FavoriteMovies;
@@ -19,6 +35,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		BA42899D2DCD1EAF008FECCD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BAACA5EC2DC124BB002627F6 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				BAACA5F12DC124BB002627F6 /* FavoriteMovies */,
+				BA4289A12DCD1EAF008FECCD /* APIManagerTests */,
 				BAACA5F02DC124BB002627F6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				BAACA5EF2DC124BB002627F6 /* FavoriteMovies.app */,
+				BA4289A02DCD1EAF008FECCD /* APIManagerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,6 +73,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		BA42899F2DCD1EAF008FECCD /* APIManagerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BA4289A62DCD1EAF008FECCD /* Build configuration list for PBXNativeTarget "APIManagerTests" */;
+			buildPhases = (
+				BA42899C2DCD1EAF008FECCD /* Sources */,
+				BA42899D2DCD1EAF008FECCD /* Frameworks */,
+				BA42899E2DCD1EAF008FECCD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BA4289A52DCD1EAF008FECCD /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BA4289A12DCD1EAF008FECCD /* APIManagerTests */,
+			);
+			name = APIManagerTests;
+			packageProductDependencies = (
+			);
+			productName = APIManagerTests;
+			productReference = BA4289A02DCD1EAF008FECCD /* APIManagerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		BAACA5EE2DC124BB002627F6 /* FavoriteMovies */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = BAACA5FA2DC124BD002627F6 /* Build configuration list for PBXNativeTarget "FavoriteMovies" */;
@@ -82,6 +130,10 @@
 				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
+					BA42899F2DCD1EAF008FECCD = {
+						CreatedOnToolsVersion = 16.3;
+						TestTargetID = BAACA5EE2DC124BB002627F6;
+					};
 					BAACA5EE2DC124BB002627F6 = {
 						CreatedOnToolsVersion = 16.3;
 					};
@@ -102,11 +154,19 @@
 			projectRoot = "";
 			targets = (
 				BAACA5EE2DC124BB002627F6 /* FavoriteMovies */,
+				BA42899F2DCD1EAF008FECCD /* APIManagerTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		BA42899E2DCD1EAF008FECCD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BAACA5ED2DC124BB002627F6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -157,6 +217,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		BA42899C2DCD1EAF008FECCD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BAACA5EB2DC124BB002627F6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -166,7 +233,53 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		BA4289A52DCD1EAF008FECCD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BAACA5EE2DC124BB002627F6 /* FavoriteMovies */;
+			targetProxy = BA4289A42DCD1EAF008FECCD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		BA4289A72DCD1EAF008FECCD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5W2A88B7UL;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.y.nastiushkina.APIManagerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FavoriteMovies.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FavoriteMovies";
+			};
+			name = Debug;
+		};
+		BA4289A82DCD1EAF008FECCD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5W2A88B7UL;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.y.nastiushkina.APIManagerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FavoriteMovies.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FavoriteMovies";
+			};
+			name = Release;
+		};
 		BAACA5F82DC124BD002627F6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -347,6 +460,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		BA4289A62DCD1EAF008FECCD /* Build configuration list for PBXNativeTarget "APIManagerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BA4289A72DCD1EAF008FECCD /* Debug */,
+				BA4289A82DCD1EAF008FECCD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		BAACA5EA2DC124BB002627F6 /* Build configuration list for PBXProject "FavoriteMovies" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
