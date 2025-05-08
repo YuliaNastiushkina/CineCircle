@@ -3,6 +3,7 @@ identifier_name:
 
 disabled_rules:
     - redundant_discardable_let
+    - line_length
 
 trailing_comma:
     mandatory_comma: true
