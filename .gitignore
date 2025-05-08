@@ -1,18 +1,16 @@
 ## macOS ##
-### Apple Finder's file
 .DS_Store
 
-### Xcode
-xcuserdata/
+## Xcode
 build/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
 
-## User settings
-xcuserstate/
-xcuserdata/
-
-##Secrets
+## Python & Secrets
 .env
+venv/
 **/APIKeys.swift
 
-## Others
+## Scripts
 gyb.py
+generate_keys.sh
