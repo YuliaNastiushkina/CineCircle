@@ -21,14 +21,45 @@
 		BAACA5EF2DC124BB002627F6 /* FavoriteMovies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FavoriteMovies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		BA71F4DC2DCD513400D984CB /* Exceptions for "FavoriteMovies" folder in "APIManagerTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				APIManager/APIClient.swift,
+				APIManager/APIKeyProvider.swift,
+				APIManager/APIKeys.swift,
+				APIManager/APIKeySource.swift,
+				APIManager/APIManager.swift,
+				APIManager/DefaultAPIKeys.swift,
+				APIManager/Errors/APICallErrors.swift,
+				APIManager/Errors/APIKeyErrors.swift,
+				APIManager/MockAPIKeys.swift,
+			);
+			target = BA42899F2DCD1EAF008FECCD /* APIManagerTests */;
+		};
+		BA71F5512DCE72E700D984CB /* Exceptions for "APIManagerTests" folder in "FavoriteMovies" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				APIClientTests/MockAPIManager.swift,
+			);
+			target = BAACA5EE2DC124BB002627F6 /* FavoriteMovies */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		BA4289A12DCD1EAF008FECCD /* APIManagerTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BA71F5512DCE72E700D984CB /* Exceptions for "APIManagerTests" folder in "FavoriteMovies" target */,
+			);
 			path = APIManagerTests;
 			sourceTree = "<group>";
 		};
 		BAACA5F12DC124BB002627F6 /* FavoriteMovies */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BA71F4DC2DCD513400D984CB /* Exceptions for "FavoriteMovies" folder in "APIManagerTests" target */,
+			);
 			path = FavoriteMovies;
 			sourceTree = "<group>";
 		};
