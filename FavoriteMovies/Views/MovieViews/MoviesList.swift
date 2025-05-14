@@ -34,7 +34,7 @@ struct MoviesList: View {
                 } else {
                     List(filteredMovies) { movie in
                         NavigationLink(movie.title) {
-                            Text("Here will be \(movie.title) details")
+                            MovieDetail(movie: movie)
                         }
                     }
                 }
