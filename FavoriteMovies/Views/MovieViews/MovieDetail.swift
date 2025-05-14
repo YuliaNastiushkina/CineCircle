@@ -2,77 +2,67 @@ import SwiftData
 import SwiftUI
 
 struct MovieDetail: View {
-    @Bindable var movie: Movie
-    let isNew: Bool
-
-    init(movie: Movie, isNew: Bool = false) {
-        self.movie = movie
-        self.isNew = isNew
-    }
-
-    var sortedFriends: [Friend] {
-        movie.favoritedBy.sorted { first, second in
-            first.name < second.name
-        }
-    }
-
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var context
+    let movie: RemoteMovie
 
     var body: some View {
-        Form {
-            TextField("Title", text: $movie.title)
-            DatePicker("Release Date", selection: $movie.releaseDate, displayedComponents: .date)
-
-            if !movie.favoritedBy.isEmpty {
-                Section("Favorited by") {
-                    ForEach(sortedFriends) { friend in
-                        Text(friend.name)
+        ScrollView {
+            VStack(alignment: .leading) {
+                if let posterPath = movie.posterPath {
+                    AsyncImage(url: URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(maxWidth: .infinity, minHeight: 300)
+                        case let .success(image):
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .foregroundColor(.gray)
+                                .frame(height: 300)
+                        default:
+                            EmptyView()
+                        }
                     }
-                    .onDelete(perform: deleteFriend)
                 }
+
+                Text(movie.title)
+                    .font(.system(.title, design: .rounded))
+                    .bold()
+
+                Text("⭐️ \(String(format: "%.1f", movie.voteAverage))")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.secondary)
+
+                Text("Release date: \(movie.releaseDate)")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.secondary)
+
+                Divider()
+
+                Text(movie.overview)
+                    .font(.system(.body, design: .rounded))
+                    .multilineTextAlignment(.leading)
             }
-
-            if !movie.cast.isEmpty {
-                Section("Cast") {
-                    ForEach(movie.cast) { member in
-                        Text(member.actorName)
-                    }
-                }
-            }
-        }
-        .navigationTitle(isNew ? "New movie" : "Movie's Details")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            if isNew {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        dismiss()
-                    }
-                }
-
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        context.delete(movie)
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: Private interface
-
-    private func deleteFriend(indexes: IndexSet) {
-        for index in indexes {
-            context.delete(movie.favoritedBy[index])
+            .padding()
+            .navigationTitle(movie.title)
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
 
 #Preview {
+    let sampleMovie = RemoteMovie(
+        id: 1,
+        title: "Sonic 2. The Hedgehog",
+        overview: "When Dr. Robotnik returns with a new partner, Knuckles, in search of an emerald that has the power to destroy civilizations, Sonic teams up with his own sidekick, Tails, on a journey across the world to find the emerald first.",
+        posterPath: "/6DrHO1jr3qVrViUO6s6kFiAGM7.jpg",
+        voteAverage: 7.5,
+        releaseDate: "2024-10-12"
+    )
+
     NavigationStack {
-        MovieDetail(movie: SampleData.shared.movie)
+        MovieDetail(movie: sampleMovie)
     }
-    .modelContainer(SampleData.shared.modelContainer)
 }
