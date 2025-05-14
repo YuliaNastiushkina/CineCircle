@@ -8,7 +8,7 @@ struct ContentView: View {
             }
 
             Tab("Movies", systemImage: "film.stack") {
-                FilteredMovieList()
+                MoviesList()
             }
 
             Tab("Actors", systemImage: "person.crop.square.badge.video.fill") {
