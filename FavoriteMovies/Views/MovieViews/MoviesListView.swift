@@ -49,6 +49,11 @@ struct MoviesListView: View {
                     }
                 }
             }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    LogoView()
+                }
+            }
         }
         .searchable(text: $filterText)
         .task {

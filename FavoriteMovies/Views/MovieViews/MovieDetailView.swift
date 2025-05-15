@@ -9,9 +9,15 @@ struct MovieDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
-                Text(movie.title)
-                    .font(titleFont)
-                    .bold()
+                HStack {
+                    Text(movie.title)
+                        .font(titleFont)
+                        .bold()
+
+                    Spacer()
+
+                    LogoView()
+                }
 
                 HStack {
                     if let posterPath = movie.posterPath,
