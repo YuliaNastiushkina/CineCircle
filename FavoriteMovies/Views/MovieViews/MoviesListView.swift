@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-struct MoviesList: View {
+struct MoviesListView: View {
     @State private var filterText = ""
     @State private var isLoading = false
     @State private var isSorted = false
@@ -34,7 +34,7 @@ struct MoviesList: View {
                 } else {
                     List(filteredMovies) { movie in
                         NavigationLink(movie.title) {
-                            MovieDetail(movie: movie)
+                            MovieDetailView(movie: movie)
                         }
                     }
                 }
@@ -71,5 +71,5 @@ struct MoviesList: View {
 }
 
 #Preview {
-    MoviesList()
+    MoviesListView()
 }
