@@ -18,11 +18,11 @@
 
 /* Begin PBXFileReference section */
 		BA4289A02DCD1EAF008FECCD /* APIManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = APIManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		BAACA5EF2DC124BB002627F6 /* FavoriteMovies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FavoriteMovies.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BAACA5EF2DC124BB002627F6 /* CineCircle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CineCircle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		BA71F4DC2DCD513400D984CB /* Exceptions for "FavoriteMovies" folder in "APIManagerTests" target */ = {
+		BA71F4DC2DCD513400D984CB /* Exceptions for "CineCircleApp" folder in "APIManagerTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				APIManager/APIClient.swift,
@@ -37,12 +37,12 @@
 			);
 			target = BA42899F2DCD1EAF008FECCD /* APIManagerTests */;
 		};
-		BA71F5512DCE72E700D984CB /* Exceptions for "APIManagerTests" folder in "FavoriteMovies" target */ = {
+		BA71F5512DCE72E700D984CB /* Exceptions for "APIManagerTests" folder in "CineCircle" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				APIClientTests/MockAPIManager.swift,
 			);
-			target = BAACA5EE2DC124BB002627F6 /* FavoriteMovies */;
+			target = BAACA5EE2DC124BB002627F6 /* CineCircle */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -50,17 +50,17 @@
 		BA4289A12DCD1EAF008FECCD /* APIManagerTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				BA71F5512DCE72E700D984CB /* Exceptions for "APIManagerTests" folder in "FavoriteMovies" target */,
+				BA71F5512DCE72E700D984CB /* Exceptions for "APIManagerTests" folder in "CineCircle" target */,
 			);
 			path = APIManagerTests;
 			sourceTree = "<group>";
 		};
-		BAACA5F12DC124BB002627F6 /* FavoriteMovies */ = {
+		BAACA5F12DC124BB002627F6 /* CineCircleApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				BA71F4DC2DCD513400D984CB /* Exceptions for "FavoriteMovies" folder in "APIManagerTests" target */,
+				BA71F4DC2DCD513400D984CB /* Exceptions for "CineCircleApp" folder in "APIManagerTests" target */,
 			);
-			path = FavoriteMovies;
+			path = CineCircleApp;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -86,7 +86,7 @@
 		BAACA5E62DC124BB002627F6 = {
 			isa = PBXGroup;
 			children = (
-				BAACA5F12DC124BB002627F6 /* FavoriteMovies */,
+				BAACA5F12DC124BB002627F6 /* CineCircleApp */,
 				BA4289A12DCD1EAF008FECCD /* APIManagerTests */,
 				BAACA5F02DC124BB002627F6 /* Products */,
 			);
@@ -95,7 +95,7 @@
 		BAACA5F02DC124BB002627F6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BAACA5EF2DC124BB002627F6 /* FavoriteMovies.app */,
+				BAACA5EF2DC124BB002627F6 /* CineCircle.app */,
 				BA4289A02DCD1EAF008FECCD /* APIManagerTests.xctest */,
 			);
 			name = Products;
@@ -127,9 +127,9 @@
 			productReference = BA4289A02DCD1EAF008FECCD /* APIManagerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		BAACA5EE2DC124BB002627F6 /* FavoriteMovies */ = {
+		BAACA5EE2DC124BB002627F6 /* CineCircle */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BAACA5FA2DC124BD002627F6 /* Build configuration list for PBXNativeTarget "FavoriteMovies" */;
+			buildConfigurationList = BAACA5FA2DC124BD002627F6 /* Build configuration list for PBXNativeTarget "CineCircle" */;
 			buildPhases = (
 				BA6718F52DCBD03100FC6643 /* ShellScript */,
 				BAACA5EB2DC124BB002627F6 /* Sources */,
@@ -142,13 +142,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				BAACA5F12DC124BB002627F6 /* FavoriteMovies */,
+				BAACA5F12DC124BB002627F6 /* CineCircleApp */,
 			);
-			name = FavoriteMovies;
+			name = CineCircle;
 			packageProductDependencies = (
 			);
 			productName = FriendsFavoriteMovies;
-			productReference = BAACA5EF2DC124BB002627F6 /* FavoriteMovies.app */;
+			productReference = BAACA5EF2DC124BB002627F6 /* CineCircle.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -170,7 +170,7 @@
 					};
 				};
 			};
-			buildConfigurationList = BAACA5EA2DC124BB002627F6 /* Build configuration list for PBXProject "FavoriteMovies" */;
+			buildConfigurationList = BAACA5EA2DC124BB002627F6 /* Build configuration list for PBXProject "CineCircleApp" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -184,7 +184,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				BAACA5EE2DC124BB002627F6 /* FavoriteMovies */,
+				BAACA5EE2DC124BB002627F6 /* CineCircle */,
 				BA42899F2DCD1EAF008FECCD /* APIManagerTests */,
 			);
 		};
@@ -267,7 +267,7 @@
 /* Begin PBXTargetDependency section */
 		BA4289A52DCD1EAF008FECCD /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = BAACA5EE2DC124BB002627F6 /* FavoriteMovies */;
+			target = BAACA5EE2DC124BB002627F6 /* CineCircle */;
 			targetProxy = BA4289A42DCD1EAF008FECCD /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -288,7 +288,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FavoriteMovies.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FavoriteMovies";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CineCircle.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CineCircle";
 			};
 			name = Debug;
 		};
@@ -307,7 +307,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FavoriteMovies.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/FavoriteMovies";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CineCircle.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CineCircle";
 			};
 			name = Release;
 		};
@@ -452,7 +452,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.y.nastiushkina.FriendsFavoriteMovies;
+				PRODUCT_BUNDLE_IDENTIFIER = com.y.nastiushkina.CineCircleApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -480,7 +480,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.y.nastiushkina.FriendsFavoriteMovies;
+				PRODUCT_BUNDLE_IDENTIFIER = com.y.nastiushkina.CineCircleApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -500,7 +500,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BAACA5EA2DC124BB002627F6 /* Build configuration list for PBXProject "FavoriteMovies" */ = {
+		BAACA5EA2DC124BB002627F6 /* Build configuration list for PBXProject "CineCircleApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BAACA5F82DC124BD002627F6 /* Debug */,
@@ -509,7 +509,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BAACA5FA2DC124BD002627F6 /* Build configuration list for PBXNativeTarget "FavoriteMovies" */ = {
+		BAACA5FA2DC124BD002627F6 /* Build configuration list for PBXNativeTarget "CineCircle" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				BAACA5FB2DC124BD002627F6 /* Debug */,
