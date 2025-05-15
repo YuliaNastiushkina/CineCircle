@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var isLoaded = true
+
     var body: some View {
         TabView {
             Tab("Friends", systemImage: "person.and.person") {
@@ -15,6 +17,8 @@ struct ContentView: View {
                 ActorListView()
             }
         }
+        .opacity(isLoaded ? 1 : 0)
+        .animation(.easeInOut(duration: 0.5), value: isLoaded)
     }
 }
 
