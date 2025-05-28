@@ -98,4 +98,17 @@ final class AuthServiceTests: XCTestCase {
 
         wait(for: [expectation], timeout: 1.0)
     }
+
+    func testSignOut() throws {
+        auth.signedInUserEmail = "test@example.com"
+        try auth.signOut()
+        XCTAssertNil(auth.signedInUserEmail)
+    }
+
+    func testSignOutWhenAlreadySignedOut() {
+        auth.signedInUserEmail = nil
+
+        XCTAssertNoThrow(try auth.signOut())
+        XCTAssertNil(auth.signedInUserEmail)
+    }
 }

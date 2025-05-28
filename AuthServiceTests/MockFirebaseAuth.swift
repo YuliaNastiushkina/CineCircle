@@ -45,7 +45,9 @@ class MockFirebaseAuth: FirebaseAuthProtocol {
         }
     }
 
-    func signOut() throws {}
+    func signOut() throws {
+        signedInUserEmail = nil
+    }
 
     func addStateDidChangeListener(_: @escaping (FirebaseAuth.Auth, FirebaseAuth.User?) -> Void) {}
 }
