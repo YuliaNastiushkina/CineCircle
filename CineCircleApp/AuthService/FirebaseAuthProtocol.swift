@@ -1,5 +1,5 @@
-import Foundation
 import FirebaseAuth
+import Foundation
 
 /// Abstracts Firebase authentication methods for dependency injection and testing.
 protocol FirebaseAuthProtocol {
