@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BA5DF9B22DDFC9A8005E1397 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = BA5DF9B12DDFC9A8005E1397 /* FirebaseAuth */; };
+		BA5DF9B42DDFC9A8005E1397 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = BA5DF9B32DDFC9A8005E1397 /* FirebaseCore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		BA4289A42DCD1EAF008FECCD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -85,6 +90,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA5DF9B42DDFC9A8005E1397 /* FirebaseCore in Frameworks */,
+				BA5DF9B22DDFC9A8005E1397 /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,6 +161,8 @@
 			);
 			name = CineCircle;
 			packageProductDependencies = (
+				BA5DF9B12DDFC9A8005E1397 /* FirebaseAuth */,
+				BA5DF9B32DDFC9A8005E1397 /* FirebaseCore */,
 			);
 			productName = FriendsFavoriteMovies;
 			productReference = BAACA5EF2DC124BB002627F6 /* CineCircle.app */;
@@ -187,6 +196,9 @@
 			);
 			mainGroup = BAACA5E62DC124BB002627F6;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BA5DF9B02DDFC9A8005E1397 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BAACA5F02DC124BB002627F6 /* Products */;
 			projectDirPath = "";
@@ -531,6 +543,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		BA5DF9B02DDFC9A8005E1397 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.13.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BA5DF9B12DDFC9A8005E1397 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BA5DF9B02DDFC9A8005E1397 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		BA5DF9B32DDFC9A8005E1397 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BA5DF9B02DDFC9A8005E1397 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BAACA5E72DC124BB002627F6 /* Project object */;
 }
