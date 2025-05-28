@@ -1,8 +1,19 @@
-//
-//  FirebaseAuthAdapter.swift
-//  CineCircle
-//
-//  Created by Yulya on 2025-05-28.
-//
+import FirebaseAuth
 
-import Foundation
+/// A concrete implementation of `FirebaseAuthProtocol` that uses Firebase's real authentication API.
+class FirebaseAuthAdapter: FirebaseAuthProtocol {
+    func createAnAccount(email: String, password: String, completion: @escaping (FirebaseAuth.AuthDataResult?, (any Error)?) -> Void) {
+    }
+
+    func signIn(email: String, password: String, completion: @escaping (AuthDataResult?, Error?) -> Void) {
+        Auth.auth().signIn(withEmail: email, password: password, completion: completion)
+    }
+
+    func signOut() throws {
+        try Auth.auth().signOut()
+    }
+
+    func addStateDidChangeListener(_ listener: @escaping (Auth, User?) -> Void) {
+        Auth.auth().addStateDidChangeListener(listener)
+    }
+}
