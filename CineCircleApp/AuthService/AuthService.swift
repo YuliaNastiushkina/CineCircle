@@ -49,4 +49,21 @@ class AuthService: ObservableObject {
             }
         }
     }
+
+    /// Attempts to sign in an exicting user.
+    /// - Parameters:
+    ///   - email: The user's email.
+    ///   - password: The user's password.
+    ///   - completion: A closure called with an error if the operation fails.
+    func signIn(email: String, password: String, completion: @escaping (Error?) -> Void) {
+        authError = nil
+        Auth.auth().signIn(withEmail: email, password: password) { [weak self] _, error in
+            guard let self else { return }
+
+            if error == nil {
+                signedIn = true
+            }
+            completion(error)
+        }
+    }
 }
