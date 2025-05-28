@@ -1,5 +1,5 @@
 // swiftformat:disable trailing_whitespace
-@testable import FavoriteMovies
+@testable import CineCircle
 import XCTest
 
 final class APIManagerTests: XCTestCase {

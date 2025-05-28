@@ -1,6 +1,6 @@
 // swiftformat:disable all
 // swiftlint:disable all
-@testable import FavoriteMovies
+@testable import CineCircle
 import XCTest
 
 final class APIClientTests: XCTestCase {
