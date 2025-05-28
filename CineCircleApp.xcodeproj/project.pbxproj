@@ -19,10 +19,18 @@
 			remoteGlobalIDString = BAACA5EE2DC124BB002627F6;
 			remoteInfo = FavoriteMovies;
 		};
+		BAA0685E2DE77C9700A53CE7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BAACA5E72DC124BB002627F6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BAACA5EE2DC124BB002627F6;
+			remoteInfo = CineCircle;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		BA4289A02DCD1EAF008FECCD /* APIManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = APIManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BAA0685A2DE77C9700A53CE7 /* AuthServiceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AuthServiceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAACA5EF2DC124BB002627F6 /* CineCircle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CineCircle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -67,6 +75,11 @@
 			path = APIManagerTests;
 			sourceTree = "<group>";
 		};
+		BAA0685B2DE77C9700A53CE7 /* AuthServiceTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AuthServiceTests;
+			sourceTree = "<group>";
+		};
 		BAACA5F12DC124BB002627F6 /* CineCircleApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -80,6 +93,13 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		BA42899D2DCD1EAF008FECCD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BAA068572DE77C9700A53CE7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -103,6 +123,7 @@
 			children = (
 				BAACA5F12DC124BB002627F6 /* CineCircleApp */,
 				BA4289A12DCD1EAF008FECCD /* APIManagerTests */,
+				BAA0685B2DE77C9700A53CE7 /* AuthServiceTests */,
 				BAACA5F02DC124BB002627F6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -112,6 +133,7 @@
 			children = (
 				BAACA5EF2DC124BB002627F6 /* CineCircle.app */,
 				BA4289A02DCD1EAF008FECCD /* APIManagerTests.xctest */,
+				BAA0685A2DE77C9700A53CE7 /* AuthServiceTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -140,6 +162,29 @@
 			);
 			productName = APIManagerTests;
 			productReference = BA4289A02DCD1EAF008FECCD /* APIManagerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		BAA068592DE77C9700A53CE7 /* AuthServiceTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BAA068622DE77C9700A53CE7 /* Build configuration list for PBXNativeTarget "AuthServiceTests" */;
+			buildPhases = (
+				BAA068562DE77C9700A53CE7 /* Sources */,
+				BAA068572DE77C9700A53CE7 /* Frameworks */,
+				BAA068582DE77C9700A53CE7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				BAA0685F2DE77C9700A53CE7 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				BAA0685B2DE77C9700A53CE7 /* AuthServiceTests */,
+			);
+			name = AuthServiceTests;
+			packageProductDependencies = (
+			);
+			productName = AuthServiceTests;
+			productReference = BAA0685A2DE77C9700A53CE7 /* AuthServiceTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		BAACA5EE2DC124BB002627F6 /* CineCircle */ = {
@@ -182,6 +227,10 @@
 						CreatedOnToolsVersion = 16.3;
 						TestTargetID = BAACA5EE2DC124BB002627F6;
 					};
+					BAA068592DE77C9700A53CE7 = {
+						CreatedOnToolsVersion = 16.3;
+						TestTargetID = BAACA5EE2DC124BB002627F6;
+					};
 					BAACA5EE2DC124BB002627F6 = {
 						CreatedOnToolsVersion = 16.3;
 					};
@@ -206,12 +255,20 @@
 			targets = (
 				BAACA5EE2DC124BB002627F6 /* CineCircle */,
 				BA42899F2DCD1EAF008FECCD /* APIManagerTests */,
+				BAA068592DE77C9700A53CE7 /* AuthServiceTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		BA42899E2DCD1EAF008FECCD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BAA068582DE77C9700A53CE7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -275,6 +332,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BAA068562DE77C9700A53CE7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BAACA5EB2DC124BB002627F6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -289,6 +353,11 @@
 			isa = PBXTargetDependency;
 			target = BAACA5EE2DC124BB002627F6 /* CineCircle */;
 			targetProxy = BA4289A42DCD1EAF008FECCD /* PBXContainerItemProxy */;
+		};
+		BAA0685F2DE77C9700A53CE7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BAACA5EE2DC124BB002627F6 /* CineCircle */;
+			targetProxy = BAA0685E2DE77C9700A53CE7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -323,6 +392,44 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.y.nastiushkina.APIManagerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CineCircle.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CineCircle";
+			};
+			name = Release;
+		};
+		BAA068602DE77C9700A53CE7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5W2A88B7UL;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.y.nastiushkina.AuthServiceTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CineCircle.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CineCircle";
+			};
+			name = Debug;
+		};
+		BAA068612DE77C9700A53CE7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5W2A88B7UL;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.y.nastiushkina.AuthServiceTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
@@ -520,6 +627,15 @@
 			buildConfigurations = (
 				BA4289A72DCD1EAF008FECCD /* Debug */,
 				BA4289A82DCD1EAF008FECCD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BAA068622DE77C9700A53CE7 /* Build configuration list for PBXNativeTarget "AuthServiceTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BAA068602DE77C9700A53CE7 /* Debug */,
+				BAA068612DE77C9700A53CE7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
