@@ -9,7 +9,7 @@ import SwiftUI
 @main
 struct CineCircleApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @StateObject private var authService = AuthService()
+    @StateObject private var authService = AuthService(auth: FirebaseAuthAdapter())
 
     var body: some Scene {
         WindowGroup {
