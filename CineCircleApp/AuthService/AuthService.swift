@@ -66,4 +66,14 @@ class AuthService: ObservableObject {
             completion(error)
         }
     }
+
+    /// Signs out the current user.
+    func signOut() {
+        do {
+            try Auth.auth().signOut()
+            signedIn = false
+        } catch {
+            authError = error.localizedDescription
+        }
+    }
 }
