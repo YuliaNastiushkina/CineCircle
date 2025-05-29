@@ -77,7 +77,7 @@ python3 "${SRCROOT}/gyb.py" -o "${SRCROOT}/CineCircleApp/APIManager/APIKeys.swif
 ```
 
 ### 4. Add `gyb.py`
-Download gyb.py from Apple’s official ![Swift repository](https://github.com/swiftlang/swift/blob/main/utils/gyb.py)
+Download gyb.py from Apple’s official [Swift repository](https://github.com/swiftlang/swift/blob/main/utils/gyb.py).
 
 Place it into your project root (CineCircle/gyb.py) and make it executable:
 ```
