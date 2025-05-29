@@ -39,11 +39,11 @@ open CineCircleApp.xcodeproj
 ```
 
 ### 3. Set Up API Key Generation
-* In the root of your project, create a file named .env with your API key:
+* In the root of your project, create a file named `.env` with your API key:
 ```
 API_KEY=your_real_api_key_here
 ```
-Make sure this file is never committed to Git — it’s already in .gitignore.
+*Make sure this file is never committed to Git.*
 
 * Create the generate_keys.sh Script
 Create this file at Scripts/generate_keys.sh:
@@ -76,16 +76,16 @@ fi
 python3 "${SRCROOT}/gyb.py" -o "${SRCROOT}/CineCircleApp/APIManager/APIKeys.swift" "${SRCROOT}/Scripts/APIKeys.swift.gyb"
 ```
 
-###4. Add gyb.py
-Download gyb.py from Apple’s official Swift repo:
-https://github.com/swiftlang/swift/blob/main/utils/gyb.py
+### 4. Add `gyb.py`
+Download gyb.py from Apple’s official ![Swift repository](https://github.com/swiftlang/swift/blob/main/utils/gyb.py)
+
 Place it into your project root (CineCircle/gyb.py) and make it executable:
 ```
 chmod +x gyb.py
 ```
 
 
-###5. Install Python virtual environment
+### 5. Install Python virtual environment
 ```
 python3 -m venv .venv
 source .venv/bin/activate
@@ -104,7 +104,7 @@ Scripts/generate_keys.sh
 
 This will generate APIKeys.swift based on the obfuscated value of your API key.
 
-❗ Don’t commit .env or APIKeys.swift to Git for security reasons.
+❗ Don’t commit `.env` or `APIKeys.swift` to Git for security reasons.
 
 ✅ You’re Ready!
 
