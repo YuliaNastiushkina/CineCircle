@@ -2,7 +2,9 @@ import FirebaseAuth
 
 /// A concrete implementation of `FirebaseAuthProtocol` that uses Firebase's real authentication API.
 class FirebaseAuthAdapter: FirebaseAuthProtocol {
-    func createAnAccount(email _: String, password _: String, completion _: @escaping (FirebaseAuth.AuthDataResult?, (any Error)?) -> Void) {}
+    func createAnAccount(email: String, password: String, completion: @escaping (FirebaseAuth.AuthDataResult?, (any Error)?) -> Void) {
+        Auth.auth().createUser(withEmail: email, password: password, completion: completion)
+    }
 
     func signIn(email: String, password: String, completion: @escaping (AuthDataResult?, Error?) -> Void) {
         Auth.auth().signIn(withEmail: email, password: password, completion: completion)
