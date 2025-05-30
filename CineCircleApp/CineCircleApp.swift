@@ -14,7 +14,7 @@ struct CineCircleApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .modelContainer(for: [Friend.self, Movie.self])
+                .modelContainer(for: [Movie.self])
                 .environmentObject(authService)
         }
     }

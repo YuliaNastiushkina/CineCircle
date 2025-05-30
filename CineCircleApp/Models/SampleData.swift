@@ -10,10 +10,6 @@ class SampleData {
         modelContainer.mainContext
     }
 
-    var friend: Friend {
-        Friend.sampleData.first!
-    }
-
     var movie: Movie {
         Movie.sampleData.first!
     }
@@ -24,7 +20,6 @@ class SampleData {
 
     private init() {
         let schema = Schema([
-            Friend.self,
             Movie.self,
             CastMember.self,
         ])
@@ -43,10 +38,6 @@ class SampleData {
     }
 
     private func insertSampleData() {
-        for friend in Friend.sampleData {
-            context.insert(friend)
-        }
-
         for movie in Movie.sampleData {
             context.insert(movie)
         }
@@ -54,11 +45,6 @@ class SampleData {
         for castMember in CastMember.sampleData {
             context.insert(castMember)
         }
-
-        Friend.sampleData[2].favoriteMovie = Movie.sampleData[0]
-        Friend.sampleData[3].favoriteMovie = Movie.sampleData[4]
-        Friend.sampleData[4].favoriteMovie = Movie.sampleData[0]
-        Friend.sampleData[0].favoriteMovie = Movie.sampleData[0]
 
         Movie.sampleData[5].cast = [CastMember.sampleData[0], CastMember.sampleData[1], CastMember.sampleData[4]]
         Movie.sampleData[1].cast = [CastMember.sampleData[2], CastMember.sampleData[3]]
