@@ -5,10 +5,6 @@ struct MainView: View {
 
     var body: some View {
         TabView {
-            Tab("Friends", systemImage: "person.and.person") {
-                FilteredFriendList()
-            }
-
             Tab("Movies", systemImage: "film.stack") {
                 MoviesListView()
             }
