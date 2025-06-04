@@ -13,10 +13,8 @@ struct MainView: View {
                 ActorListView()
             }
 
-            Tab("Settings", systemImage: "gearshape.fill") {
-                Button("Sign out") {
-                    authService.signOut()
-                }
+            Tab("Profile", systemImage: "person.crop.circle") {
+                ProfileView()
             }
         }
     }
