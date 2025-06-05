@@ -32,7 +32,7 @@ struct ActorListView: View {
                 } else if filteredActors.isEmpty {
                     ContentUnavailableView("No Actors Found", systemImage: "person.crop.circle.badge.questionmark")
                 } else {
-                    List(filteredActors) { actor in
+                    List(filteredActors, id: \.id) { actor in
                         NavigationLink(actor.name) {
                             ActorDetailView(actor: actor)
                         }

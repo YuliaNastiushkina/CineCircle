@@ -61,11 +61,18 @@ class ActorListViewModel {
                 query: ["language": "en-US", "page": "\(currentPage + 1)"],
                 responseType: PopularActorsResponse.self
             )
-            actors += response.results
+            addUniqueActors(response.results)
             currentPage = response.page
             totalPages = response.totalPages
         } catch {
             errorMessage = "Failed to load more actors: \(error.localizedDescription)"
         }
+    }
+
+    private func addUniqueActors(_ newActors: [RemoteActor]) {
+        let unique = newActors.filter { new in
+            !actors.contains(where: { $0.id == new.id })
+        }
+        actors.append(contentsOf: unique)
     }
 }
