@@ -4,4 +4,5 @@ struct KnownForItem: Codable, Identifiable {
     let id: Int
     /// Title of the movie or name of the show (may be `nil`).
     let title: String?
+    let name: String?
 }

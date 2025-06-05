@@ -55,7 +55,7 @@ struct ActorDetailView: View {
 
                         Text(
                             actor.knownFor
-                                .map { $0.title ?? "Unknown" }
+                                .map { $0.title ?? $0.name ?? "Unknown" }
                                 .joined(separator: ", ")
                         )
                         .font(infoFont)
@@ -113,7 +113,7 @@ struct ActorDetailView: View {
     let sampleActor: RemoteActor = .init(
         id: 1,
         name: "John Doe",
-        knownFor: [KnownForItem(id: 1, title: "Some title")],
+        knownFor: [KnownForItem(id: 1, title: "Some title", name: "Some name")],
         profilePath: "/path/to/profile.jpg"
     )
     ActorDetailView(actor: sampleActor)
