@@ -1,13 +1,17 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @EnvironmentObject var authService: AuthService
+    // MARK: Private interface
 
-    @State private var name: String = ""
-    @State private var favoriteGenre: [MoviesGenre] = []
     @State private var showGenrePicker = false
     @State private var isEditing = false
+    @State private var showNameAlert = false
 
+    @StateObject private var viewModel = ProfileViewModel()
+
+    // MARK: Internal interface
+
+    @EnvironmentObject var authService: AuthService
     var body: some View {
         NavigationView {
             HStack {
@@ -16,11 +20,11 @@ struct ProfileView: View {
                         Text("Name:")
 
                         if isEditing {
-                            TextField("Your name", text: $name)
+                            TextField("Your name", text: $viewModel.name)
                                 .textFieldStyle(.roundedBorder)
                         } else {
-                            Text(name.isEmpty ? "Add your name" : name)
-                                .foregroundColor(name.isEmpty ? .gray : .primary)
+                            Text(viewModel.name.isEmpty ? "Add your name" : viewModel.name)
+                                .foregroundColor(viewModel.name.isEmpty ? .gray : .primary)
                                 .fontWeight(.semibold)
                         }
                     }
@@ -44,8 +48,8 @@ struct ProfileView: View {
                             .cornerRadius(10)
                         }
 
-                        if !favoriteGenre.isEmpty {
-                            Text(favoriteGenre.map(\.rawValue.capitalized).joined(separator: ", "))
+                        if !viewModel.favoriteGenres.isEmpty {
+                            Text(viewModel.favoriteGenres.map(\.rawValue.capitalized).joined(separator: ", "))
                                 .foregroundColor(.secondary)
                         } else {
                             Text("No genres selected")
@@ -58,7 +62,15 @@ struct ProfileView: View {
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(isEditing ? "Done" : "Edit") {
-                            isEditing.toggle()
+                            if isEditing {
+                                if viewModel.saveProfile() {
+                                    isEditing = false
+                                } else {
+                                    showNameAlert = true
+                                }
+                            } else {
+                                isEditing = true
+                            }
                         }
                     }
 
@@ -73,7 +85,10 @@ struct ProfileView: View {
                     }
                 }
                 .sheet(isPresented: $showGenrePicker) {
-                    GenrePickerView(selectedGenres: $favoriteGenre)
+                    GenrePickerView(selectedGenres: $viewModel.favoriteGenres)
+                }
+                .alert("Name is required", isPresented: $showNameAlert) {
+                    Button("OK", role: .cancel) {}
                 }
                 .navigationTitle("Your Profile")
 
