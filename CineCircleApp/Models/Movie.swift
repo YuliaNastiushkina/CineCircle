@@ -9,7 +9,6 @@ class Movie {
     /// Movie release date.
     var releaseDate: Date
     /// Friends who marked this movie as their favorite.
-//    var favoritedBy = [Friend]()
     /// The cast of the movie.
     @Relationship(inverse: \CastMember.movies) var cast = [CastMember]()
     /// String representation of movie release date. Used for sorting.

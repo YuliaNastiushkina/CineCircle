@@ -4,8 +4,17 @@ import Foundation
 @Observable
 @MainActor
 class ActorDetailsViewModel {
+    // MARK: Private interface
+
     private let client: APIClientProtocol
 
+    // MARK: Internal interface
+
+    /// Initializes a new instance of `ActorListViewModel`.
+    ///
+    /// - Parameter client: An object conforming to `APIClientProtocol` used for making API requests.
+    ///   Defaults to a shared instance of `APIClient`. This allows for dependency injection,
+    ///   particularly useful for testing with a mock API client.
     init(client: APIClientProtocol = APIClient()) {
         self.client = client
     }
