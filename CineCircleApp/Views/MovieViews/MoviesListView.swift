@@ -32,9 +32,14 @@ struct MoviesListView: View {
                 } else if filteredMovies.isEmpty {
                     ContentUnavailableView("No Movies Found", systemImage: "film.stack")
                 } else {
-                    List(filteredMovies) { movie in
+                    List(filteredMovies, id: \.id) { movie in
                         NavigationLink(movie.title) {
                             MovieDetailView(movie: movie)
+                        }
+                        .task {
+                            if movie.id == viewModel.movies.last?.id {
+                                await viewModel.fetchNextPageIfNeeded(currentMovie: movie)
+                            }
                         }
                     }
                 }
