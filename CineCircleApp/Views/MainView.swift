@@ -22,5 +22,4 @@ struct MainView: View {
 
 #Preview {
     MainView()
-        .modelContainer(SampleData.shared.modelContainer)
 }
