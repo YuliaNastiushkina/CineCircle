@@ -18,6 +18,12 @@ class AuthService: ObservableObject {
     /// Indicates whether the app is currently checking the authentication state.
     @Published var checkingAuthState = true
 
+    /// Returns the unique identifier (UID) of the currently signed-in user, if available.
+    /// This value is `nil` if no user is currently authenticated.
+    var currentUserId: String? {
+        Auth.auth().currentUser?.uid
+    }
+
     /// Initializes the service with a given authentication backend.
     /// - Parameter auth: A FirebaseAuthProtocol-compatible backend (e.g., FirebaseAuthAdapter or a mock).
     init(auth: FirebaseAuthProtocol) {

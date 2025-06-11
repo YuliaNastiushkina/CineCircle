@@ -7,11 +7,18 @@ struct ProfileView: View {
     @State private var isEditing = false
     @State private var showNameAlert = false
 
-    @StateObject private var viewModel = ProfileViewModel()
-
     // MARK: Internal interface
 
+    let userId: String
+    @StateObject private var viewModel: ProfileViewModel
+
+    init(userId: String) {
+        self.userId = userId
+        _viewModel = StateObject(wrappedValue: ProfileViewModel(userId: userId))
+    }
+
     @EnvironmentObject var authService: AuthService
+
     var body: some View {
         NavigationView {
             HStack {
@@ -99,5 +106,5 @@ struct ProfileView: View {
 }
 
 #Preview {
-    ProfileView()
+    ProfileView(userId: "previewUser")
 }

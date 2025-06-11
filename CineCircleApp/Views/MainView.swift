@@ -14,7 +14,9 @@ struct MainView: View {
             }
 
             Tab("Profile", systemImage: "person.crop.circle") {
-                ProfileView()
+                if let userId = authService.currentUserId {
+                    ProfileView(userId: userId)
+                }
             }
         }
     }

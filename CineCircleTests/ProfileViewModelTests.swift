@@ -5,6 +5,7 @@ import XCTest
 class ProfileViewModelTests: XCTestCase {
     var userDefaults: UserDefaults!
     var viewModel: ProfileViewModel!
+    var userID: String = "testUserID"
 
     override func setUp() {
         super.setUp()
@@ -15,7 +16,7 @@ class ProfileViewModelTests: XCTestCase {
         UserDefaults.standard.removeObject(forKey: ProfileUserDefaultsKeys.name)
         UserDefaults.standard.removeObject(forKey: ProfileUserDefaultsKeys.favoriteGenres)
 
-        viewModel = ProfileViewModel()
+        viewModel = ProfileViewModel(userId: userID)
     }
 
     override func tearDown() {
@@ -31,7 +32,7 @@ class ProfileViewModelTests: XCTestCase {
 
         // When
         viewModel.saveProfile()
-        let newViewModel = ProfileViewModel()
+        let newViewModel = ProfileViewModel(userId: userID)
 
         // Then
         XCTAssertEqual(newViewModel.name, "Alice")
@@ -49,7 +50,7 @@ class ProfileViewModelTests: XCTestCase {
         // Then
         XCTAssertFalse(didSave, "Expected saveProfile to return false when name is empty")
 
-        let reloadedViewModel = ProfileViewModel()
+        let reloadedViewModel = ProfileViewModel(userId: userID)
         XCTAssertEqual(reloadedViewModel.name, "")
         XCTAssertEqual(reloadedViewModel.favoriteGenres, [])
     }
