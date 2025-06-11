@@ -34,7 +34,8 @@ final class NoteService {
     ///   - movieId: The ID of the movie.
     ///   - userId: The ID of the user.
     ///   - content: The content of the note.
-    func createOrUpdateNote(for movieId: Int, userId: String, content: String) {
+    /// - Returns: An optional error if the save operation fails.
+    @discardableResult func createOrUpdateNote(for movieId: Int, userId: String, content: String) -> Error? {
         let existingNotes = fetchNotes(for: movieId, userId: userId)
 
         if let existingNote = existingNotes.first {
@@ -48,6 +49,11 @@ final class NoteService {
             newNote.createdAt = Date()
         }
 
-        try? context.save()
+        do {
+            try context.save()
+            return nil
+        } catch {
+            return error
+        }
     }
 }

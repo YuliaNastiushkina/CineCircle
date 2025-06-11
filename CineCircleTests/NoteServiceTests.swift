@@ -48,9 +48,10 @@ final class NoteServiceTests: XCTestCase {
 
     func testCreateOrUpdateNoteCreatesNewNote() {
         // When
-        sut.createOrUpdateNote(for: 1, userId: "testUser", content: "New note")
+        let error = sut.createOrUpdateNote(for: 1, userId: "testUser", content: "New note")
 
         // Then
+        XCTAssertNil(error)
         let notes = sut.fetchNotes(for: 1, userId: "testUser")
         XCTAssertEqual(notes.count, 1)
         XCTAssertEqual(notes.first?.content, "New note")
@@ -62,9 +63,10 @@ final class NoteServiceTests: XCTestCase {
         try context.save()
 
         // When
-        sut.createOrUpdateNote(for: 1, userId: "testUser", content: "Updated content")
+        let error = sut.createOrUpdateNote(for: 1, userId: "testUser", content: "Updated content")
 
         // Then
+        XCTAssertNil(error)
         let notes = sut.fetchNotes(for: 1, userId: "testUser")
         XCTAssertEqual(notes.count, 1)
         XCTAssertEqual(notes.first?.content, "Updated content")
@@ -72,12 +74,26 @@ final class NoteServiceTests: XCTestCase {
 
     func testCreateOrUpdateNoteHandlesEmptyContent() {
         // When
-        sut.createOrUpdateNote(for: 1, userId: "testUser", content: "")
+        let error = sut.createOrUpdateNote(for: 1, userId: "testUser", content: "")
 
         // Then
+        XCTAssertNil(error)
         let notes = sut.fetchNotes(for: 1, userId: "testUser")
         XCTAssertEqual(notes.count, 1)
         XCTAssertEqual(notes.first?.content, "")
+    }
+
+    func testCreateOrUpdateNoteReturnsErrorWhenContextFailsToSave() {
+        // Given
+        let failingContext = FailingContext(concurrencyType: .mainQueueConcurrencyType)
+        failingContext.persistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel: CoreDataManager.shared.container.managedObjectModel)
+        let service = NoteService(context: failingContext)
+
+        // When
+        let error = service.createOrUpdateNote(for: 1, userId: "testUser", content: "Will fail")
+
+        // Then
+        XCTAssertNotNil(error)
     }
 
     // MARK: - Helper Methods
@@ -90,5 +106,11 @@ final class NoteServiceTests: XCTestCase {
         note.id = UUID()
         note.createdAt = Date()
         return note
+    }
+}
+
+final class FailingContext: NSManagedObjectContext {
+    override func save() throws {
+        throw NSError(domain: "TestError", code: 999, userInfo: nil)
     }
 }
