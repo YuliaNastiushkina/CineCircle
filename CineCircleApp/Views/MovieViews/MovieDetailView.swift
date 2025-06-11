@@ -2,9 +2,14 @@ import SwiftData
 import SwiftUI
 
 struct MovieDetailView: View {
-    let movie: RemoteMovie
+    // MARK: Private interface
 
     @State private var viewModel = MovieDetailViewModel()
+
+    // MARK: Internal interface
+
+    let movie: RemoteMovie
+    @EnvironmentObject var authService: AuthService
 
     var body: some View {
         ScrollView {
@@ -56,6 +61,11 @@ struct MovieDetailView: View {
                                 Text("Cast: ").bold()
                                     + Text(actorNames).foregroundStyle(Color.gray)
                                     + Text(", etc.").foregroundStyle(Color.gray)
+                            }
+                        }
+                        if let userID = authService.currentUserId {
+                            NavigationLink("My notes") {
+                                MovieNoteView(movieId: movie.id, userId: userID)
                             }
                         }
                         Spacer()
