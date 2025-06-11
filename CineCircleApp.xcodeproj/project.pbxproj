@@ -55,23 +55,23 @@
 		BA3949212DF3620E00B7CB8B /* Exceptions for "CineCircleApp" folder in "CineCircleTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				CoreData/CoreDataManager.swift,
+				Sevices/CoreData/CoreDataManager.swift,
 			);
 			target = BAB46D882DF1FCCE00891FA8 /* CineCircleTests */;
 		};
 		BA71F4DC2DCD513400D984CB /* Exceptions for "CineCircleApp" folder in "APIManagerTests" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				APIManager/APIClient.swift,
-				APIManager/APIClientProtocol.swift,
-				APIManager/APIKeyProvider.swift,
-				APIManager/APIKeys.swift,
-				APIManager/APIKeySource.swift,
-				APIManager/APIManager.swift,
-				APIManager/DefaultAPIKeys.swift,
-				APIManager/Errors/APICallErrors.swift,
-				APIManager/Errors/APIKeyErrors.swift,
-				APIManager/MockAPIKeys.swift,
+				Sevices/APIManager/APIClient.swift,
+				Sevices/APIManager/APIClientProtocol.swift,
+				Sevices/APIManager/APIKeyProvider.swift,
+				Sevices/APIManager/APIKeys.swift,
+				Sevices/APIManager/APIKeySource.swift,
+				Sevices/APIManager/APIManager.swift,
+				Sevices/APIManager/DefaultAPIKeys.swift,
+				Sevices/APIManager/Errors/APICallErrors.swift,
+				Sevices/APIManager/Errors/APIKeyErrors.swift,
+				Sevices/APIManager/MockAPIKeys.swift,
 			);
 			target = BA42899F2DCD1EAF008FECCD /* APIManagerTests */;
 		};
