@@ -10,6 +10,7 @@ struct MovieDetailView: View {
 
     let movie: RemoteMovie
     @EnvironmentObject var authService: AuthService
+    @Environment(\.managedObjectContext) private var context
 
     var body: some View {
         ScrollView {
@@ -64,10 +65,14 @@ struct MovieDetailView: View {
                             }
                         }
                         if let userID = authService.currentUserId {
-                            NavigationLink("My notes") {
-                                MovieNoteView(movieId: movie.id, userId: userID)
+                            VStack(alignment: .leading) {
+                                NavigationLink("My notes") {
+                                    MovieNoteView(movieId: movie.id, userId: userID)
+                                }
+                                WatchedCheckboxView(movieID: movie.id, userID: userID)
                             }
                         }
+
                         Spacer()
                     }
                     .font(infoFont)
