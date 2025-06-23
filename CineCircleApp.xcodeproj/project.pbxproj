@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BA39491C2DF35DE600B7CB8B /* NoteModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BA3949182DF35D5000B7CB8B /* NoteModel.xcdatamodeld */; };
+		BA39491C2DF35DE600B7CB8B /* MovieDataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BA3949182DF35D5000B7CB8B /* MovieDataModel.xcdatamodeld */; };
 		BA5DF9B22DDFC9A8005E1397 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = BA5DF9B12DDFC9A8005E1397 /* FirebaseAuth */; };
 		BA5DF9B42DDFC9A8005E1397 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = BA5DF9B32DDFC9A8005E1397 /* FirebaseCore */; };
 /* End PBXBuildFile section */
@@ -37,7 +37,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		BA3949192DF35D5000B7CB8B /* NoteModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = NoteModel.xcdatamodel; sourceTree = "<group>"; };
+		BA3949192DF35D5000B7CB8B /* MovieDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MovieDataModel.xcdatamodel; sourceTree = "<group>"; };
 		BA4289A02DCD1EAF008FECCD /* APIManagerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = APIManagerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAA0685A2DE77C9700A53CE7 /* AuthServiceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AuthServiceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAACA5EF2DC124BB002627F6 /* CineCircle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CineCircle.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -152,7 +152,7 @@
 		BAACA5E62DC124BB002627F6 = {
 			isa = PBXGroup;
 			children = (
-				BA3949182DF35D5000B7CB8B /* NoteModel.xcdatamodeld */,
+				BA3949182DF35D5000B7CB8B /* MovieDataModel.xcdatamodeld */,
 				BAACA5F12DC124BB002627F6 /* CineCircleApp */,
 				BA4289A12DCD1EAF008FECCD /* APIManagerTests */,
 				BAA0685B2DE77C9700A53CE7 /* AuthServiceTests */,
@@ -412,7 +412,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BA39491C2DF35DE600B7CB8B /* NoteModel.xcdatamodeld in Sources */,
+				BA39491C2DF35DE600B7CB8B /* MovieDataModel.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -814,13 +814,13 @@
 /* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
-		BA3949182DF35D5000B7CB8B /* NoteModel.xcdatamodeld */ = {
+		BA3949182DF35D5000B7CB8B /* MovieDataModel.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
-				BA3949192DF35D5000B7CB8B /* NoteModel.xcdatamodel */,
+				BA3949192DF35D5000B7CB8B /* MovieDataModel.xcdatamodel */,
 			);
-			currentVersion = BA3949192DF35D5000B7CB8B /* NoteModel.xcdatamodel */;
-			path = NoteModel.xcdatamodeld;
+			currentVersion = BA3949192DF35D5000B7CB8B /* MovieDataModel.xcdatamodel */;
+			path = MovieDataModel.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;
 		};

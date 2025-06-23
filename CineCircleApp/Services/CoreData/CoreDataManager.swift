@@ -43,7 +43,7 @@ final class CoreDataManager: ObservableObject {
     /// Useful for testing purposes or temporary data that doesn’t need to persist between launches.
     /// - Parameter inMemory: A Boolean indicating whether to use an in-memory store. Pass `true` for testing, otherwise `false` (default).
     init(inMemory: Bool = false) {
-        container = NSPersistentContainer(name: "NoteModel")
+        container = NSPersistentContainer(name: "MovieDataModel")
         if inMemory {
             let description = NSPersistentStoreDescription()
             description.type = NSInMemoryStoreType
@@ -59,7 +59,7 @@ final class CoreDataManager: ObservableObject {
     // MARK: Private interface
 
     private init() {
-        container = NSPersistentContainer(name: "NoteModel")
+        container = NSPersistentContainer(name: "MovieDataModel")
         container.loadPersistentStores { _, error in
             if let error {
                 fatalError("Failed to load Core Data: \(error)")
