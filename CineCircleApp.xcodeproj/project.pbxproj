@@ -82,6 +82,13 @@
 			);
 			target = BAACA5EE2DC124BB002627F6 /* CineCircle */;
 		};
+		BA7FD4062E0C886A0033BD06 /* Exceptions for "AuthServiceTests" folder in "CineCircleTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				MockFirebaseAuth.swift,
+			);
+			target = BAB46D882DF1FCCE00891FA8 /* CineCircleTests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -95,6 +102,9 @@
 		};
 		BAA0685B2DE77C9700A53CE7 /* AuthServiceTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				BA7FD4062E0C886A0033BD06 /* Exceptions for "AuthServiceTests" folder in "CineCircleTests" target */,
+			);
 			path = AuthServiceTests;
 			sourceTree = "<group>";
 		};

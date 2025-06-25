@@ -9,7 +9,6 @@ import SwiftUI
 @main
 struct CineCircleApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @StateObject private var authService = AuthService(auth: FirebaseAuthAdapter())
     @StateObject private var coreDataStack = CoreDataManager.shared
     @StateObject private var userSession = UserSession()
 
@@ -17,7 +16,7 @@ struct CineCircleApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(userSession)
-                .environmentObject(authService)
+                .environment(\.authService, FirebaseAuthService())
                 .environment(\.managedObjectContext,
                              coreDataStack.container.viewContext)
         }
