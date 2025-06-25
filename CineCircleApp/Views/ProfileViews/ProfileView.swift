@@ -14,10 +14,10 @@ struct ProfileView: View {
 
     init(userId: String) {
         self.userId = userId
-        _viewModel = StateObject(wrappedValue: ProfileViewModel(userId: userId))
+        _viewModel = StateObject(wrappedValue: ProfileViewModel(userId: userId, authService: FirebaseAuthService()))
     }
 
-    @EnvironmentObject var authService: AuthService
+    @Environment(\.authService) private var authService: AuthServiceProtocol
 
     var body: some View {
         NavigationView {
@@ -84,7 +84,9 @@ struct ProfileView: View {
                     if !isEditing {
                         ToolbarItem(placement: .bottomBar) {
                             Button("Sign out") {
-                                authService.signOut()
+                                Task {
+                                    try viewModel.signOut()
+                                }
                             }
                             .buttonStyle(.borderedProminent)
                             .tint(.red.opacity(0.8))
@@ -98,6 +100,9 @@ struct ProfileView: View {
                     Button("OK", role: .cancel) {}
                 }
                 .navigationTitle("Your Profile")
+                .task {
+                    await viewModel.loadProfile()
+                }
 
                 Spacer()
             }

@@ -2,6 +2,7 @@
 import Foundation
 import XCTest
 
+@MainActor
 class ProfileViewModelTests: XCTestCase {
     var userDefaults: UserDefaults!
     var viewModel: ProfileViewModel!
@@ -16,7 +17,7 @@ class ProfileViewModelTests: XCTestCase {
         UserDefaults.standard.removeObject(forKey: ProfileUserDefaultsKeys.name)
         UserDefaults.standard.removeObject(forKey: ProfileUserDefaultsKeys.favoriteGenres)
 
-        viewModel = ProfileViewModel(userId: userID)
+        viewModel = ProfileViewModel(userId: userID, authService: MockFirebaseAuth())
     }
 
     override func tearDown() {
@@ -32,7 +33,8 @@ class ProfileViewModelTests: XCTestCase {
 
         // When
         viewModel.saveProfile()
-        let newViewModel = ProfileViewModel(userId: userID)
+        let newViewModel = ProfileViewModel(userId: userID, authService: MockFirebaseAuth())
+        await newViewModel.loadProfile()
 
         // Then
         XCTAssertEqual(newViewModel.name, "Alice")
@@ -50,7 +52,7 @@ class ProfileViewModelTests: XCTestCase {
         // Then
         XCTAssertFalse(didSave, "Expected saveProfile to return false when name is empty")
 
-        let reloadedViewModel = ProfileViewModel(userId: userID)
+        let reloadedViewModel = ProfileViewModel(userId: userID, authService: MockFirebaseAuth())
         XCTAssertEqual(reloadedViewModel.name, "")
         XCTAssertEqual(reloadedViewModel.favoriteGenres, [])
     }
