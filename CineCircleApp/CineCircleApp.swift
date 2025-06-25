@@ -11,10 +11,12 @@ struct CineCircleApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var authService = AuthService(auth: FirebaseAuthAdapter())
     @StateObject private var coreDataStack = CoreDataManager.shared
+    @StateObject private var userSession = UserSession()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(userSession)
                 .environmentObject(authService)
                 .environment(\.managedObjectContext,
                              coreDataStack.container.viewContext)
