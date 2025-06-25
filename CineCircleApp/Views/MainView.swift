@@ -1,23 +1,17 @@
 import SwiftUI
 
 struct MainView: View {
-    @EnvironmentObject var authService: AuthService
+    @Environment(\.authService) private var authService: AuthServiceProtocol
+    @EnvironmentObject private var userSession: UserSession
 
     var body: some View {
-        TabView {
-            Tab("Movies", systemImage: "film.stack") {
-                MoviesListView()
-            }
-
-            Tab("Actors", systemImage: "person.crop.square.badge.video.fill") {
-                ActorListView()
-            }
-
-            Tab("Profile", systemImage: "person.crop.circle") {
-                if let userId = authService.currentUserId {
-                    ProfileView(userId: userId)
-                }
-            }
+        switch userSession.authState {
+        case .undefined:
+            ProgressView("Checking auth...")
+        case .notAuthenticated:
+            AuthenticationView()
+        case let .authenticated(userId):
+            MainTabView(userId: userId)
         }
     }
 }

@@ -9,7 +9,7 @@ struct MovieDetailView: View {
     // MARK: Internal interface
 
     let movie: RemoteMovie
-    @EnvironmentObject var authService: AuthService
+    @EnvironmentObject private var userSession: UserSession
     @Environment(\.managedObjectContext) private var context
 
     var body: some View {
@@ -64,7 +64,7 @@ struct MovieDetailView: View {
                                     + Text(", etc.").foregroundStyle(Color.gray)
                             }
                         }
-                        if let userID = authService.currentUserId {
+                        if case let .authenticated(userID) = userSession.authState {
                             VStack(alignment: .leading) {
                                 NavigationLink("My notes") {
                                     MovieNoteView(movieId: movie.id, userId: userID)
@@ -126,5 +126,6 @@ struct MovieDetailView: View {
 
     NavigationStack {
         MovieDetailView(movie: sampleMovie)
+            .environment(\.authService, FirebaseAuthService())
     }
 }
