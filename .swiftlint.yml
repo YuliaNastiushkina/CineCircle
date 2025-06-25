@@ -4,6 +4,7 @@ identifier_name:
 disabled_rules:
     - redundant_discardable_let
     - line_length
+    - void_function_in_ternary
 
 trailing_comma:
     mandatory_comma: true
