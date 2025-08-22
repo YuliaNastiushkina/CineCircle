@@ -1,15 +1,41 @@
-# CineCircle
+# 🎬 CineCircle
 
 ## Description
 
 The repository contains the source code of the CineCircle application.  
 The CineCircle application allows you to search for movies or actors, mark your favorites and share your thoughts about a particular movie.
 
-CineCircle is an iOS application developed with SwiftUI using Firebase Authentication for user sign-in and registration. It integrates external APIs and adheres to the MVVM architectural pattern. Dependency management is handled through the Swift Package Manager. Configuration of private API keys is managed via GYB templates in conjunction with a `.env` configuration file.
+## 🛠️ Tech Stack
+- **SwiftUI** for UI  
+- **Firebase Authentication** for user sign-in and registration  
+- **External APIs** for movie data  
+- **MVVM** architectural pattern  
+- **Swift Package Manager** for dependency management  
+- **GYB + `.env`** for private API keys configuration
+- 
+## 📱 Screenshots
+<details>
+    <summary> Main Screen </summary>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/6254d8d9-a191-48b1-92f5-c69b554cf436" alt="screen1" width="220">
+    &nbsp;&nbsp;&nbsp;
+</p>
+</details>
 
-### This application uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.
+<details>
+    <summary>Inside the App</summary>
+<p align="center">
+<img src="https://github.com/user-attachments/assets/5c02bda6-b7ff-4c4c-90ae-057616adb893" alt="screen2" width="180">
+    &nbsp;&nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/83eac0b8-e29c-4f2a-b4bd-bacacaf0b31a" alt="screen3" width="180">
+    &nbsp;&nbsp;&nbsp;
+  <img src="https://github.com/user-attachments/assets/d883ff3a-348a-48ed-b01b-46af2ab9508d" alt="screen4" width="180">
+</p>
+</details>
 
 ### The app is under active development.
+
+### ❗️This application uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.❗️
 
 ## Badges
 
@@ -26,6 +52,9 @@ Versions of our environment:
 If you plan to use your own Firebase project, replace `GoogleService-Info.plist` with your own configuration file from the Firebase Console.
 
 ## 🚀 Launch CineCircle
+<details>
+    <summary> Launch Instructions </summary>
+    
 ### 1. Clone the Repository
 ```
 git clone git@github.com:YuliaNastiushkina/CineCircle.git
@@ -107,7 +136,7 @@ This will generate APIKeys.swift based on the obfuscated value of your API key.
 ❗ Don’t commit `.env` or `APIKeys.swift` to Git for security reasons.
 
 ✅ You’re Ready!
-
+</details>
 
 ## Authors
 
@@ -115,4 +144,4 @@ This will generate APIKeys.swift based on the obfuscated value of your API key.
 |---------------------|--------------------|
 | Yuliya Nastiushkina | @YuliaNastiushkina |
 
-If you have any questions about the application, feel free to reach out via GitHub or email.
+If you have any questions about the application, feel free to reach me out.
