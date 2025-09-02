@@ -7,6 +7,7 @@ struct AuthenticationFieldsView: View {
     @FocusState private var focusedField: Field?
     @State private var emailTouched = false
     @State private var passwordTouched = false
+    @State private var showPassword = false
 
     enum Field {
         case email
@@ -47,7 +48,14 @@ struct AuthenticationFieldsView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            SecureField(passwordPlaceholder, text: $password)
+            ZStack(alignment: .trailing) {
+                Group {
+                    if showPassword {
+                        TextField(passwordPlaceholder, text: $password)
+                    } else {
+                        SecureField(passwordPlaceholder, text: $password)
+                    }
+                }
                 .padding(fieldPadding)
                 .font(Font.custom(poppinsFont, size: labelSize))
                 .foregroundStyle(Color.black)
@@ -62,6 +70,16 @@ struct AuthenticationFieldsView: View {
                         passwordTouched = true
                     }
                 }
+
+                Button {
+                    showPassword.toggle()
+                } label: {
+                    Image(systemName: showPassword ? "eye.slash.fill" : "eye.fill")
+                        .foregroundColor(.gray)
+                        .padding(.trailing, 12)
+                }
+            }
+            .padding(.top)
 
             if showPasswordError {
                 Text(passwordAlert)
