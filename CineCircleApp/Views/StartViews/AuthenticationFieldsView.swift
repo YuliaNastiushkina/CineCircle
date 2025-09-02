@@ -4,6 +4,16 @@ struct AuthenticationFieldsView: View {
     @Binding var email: String
     @Binding var password: String
 
+    @FocusState private var focusedField: Field?
+    @State private var emailTouched = false
+    @State private var passwordTouched = false
+
+    enum Field {
+        case email
+        case password
+        case confirmPassword
+    }
+
     var isEmailValid: Bool {
         email.contains("@") && email.contains(".")
     }
@@ -14,38 +24,74 @@ struct AuthenticationFieldsView: View {
 
     var body: some View {
         VStack {
-            TextField("Email", text: $email)
-                .padding(10)
+            TextField(emailPlaceholder, text: $email)
+                .padding(fieldPadding)
+                .font(Font.custom(poppinsFont, size: labelSize))
+                .foregroundStyle(Color.black)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(isEmailValid || email.isEmpty ? Color.gray : Color.red, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: fieldCornerRadius)
+                        .stroke(showEmailError ? Color.red : Color.gray, lineWidth: 1)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .focused($focusedField, equals: .email)
+                .onChange(of: focusedField) { oldFocus, newFocus in
+                    if oldFocus == .email && newFocus != .email {
+                        emailTouched = true
+                    }
+                }
 
-            if !isEmailValid && !email.isEmpty {
-                Text("Invalid email address")
+            if showEmailError {
+                Text(emailAlert)
                     .foregroundColor(.red)
-                    .font(.caption)
+                    .font(Font.custom(poppinsFont, size: alertSize))
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            SecureField("Password", text: $password)
-                .padding(10)
+            SecureField(passwordPlaceholder, text: $password)
+                .padding(fieldPadding)
+                .font(Font.custom(poppinsFont, size: labelSize))
+                .foregroundStyle(Color.black)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(isPasswordValid || password.isEmpty ? Color.gray : Color.red, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: fieldCornerRadius)
+                        .stroke(showPasswordError ? Color.red : Color.gray, lineWidth: lineWidth)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .focused($focusedField, equals: .password)
+                .onChange(of: focusedField) { oldFocus, newFocus in
+                    if oldFocus == .password && newFocus != .password {
+                        passwordTouched = true
+                    }
+                }
 
-            if !isPasswordValid && !password.isEmpty {
-                Text("Password must be at least 6 characters.")
+            if showPasswordError {
+                Text(passwordAlert)
                     .foregroundColor(.red)
-                    .font(.caption)
+                    .font(Font.custom(poppinsFont, size: alertSize))
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .textInputAutocapitalization(.never)
         .autocorrectionDisabled()
-        .padding()
     }
+
+    private var showEmailError: Bool {
+        emailTouched && !isEmailValid && !email.isEmpty
+    }
+
+    private var showPasswordError: Bool {
+        passwordTouched && !isPasswordValid && !password.isEmpty
+    }
+
+    private let emailPlaceholder = "Email"
+    private let passwordPlaceholder = "Password"
+    private let poppinsFont = "Poppins"
+    private let labelSize: CGFloat = 14
+    private let fieldPadding: CGFloat = 16
+    private let emailAlert = "Invalid email address"
+    private let passwordAlert = "Password must be at least 6 characters"
+    private let alertSize: CGFloat = 10
+    private let lineWidth: CGFloat = 1
+    private let fieldCornerRadius: CGFloat = 24
 }
 
 struct SimpleLoginPreview: View {
