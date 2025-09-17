@@ -9,16 +9,21 @@ struct WatchStatusButton: View {
     var body: some View {
         Button(action: toggleWatched) {
             HStack {
+                Text(isWatched ? seenText : unseenText)
                 Image(systemName: "eye")
-                Text("Unseen")
             }
-            .foregroundStyle(isSeen ? .yellow : .secondary)
+            .font(Font.custom(poppinsFont, size: textSixe))
+            .foregroundStyle(isWatched ? .yellow : .white)
         }
         .onAppear(perform: loadWatchedStatus)
     }
 
     // MARK: Private interface
 
+    private let poppinsFont = "Poppins"
+    private let textSixe: CGFloat = 16
+    private let seenText = "Seen"
+    private let unseenText = "Unseen"
     @State private var isWatched: Bool = false
 
     private func loadWatchedStatus() {
