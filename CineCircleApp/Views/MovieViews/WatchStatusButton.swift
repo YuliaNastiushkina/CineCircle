@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct WatchedCheckboxView: View {
+struct WatchStatusButton: View {
     @Environment(\.managedObjectContext) private var context
 
     let movieID: Int
@@ -9,10 +9,10 @@ struct WatchedCheckboxView: View {
     var body: some View {
         Button(action: toggleWatched) {
             HStack {
-                Text("Watched")
-                Image(systemName: isWatched ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(isWatched ? .green : .secondary)
+                Image(systemName: "eye")
+                Text("Unseen")
             }
+            .foregroundStyle(isSeen ? .yellow : .secondary)
         }
         .onAppear(perform: loadWatchedStatus)
     }
@@ -37,5 +37,5 @@ struct WatchedCheckboxView: View {
 }
 
 #Preview {
-    WatchedCheckboxView(movieID: 1, userID: "1")
+    WatchStatusButton(movieID: 1, userID: "1")
 }
