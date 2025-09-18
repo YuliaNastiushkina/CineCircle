@@ -4,7 +4,7 @@ import SwiftUI
 struct MovieDetailView: View {
     // MARK: Private interface
 
-    @State private var viewModel = MovieDetailViewModel()
+    @Bindable var viewModel: MovieDetailViewModel
     @EnvironmentObject private var userSession: UserSession
     @Environment(\.managedObjectContext) private var context
     @Environment(\.dismiss) private var dismiss
@@ -85,7 +85,7 @@ struct MovieDetailView: View {
             .frame(height: zStackHeight)
 
             ScrollView {
-                MovieInfo(movie: movie)
+                MovieInfo(viewModel: viewModel, movie: movie)
                     .navigationBarBackButtonHidden(true)
             }
         }
@@ -131,7 +131,7 @@ struct MovieDetailView: View {
                                         releaseDate: "2022-04-08", runtime: 121, originalLanguage: "EN", genres: [RemoteMovieDetail.Genre(id: 1, name: "Fiction")], productionCompanies: [RemoteMovieDetail.ProductionCompany(id: 1, name: "Paramount Pictures")])
 
     NavigationStack {
-        MovieDetailView(movie: sampleMovie)
+        MovieDetailView(viewModel: MovieDetailViewModel(), movie: sampleMovie)
             .environment(\.authService, FirebaseAuthService())
     }
 }

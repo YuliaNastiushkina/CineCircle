@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct MovieDetailViewLoader: View {
@@ -8,14 +7,15 @@ struct MovieDetailViewLoader: View {
     var body: some View {
         Group {
             if let movie = viewModel.movieDetail {
-                AnyView(MovieDetailView(movie: movie))
+                MovieDetailView(viewModel: viewModel, movie: movie)
             } else {
-                AnyView(ProgressView())
+                ProgressView()
             }
         }
         .task {
             await viewModel.fetchMovieDetails(for: movieID)
             await viewModel.fetchCastAndCrew(for: movieID)
+            await viewModel.fetchMovieImages(for: movieID)
         }
     }
 }
