@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MovieInfo: View {
+    let viewModel: MovieDetailViewModel
     let movie: RemoteMovieDetail
 
     var body: some View {
@@ -56,6 +57,13 @@ struct MovieInfo: View {
                 }
             }
             .padding(.vertical, overviewSpacing)
+
+            VStack(alignment: .leading, spacing: sectionSpacing) {
+                // MARK: Gallery
+
+                SectionHeader(title: "Gallery")
+                MovieGallery(images: viewModel.images)
+            }
         }
         .padding(.horizontal)
         .background(Color(.systemBackground))
@@ -71,6 +79,7 @@ struct MovieInfo: View {
     private let metaFontSize: CGFloat = 14
     private let overviewFontSize: CGFloat = 16
     private let overviewSpacing: CGFloat = 26
+    private let sectionSpacing: CGFloat = 32
     private let spacing: CGFloat = 4
     private let minInHour: Int = 60
     private let lineLimitCollapsed = 3
@@ -93,7 +102,7 @@ struct MovieInfo: View {
                                         posterPath: "/6DrHO1jr3qVrViUO6s6kFiAGM7.jpg", backdropPath: "", voteAverage: 7.5,
                                         releaseDate: "2022-04-08", runtime: 121, originalLanguage: "EN", genres: [RemoteMovieDetail.Genre(id: 1, name: "Fiction")], productionCompanies: [RemoteMovieDetail.ProductionCompany(id: 1, name: "Paramount Pictures")])
     NavigationStack {
-        MovieInfo(movie: sampleMovie)
+        MovieInfo(viewModel: MovieDetailViewModel(), movie: sampleMovie)
             .environment(\.authService, FirebaseAuthService())
     }
 }
