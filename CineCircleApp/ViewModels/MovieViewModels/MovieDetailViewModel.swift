@@ -5,10 +5,27 @@ import Foundation
 @MainActor
 @Observable
 class MovieDetailViewModel {
+    // MARK: Private interface
+
+    private let client: APIClientProtocol
+
+    // MARK: Internal interface
+
+    /// Initializes a new instance of `ActorListViewModel`.
+    ///
+    /// - Parameter client: An object conforming to `APIClientProtocol` used for making API requests.
+    ///   Defaults to a shared instance of `APIClient`. This allows for dependency injection,
+    ///   particularly useful for testing with a mock API client.
+    init(client: APIClientProtocol = APIClient()) {
+        self.client = client
+    }
+
     /// The main details of the movie.
     var movieDetail: RemoteMovieDetail?
     /// A list of actors playing in the movie.
     var cast: [MovieCast] = []
+    /// A gallery of images of the movie.
+    var images: [MovieImage] = []
     /// The name of the movie's director.
     var director: String?
     /// The name of the movie's producer.
@@ -24,6 +41,7 @@ class MovieDetailViewModel {
         do {
             let response: RemoteMovieDetail = try await client.fetch(
                 path: "movie/\(movieId)",
+                query: [:],
                 responseType: RemoteMovieDetail.self
             )
             movieDetail = response
@@ -41,6 +59,7 @@ class MovieDetailViewModel {
         do {
             let response: MovieCreditsResponse = try await client.fetch(
                 path: "movie/\(movieId)/credits",
+                query: [:],
                 responseType: MovieCreditsResponse.self
             )
             cast = response.cast
@@ -51,7 +70,21 @@ class MovieDetailViewModel {
         }
     }
 
-    // MARK: Private interface
-
-    private let client = APIClient()
+    /// Fetches backdrop images for the specified movie.
+    ///
+    /// On success, updates the `images` property with the fetched backdrops.
+    /// On failure, prints an error message to the console.
+    /// - Parameter movieId: The ID of the movie for which details are requested.
+    func fetchMovieImages(for movieId: Int) async {
+        do {
+            let response: MovieImagesResponse = try await client.fetch(
+                path: "movie/\(movieId)/images",
+                query: [:],
+                responseType: MovieImagesResponse.self
+            )
+            images = response.backdrops
+        } catch {
+            print("Failed to fetch images: \(error)")
+        }
+    }
 }
