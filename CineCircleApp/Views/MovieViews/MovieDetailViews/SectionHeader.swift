@@ -12,6 +12,7 @@ struct SectionHeader: View {
                 .foregroundColor(.gray)
         }
         .font(Font.custom(poppinsFont, size: sectionHeaderFontSize))
+        .padding(.bottom, sectionHeaderSpacing)
     }
 
     // MARK: Private interface
@@ -19,6 +20,7 @@ struct SectionHeader: View {
     private let poppinsFont = "Poppins"
     private let sectionHeaderFontSize: CGFloat = 16
     private let seeAllText = "See all"
+    private let sectionHeaderSpacing: CGFloat = 24
 }
 
 #Preview {
