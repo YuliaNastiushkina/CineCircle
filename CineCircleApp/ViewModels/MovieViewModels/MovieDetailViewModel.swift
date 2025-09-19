@@ -24,12 +24,10 @@ class MovieDetailViewModel {
     var movieDetail: RemoteMovieDetail?
     /// A list of actors playing in the movie.
     var cast: [MovieCast] = []
+    /// A list of the crew members in the movie.
+    var crew: [MovieCrew] = []
     /// A gallery of images of the movie.
     var images: [MovieImage] = []
-    /// The name of the movie's director.
-    var director: String?
-    /// The name of the movie's producer.
-    var producer: String?
     /// An error message to be displayed if fetching fails.
     var errorMessage: String?
 
@@ -63,8 +61,7 @@ class MovieDetailViewModel {
                 responseType: MovieCreditsResponse.self
             )
             cast = response.cast
-            director = response.crew.first(where: { $0.job == "Director" })?.name
-            producer = response.crew.first(where: { $0.job == "Producer" })?.name
+            crew = response.crew
         } catch {
             errorMessage = "Failed to fetch cast: \(error.localizedDescription)"
         }
