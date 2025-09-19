@@ -56,14 +56,15 @@ struct MovieInfo: View {
                     .foregroundColor(.black)
                 }
             }
-            .padding(.vertical, overviewSpacing)
+            .padding(.top, overviewSpacing)
 
-            VStack(alignment: .leading, spacing: sectionSpacing) {
+            VStack(alignment: .leading, spacing: spacing) {
                 // MARK: Gallery
 
                 SectionHeader(title: "Gallery")
                 MovieGallery(images: viewModel.images)
             }
+            .padding(.top, sectionSpacing)
         }
         .padding(.horizontal)
         .background(Color(.systemBackground))
@@ -78,7 +79,7 @@ struct MovieInfo: View {
     private let titleFontSize: CGFloat = 20
     private let metaFontSize: CGFloat = 14
     private let overviewFontSize: CGFloat = 16
-    private let overviewSpacing: CGFloat = 26
+    private let overviewSpacing: CGFloat = 22
     private let sectionSpacing: CGFloat = 32
     private let spacing: CGFloat = 4
     private let minInHour: Int = 60
@@ -87,11 +88,13 @@ struct MovieInfo: View {
     private let seeMoreText = "See more"
     private let seeLessText = "See less"
     private let fontName = "Poppins"
+    private let dotPadding: CGFloat = 5
 
     @ViewBuilder private func dot() -> some View {
         Circle()
             .fill(Color.yellow)
             .frame(width: dotSize, height: dotSize)
+            .padding(dotPadding)
     }
 }
 
