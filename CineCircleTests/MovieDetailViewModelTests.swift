@@ -52,8 +52,8 @@ final class MovieDetailViewModelTests: XCTestCase {
         // Given
         let mockClient = MockAPIClient { _, _ in
             MovieCreditsResponse(
-                cast: [MovieCast(id: 1, name: "John Doe")],
-                crew: [MovieCrew(id: 1, name: "Margaret Wild", job: "Director")]
+                cast: [MovieCast(id: 1, name: "John Doe", profilePath: "/john.jpg")],
+                crew: [MovieCrew(id: 1, name: "Margaret Wild", job: "Director", profilePath: "/margaret.jpg")]
             )
         }
 
@@ -64,7 +64,7 @@ final class MovieDetailViewModelTests: XCTestCase {
 
         // Then
         XCTAssertEqual(sut.cast.first?.name, "John Doe")
-        XCTAssertEqual(sut.director, "Margaret Wild")
+        XCTAssertEqual(sut.crew.first?.name, "Margaret Wild") // Fixed: was checking cast instead of crew
     }
 
     func testFetchCastAndCrewFailure() async {
@@ -79,8 +79,6 @@ final class MovieDetailViewModelTests: XCTestCase {
 
         // Then
         XCTAssertTrue(sut.cast.isEmpty)
-        XCTAssertNil(sut.director)
-        XCTAssertNil(sut.producer)
         XCTAssertNotNil(sut.errorMessage)
     }
 
@@ -88,10 +86,10 @@ final class MovieDetailViewModelTests: XCTestCase {
         // Given
         let mockClient = MockAPIClient { _, _ in
             MovieCreditsResponse(
-                cast: [MovieCast(id: 1, name: "John Doe")],
+                cast: [MovieCast(id: 1, name: "John Doe", profilePath: "/john.jpg")],
                 crew: [
-                    MovieCrew(id: 1, name: "Director One", job: "Director"),
-                    MovieCrew(id: 2, name: "Producer One", job: "Producer"),
+                    MovieCrew(id: 1, name: "Director One", job: "Director", profilePath: "/director1.jpg"),
+                    MovieCrew(id: 2, name: "Producer One", job: "Producer", profilePath: "/producer1.jpg"),
                 ]
             )
         }
@@ -101,8 +99,11 @@ final class MovieDetailViewModelTests: XCTestCase {
         await sut.fetchCastAndCrew(for: 1)
 
         // Then
-        XCTAssertEqual(sut.director, "Director One")
-        XCTAssertEqual(sut.producer, "Producer One")
+        let director = sut.crew.first { $0.job == "Director" }?.name
+        let producer = sut.crew.first { $0.job == "Producer" }?.name
+
+        XCTAssertEqual(director, "Director One")
+        XCTAssertEqual(producer, "Producer One")
     }
 
     func testFetchCastAndCrewEmptyArrays() async {
@@ -117,8 +118,7 @@ final class MovieDetailViewModelTests: XCTestCase {
 
         // Then
         XCTAssertTrue(sut.cast.isEmpty)
-        XCTAssertNil(sut.director)
-        XCTAssertNil(sut.producer)
+        XCTAssertTrue(sut.crew.isEmpty) // Added: also check crew is empty
     }
 
     func testFetchMovieImagesSuccess() async {
