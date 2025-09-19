@@ -21,7 +21,12 @@ struct MovieDetailView: View {
                 PosterSectionView(
                     movie: movie,
                     userSession: userSession,
-                    onDismiss: { dismiss() },
+                    onDismiss: {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            showingBottomSheet = false
+                        }
+                        dismiss()
+                    },
                     onBookmark: {}
                 )
             }
@@ -37,6 +42,7 @@ struct MovieDetailView: View {
                     .enabled(upThrough: .large)
                 )
                 .presentationCornerRadius(24)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
     }
