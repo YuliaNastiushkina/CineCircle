@@ -5,7 +5,7 @@ struct MovieInfo: View {
     let movie: RemoteMovieDetail
 
     var body: some View {
-        // MARK: Title + meta info
+        // MARK: - Title + meta info
 
         VStack(alignment: .leading, spacing: spacing) {
             HStack {
@@ -35,7 +35,7 @@ struct MovieInfo: View {
             .font(Font.custom(poppinsFont, size: metaFontSize))
             .foregroundColor(.secondary)
 
-            // MARK: Synopsis
+            // MARK: - Synopsis
 
             VStack(alignment: .leading, spacing: spacing) {
                 Text(movie.overview)
@@ -59,20 +59,53 @@ struct MovieInfo: View {
             .padding(.top, overviewSpacing)
 
             VStack(alignment: .leading, spacing: spacing) {
-                // MARK: Gallery
+                // MARK: - Gallery
 
                 SectionHeader(title: "Gallery")
                 MovieGallery(images: viewModel.images)
+                    .padding(.bottom, sectionSpacing)
+
+                // MARK: - Cast
+
+                SectionHeader(title: "Cast")
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack {
+                        ForEach(viewModel.cast) { actor in
+                            PersonItemView(
+                                name: actor.name,
+                                role: nil,
+                                profilePath: actor.profilePath,
+                                nameLineLimit: 2
+                            )
+                        }
+                    }
+                    .padding(.bottom, sectionSpacing)
+                }
+
+                // MARK: - Crew
+
+                SectionHeader(title: "Crew")
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack {
+                        ForEach(essentialCrew) { member in
+                            PersonItemView(
+                                name: member.name,
+                                role: member.job,
+                                profilePath: member.profilePath,
+                                nameLineLimit: 1
+                            )
+                        }
+                    }
+                    .padding(.bottom, sectionSpacing)
+                }
             }
             .padding(.top, sectionSpacing)
         }
         .padding(.horizontal)
         .background(Color(.systemBackground))
-
-        Divider()
     }
 
-    // MARK: Private interface
+    // MARK: - Private interface
 
     @State private var expanded = false
     private let poppinsFont = "Poppins"
@@ -95,6 +128,32 @@ struct MovieInfo: View {
             .fill(Color.yellow)
             .frame(width: dotSize, height: dotSize)
             .padding(dotPadding)
+    }
+
+    private var essentialCrew: [MovieCrew] {
+        let essentialJobs = [
+            "Director",
+            "Producer",
+            "Executive Producer",
+            "Writer",
+            "Screenplay",
+        ]
+
+        return viewModel.crew
+            .filter { essentialJobs.contains($0.job) }
+            .sorted { first, second in
+                if first.job == "Director" { return true }
+                if second.job == "Director" { return false }
+
+                let firstIndex = essentialJobs.firstIndex(of: first.job) ?? Int.max
+                let secondIndex = essentialJobs.firstIndex(of: second.job) ?? Int.max
+
+                if firstIndex == secondIndex {
+                    return first.name < second.name
+                }
+
+                return firstIndex < secondIndex
+            }
     }
 }
 
