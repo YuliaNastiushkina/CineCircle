@@ -8,4 +8,13 @@ struct MovieCrew: Identifiable, Decodable {
     let name: String
     /// The job title of the crew member (e.g., Director, Producer).
     let job: String
+    /// Relative path to the crew member's image.
+    let profilePath: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case job
+        case profilePath = "profile_path"
+    }
 }
