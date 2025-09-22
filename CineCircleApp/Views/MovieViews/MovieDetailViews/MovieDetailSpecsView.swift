@@ -5,13 +5,13 @@ struct MovieDetailSpecsView: View {
     @Bindable var viewModel: MovieDetailViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: verticalSpacing) {
             Text("Synopsis")
-                .font(Font.custom(poppinsFont, size: 14))
-                .foregroundStyle(Color(white: 0.32))
+                .font(Font.custom(poppinsFont, size: labelFontSize))
+                .foregroundStyle(labelColor)
 
             Text(movie.overview)
-                .font(Font.custom(poppinsFont, size: 14))
+                .font(Font.custom(poppinsFont, size: labelFontSize))
                 .foregroundColor(.primary)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
 
@@ -24,21 +24,21 @@ struct MovieDetailSpecsView: View {
             infoRow(title: "Release Date (Streaming)", value: formattedDate(viewModel.detailsPresentation.releaseDate))
             infoRow(title: "Runtime", value: viewModel.detailsPresentation.runtime)
         }
-        .padding(16)
+        .padding(containerPadding)
         .frame(maxWidth: .infinity, alignment: .topLeading)
-        .background(.secondary.opacity(0.04))
-        .cornerRadius(24)
+        .background(containerBackground)
+        .cornerRadius(containerCornerRadius)
     }
 
     private func infoRow(title: String, value: String) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
+        HStack(alignment: .top, spacing: horizontalSpacing) {
+            VStack(alignment: .leading, spacing: innerSpacing) {
                 Text(title)
-                    .font(Font.custom(poppinsFont, size: 14))
-                    .foregroundStyle(Color(white: 0.32))
+                    .font(Font.custom(poppinsFont, size: labelFontSize))
+                    .foregroundStyle(labelColor)
 
-                Text(value.isEmpty ? "—" : value)
-                    .font(Font.custom(poppinsFont, size: 14))
+                Text(value.isEmpty ? emptyValuePlaceholder : value)
+                    .font(Font.custom(poppinsFont, size: labelFontSize))
                     .foregroundStyle(.primary)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
@@ -48,10 +48,10 @@ struct MovieDetailSpecsView: View {
 
     private func formattedDate(_ input: String) -> String {
         let inputFormatter = DateFormatter()
-        inputFormatter.dateFormat = "yyyy-MM-dd"
+        inputFormatter.dateFormat = apiDateFormat
 
         let outputFormatter = DateFormatter()
-        outputFormatter.dateFormat = "MMM d, yyyy"
+        outputFormatter.dateFormat = displayDateFormat
 
         if let date = inputFormatter.date(from: input) {
             return outputFormatter.string(from: date)
@@ -63,6 +63,18 @@ struct MovieDetailSpecsView: View {
     // MARK: - Constants
 
     private let poppinsFont = "Poppins"
+    private let verticalSpacing: CGFloat = 12
+    private let horizontalSpacing: CGFloat = 12
+    private let innerSpacing: CGFloat = 4
+    private let containerPadding: CGFloat = 16
+    private let containerCornerRadius: CGFloat = 24
+    private let labelFontSize: CGFloat = 14
+    private let valueFontSize: CGFloat = 14
+    private let labelColor = Color(white: 0.32)
+    private let containerBackground = Color.secondary.opacity(0.04)
+    private let emptyValuePlaceholder = "—"
+    private let apiDateFormat = "yyyy-MM-dd"
+    private let displayDateFormat = "MMM d, yyyy"
 }
 
 #Preview {
