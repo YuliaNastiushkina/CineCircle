@@ -35,6 +35,14 @@ struct MovieDetailView: View {
                     MovieInfo(viewModel: viewModel, movie: movie)
                         .padding(.top)
                 }
+                .safeAreaInset(edge: .bottom) {
+                    if case let .authenticated(userId) = userSession.authState {
+                        NoteButton(movieId: movie.id, userId: userId)
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal)
+                            .padding(.vertical, 12)
+                    }
+                }
                 .interactiveDismissDisabled()
                 .presentationDragIndicator(.hidden)
                 .presentationDetents([.fraction(0.47), .large])
