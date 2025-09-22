@@ -53,6 +53,17 @@ struct MovieScreenView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+        .gesture(
+            DragGesture()
+                .onEnded { value in
+                    if value.translation.width > 100 {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            showingBottomSheet = false
+                        }
+                        dismiss()
+                    }
+                }
+        )
     }
 }
 
