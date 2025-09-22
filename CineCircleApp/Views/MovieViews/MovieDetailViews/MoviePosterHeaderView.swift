@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PosterSectionView: View {
+struct MoviePosterSectionView: View {
     // MARK: - Properties
 
     let movie: RemoteMovieDetail
@@ -173,7 +173,7 @@ struct PosterSectionView: View {
         productionCompanies: [RemoteMovieDetail.ProductionCompany(id: 1, name: "Paramount Pictures")]
     )
 
-    PosterSectionView(
+    MoviePosterSectionView(
         movie: sampleMovie,
         userSession: UserSession(),
         onDismiss: {},

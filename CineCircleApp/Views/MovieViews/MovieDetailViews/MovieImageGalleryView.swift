@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct MovieGallery: View {
+struct MovieImageGalleryView: View {
     let images: [MovieImage]
 
     var body: some View {
@@ -44,5 +44,5 @@ struct MovieGallery: View {
         MovieImage(filePath: "/iQFcwSGbZXMkeyKrxbPnwnRo5fl.jpg"),
     ]
 
-    MovieGallery(images: sampleImages)
+    MovieImageGalleryView(images: sampleImages)
 }

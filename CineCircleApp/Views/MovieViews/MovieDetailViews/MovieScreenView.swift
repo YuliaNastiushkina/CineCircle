@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-struct MovieDetailView: View {
+struct MovieScreenView: View {
     // MARK: - Private interface
 
     @Bindable var viewModel: MovieDetailViewModel
@@ -18,7 +18,7 @@ struct MovieDetailView: View {
     var body: some View {
         GeometryReader { _ in
             VStack(spacing: 0) {
-                PosterSectionView(
+                MoviePosterSectionView(
                     movie: movie,
                     userSession: userSession,
                     onDismiss: {
@@ -32,12 +32,12 @@ struct MovieDetailView: View {
             }
             .sheet(isPresented: $showingBottomSheet) {
                 ScrollView {
-                    MovieInfo(viewModel: viewModel, movie: movie)
+                    MovieInfoSummaryView(viewModel: viewModel, movie: movie)
                         .padding(.top)
                 }
                 .safeAreaInset(edge: .bottom) {
                     if case let .authenticated(userId) = userSession.authState {
-                        NoteButton(movieId: movie.id, userId: userId)
+                        MovieNoteButton(movieId: movie.id, userId: userId)
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal)
                             .padding(.vertical, 12)
@@ -64,7 +64,7 @@ struct MovieDetailView: View {
                                         releaseDate: "2022-04-08", runtime: 121, originalLanguage: "EN", genres: [RemoteMovieDetail.Genre(id: 1, name: "Fiction")], productionCompanies: [RemoteMovieDetail.ProductionCompany(id: 1, name: "Paramount Pictures")])
 
     NavigationStack {
-        MovieDetailView(viewModel: MovieDetailViewModel(), movie: sampleMovie)
+        MovieScreenView(viewModel: MovieDetailViewModel(), movie: sampleMovie)
             .environment(\.authService, FirebaseAuthService())
     }
 }

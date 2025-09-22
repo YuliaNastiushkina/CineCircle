@@ -1,13 +1,13 @@
 import SwiftUI
 
-struct MovieDetailViewLoader: View {
+struct MovieDetailViewLoaderView: View {
     let movieID: Int
     @State private var viewModel = MovieDetailViewModel()
 
     var body: some View {
         Group {
             if let movie = viewModel.movieDetail {
-                MovieDetailView(viewModel: viewModel, movie: movie)
+                MovieScreenView(viewModel: viewModel, movie: movie)
             } else {
                 ProgressView()
             }
@@ -21,5 +21,5 @@ struct MovieDetailViewLoader: View {
 }
 
 #Preview {
-    MovieDetailViewLoader(movieID: 1)
+    MovieDetailViewLoaderView(movieID: 1)
 }

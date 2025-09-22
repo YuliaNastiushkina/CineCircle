@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct MovieInfo: View {
+struct MovieInfoSummaryView: View {
     let viewModel: MovieDetailViewModel
     let movie: RemoteMovieDetail
 
@@ -61,17 +61,17 @@ struct MovieInfo: View {
             VStack(alignment: .leading, spacing: spacing) {
                 // MARK: - Gallery
 
-                SectionHeader(title: "Gallery")
-                MovieGallery(images: viewModel.images)
+                SectionTitleView(title: "Gallery")
+                MovieImageGalleryView(images: viewModel.images)
                     .padding(.bottom, sectionSpacing)
 
                 // MARK: - Cast
 
-                SectionHeader(title: "Cast")
+                SectionTitleView(title: "Cast")
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(viewModel.cast) { actor in
-                            PersonItemView(
+                            PersonChipView(
                                 name: actor.name,
                                 role: nil,
                                 profilePath: actor.profilePath,
@@ -84,11 +84,11 @@ struct MovieInfo: View {
 
                 // MARK: - Crew
 
-                SectionHeader(title: "Crew")
+                SectionTitleView(title: "Crew")
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(essentialCrew) { member in
-                            PersonItemView(
+                            PersonChipView(
                                 name: member.name,
                                 role: member.job,
                                 profilePath: member.profilePath,
@@ -101,7 +101,7 @@ struct MovieInfo: View {
 
                 // MARK: - Detailed info
 
-                SectionHeader(title: "Movie Info")
+                SectionTitleView(title: "Movie Info")
                 MovieDetailSpecsView(movie: movie, viewModel: viewModel)
             }
             .padding(.top, sectionSpacing)
@@ -169,7 +169,7 @@ struct MovieInfo: View {
                                         posterPath: "/6DrHO1jr3qVrViUO6s6kFiAGM7.jpg", backdropPath: "", voteAverage: 7.5,
                                         releaseDate: "2022-04-08", runtime: 121, originalLanguage: "EN", genres: [RemoteMovieDetail.Genre(id: 1, name: "Fiction")], productionCompanies: [RemoteMovieDetail.ProductionCompany(id: 1, name: "Paramount Pictures")])
     NavigationStack {
-        MovieInfo(viewModel: MovieDetailViewModel(), movie: sampleMovie)
+        MovieInfoSummaryView(viewModel: MovieDetailViewModel(), movie: sampleMovie)
             .environment(\.authService, FirebaseAuthService())
     }
 }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct NoteButton: View {
+struct MovieNoteButton: View {
     let movieId: Int
     let userId: String
 
@@ -33,5 +33,5 @@ struct NoteButton: View {
 }
 
 #Preview {
-    NoteButton(movieId: 1, userId: "previewUser")
+    MovieNoteButton(movieId: 1, userId: "previewUser")
 }

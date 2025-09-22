@@ -34,7 +34,7 @@ struct MoviesListView: View {
                 } else {
                     List(filteredMovies, id: \.id) { movie in
                         NavigationLink(movie.title) {
-                            MovieDetailViewLoader(movieID: movie.id)
+                            MovieDetailViewLoaderView(movieID: movie.id)
                         }
                         .task {
                             if movie.id == viewModel.movies.last?.id {

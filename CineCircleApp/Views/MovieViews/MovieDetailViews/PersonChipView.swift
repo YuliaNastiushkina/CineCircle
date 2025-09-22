@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PersonItemView: View {
+struct PersonChipView: View {
     let name: String
     let role: String?
     let profilePath: String?
@@ -78,5 +78,5 @@ struct PersonItemView: View {
 }
 
 #Preview {
-    PersonItemView(name: "Rich Lee", role: "Director", profilePath: "", nameLineLimit: 1)
+    PersonChipView(name: "Rich Lee", role: "Director", profilePath: "", nameLineLimit: 1)
 }
