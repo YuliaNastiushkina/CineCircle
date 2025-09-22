@@ -6,13 +6,13 @@ The repository contains the source code of the CineCircle application.
 The CineCircle application allows you to search for movies or actors, mark your favorites and share your thoughts about a particular movie.
 
 ## 🛠️ Tech Stack
-- **SwiftUI** for UI  
-- **Firebase Authentication** for user sign-in and registration  
-- **External APIs** for movie data  
-- **MVVM** architectural pattern  
-- **Swift Package Manager** for dependency management  
-- **GYB + `.env`** for private API keys configuration
-- 
+- **SwiftUI** — user interface framework  
+- **SwiftData** — local persistence  
+- **Firebase Authentication** — user sign-in and registration  
+- **External APIs (TMDB)** — movie data source  
+- **MVVM** — architectural pattern  
+- **Swift Package Manager (SPM)** — dependency management  
+- **GYB + `.env`** — secure API keys configuration
 ## 📱 Screenshots
 <details>
     <summary> Main Screen </summary>
