@@ -1,38 +1,24 @@
+import CoreData
 import SwiftData
 import SwiftUI
 
 struct MoviesListView: View {
-    @State private var filterText = ""
+    @Environment(\.managedObjectContext) private var context
+    @EnvironmentObject private var userSession: UserSession
+
     @State private var isLoading = false
-    @State private var isSorted = false
-
     @State private var viewModel = MovieListViewModel()
-
-    var filteredMovies: [RemoteMovie] {
-        let baseList = filterText.isEmpty
-            ? viewModel.movies
-            : viewModel.movies.filter {
-                $0.title.localizedCaseInsensitiveContains(filterText)
-            }
-
-        if isSorted {
-            return baseList.sorted {
-                $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
-            }
-        } else {
-            return baseList
-        }
-    }
 
     var body: some View {
         NavigationStack {
             Group {
                 if isLoading {
                     ProgressView("Loading...")
-                } else if filteredMovies.isEmpty {
-                    ContentUnavailableView("No Movies Found", systemImage: "film.stack")
+                } else if viewModel.displayedMovies.isEmpty {
+                    ContentUnavailableView(viewModel.showSavedOnly ? "No Saved Movies" : "No Movies Found",
+                                           systemImage: "film.stack")
                 } else {
-                    List(filteredMovies, id: \.id) { movie in
+                    List(viewModel.displayedMovies, id: \.id) { movie in
                         NavigationLink(movie.title) {
                             MovieDetailViewLoaderView(movieID: movie.id)
                         }
@@ -44,23 +30,31 @@ struct MoviesListView: View {
                     }
                 }
             }
-            .navigationTitle("Popular Movies")
+            .navigationTitle(viewModel.showSavedOnly ? "Saved" : "Popular Movies")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        isSorted.toggle()
-                    } label: {
-                        Label("Sort A–Z", systemImage: "arrow.up.arrow.down")
+                    HStack {
+                        Button {
+                            viewModel.showSavedOnly.toggle()
+                            if viewModel.showSavedOnly { loadSavedIDs() }
+                        } label: {
+                            Label("Saved", systemImage: viewModel.showSavedOnly ? "bookmark.fill" : "bookmark")
+                        }
+
+                        Button {
+                            viewModel.isSorted.toggle()
+                        } label: {
+                            Label("Sort A–Z", systemImage: "arrow.up.arrow.down")
+                        }
                     }
                 }
-            }
-            .toolbar {
+
                 ToolbarItem(placement: .topBarTrailing) {
                     LogoView()
                 }
             }
         }
-        .searchable(text: $filterText)
+        .searchable(text: $viewModel.filterText)
         .task {
             if viewModel.movies.isEmpty {
                 await loadMovies()
@@ -71,15 +65,33 @@ struct MoviesListView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+        .onAppear(perform: loadSavedIDs)
+        .onReceive(userSession.$authState) { _ in
+            loadSavedIDs()
+        }
     }
+
+    // MARK: - Private interface
 
     private func loadMovies() async {
         isLoading = true
         await viewModel.fetchPopularMovies()
         isLoading = false
     }
+
+    private func loadSavedIDs() {
+        guard case let .authenticated(userId) = userSession.authState else {
+            viewModel.savedIDs = []; return
+        }
+        let request: NSFetchRequest<SavedMovie> = SavedMovie.fetchRequest()
+        request.predicate = NSPredicate(format: "userID == %@", userId)
+        request.sortDescriptors = []
+        let results = (try? context.fetch(request)) ?? []
+        viewModel.savedIDs = Set(results.map { Int($0.movieID) })
+    }
 }
 
 #Preview {
     MoviesListView()
+        .environmentObject(UserSession())
 }
