@@ -4,11 +4,38 @@ import Foundation
 /// It fetches data from the API and exposes it to the view layer.
 @Observable
 @MainActor
-class MovieListViewModel {
+final class MovieListViewModel {
     /// A list of popular movies fetched from the API.
     var movies: [RemoteMovie] = []
     /// An error message to be displayed if fetching fails.
     var errorMessage: String?
+    /// Text used to filter movies by title.
+    var filterText = ""
+    /// Indicates whether the movies should be sorted alphabetically by title.
+    var isSorted = false
+    /// Indicates whether only saved movies should be displayed.
+    var showSavedOnly = false
+    /// Set of saved movie IDs used to filter the displayed movies.
+    var savedIDs: Set<Int> = []
+
+    /// Computed property that returns the list of movies after filtering and sorting.
+    var displayedMovies: [RemoteMovie] {
+        let searched = filterText.isEmpty
+            ? movies
+            : movies.filter { $0.title.localizedCaseInsensitiveContains(filterText) }
+
+        let sorted = isSorted
+            ? searched.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+            : searched
+
+        return showSavedOnly ? sorted.filter { savedIDs.contains($0.id) } : sorted
+    }
+
+    /// Initializes the view model with a given API client.
+    /// - Parameter client: An object conforming to `APIClientProtocol`. Defaults to `APIClient()`.
+    init(client: APIClientProtocol = APIClient()) {
+        self.client = client
+    }
 
     /// Fetches the list of popular movies from the TMDB API.
     ///
@@ -53,9 +80,9 @@ class MovieListViewModel {
         }
     }
 
-    // MARK: Private interface.
+    // MARK: - Private interface.
 
-    private let client = APIClient()
+    private let client: APIClientProtocol
     private(set) var currentPage = 1
     private(set) var totalPages = 1
     private var isFetching = false
