@@ -27,10 +27,10 @@ struct MoviePosterSectionView: View {
         static let ratingFormat = "%.1f"
 
         // UI Constants
-        static let overlayCircleSize: CGFloat = 45
-        static let overlayCircleOpacity: Double = 0.8
-        static let overlayCircleColor: Double = 0.32
-        static let buttonIconFontSize: CGFloat = 20
+//        static let overlayCircleSize: CGFloat = 45
+//        static let overlayCircleOpacity: Double = 0.8
+//        static let overlayCircleColor: Double = 0.32
+//        static let buttonIconFontSize: CGFloat = 20
         static let ratingFontSize: CGFloat = 16
         static let ratingPaddingVertical: CGFloat = 10
         static let ratingPaddingHorizontal: CGFloat = 16
@@ -94,9 +94,12 @@ struct MoviePosterSectionView: View {
 
     private var topOverlayButtons: some View {
         HStack {
-            overlayButton(systemName: "chevron.left", action: onDismiss)
+            CircleButton(systemName: "chevron.left", action: onDismiss)
+                .foregroundStyle(Color.white)
             Spacer()
-            overlayButton(systemName: "bookmark.fill", action: onBookmark)
+            if case let .authenticated(userId) = userSession.authState {
+                BookmarkButton(movieID: movie.id, userID: userId)
+            }
         }
         .padding(.horizontal)
         .padding(.top, Constants.topPadding)
@@ -136,22 +139,6 @@ struct MoviePosterSectionView: View {
                 .padding(.horizontal, Constants.ratingPaddingHorizontal)
                 .background(ratingBackgroundColor)
                 .clipShape(Capsule())
-        }
-    }
-
-    // MARK: - Helper Methods
-
-    private func overlayButton(systemName: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Circle()
-                .fill(Color(white: Constants.overlayCircleColor, opacity: Constants.overlayCircleOpacity))
-                .frame(width: Constants.overlayCircleSize, height: Constants.overlayCircleSize)
-                .overlay(
-                    Image(systemName: systemName)
-                        .foregroundColor(.white)
-                        .fontWeight(.bold)
-                        .font(.system(size: Constants.buttonIconFontSize))
-                )
         }
     }
 }
