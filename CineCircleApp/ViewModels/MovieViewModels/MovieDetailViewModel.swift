@@ -84,4 +84,26 @@ class MovieDetailViewModel {
             print("Failed to fetch images: \(error)")
         }
     }
+
+    /// Computed property that transforms raw movie/crew data into `DetailedInfoPresentation` ready for display in the UI.
+    var detailsPresentation: DetailedInfoPresentation {
+        let directors = CrewFormatter.names(for: ["Director"], in: crew)
+        let producers = CrewFormatter.names(for: ["Producer"], in: crew)
+        let screen = CrewFormatter.names(for: ["Writer", "Screenplay", "Story"], in: crew)
+
+        let companies = MovieFormatter.commaJoined(movieDetail?.productionCompanies.map(\.name) ?? [])
+        let genres = MovieFormatter.commaJoined(movieDetail?.genres.map(\.name) ?? [])
+        let language = (movieDetail?.originalLanguage.uppercased() ?? "—").nonEmptyOrDash
+        let release = (movieDetail?.releaseDate ?? "—").nonEmptyOrDash
+        let runtime = MovieFormatter.runtimeText(minutes: movieDetail?.runtime)
+
+        return .init(directors: directors,
+                     producers: producers,
+                     screenwriters: screen,
+                     productionCompanies: companies,
+                     genres: genres,
+                     originalLanguage: language,
+                     releaseDate: release,
+                     runtime: runtime)
+    }
 }

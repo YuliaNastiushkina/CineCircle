@@ -150,4 +150,67 @@ final class MovieDetailViewModelTests: XCTestCase {
         // Then
         XCTAssertTrue(sut.images.isEmpty)
     }
+
+    func testDetailsPresentationPopulatesFromModels() {
+        // Given
+        let vm = MovieDetailViewModel(client: MockAPIClient { _, _ in () as Any })
+        vm.movieDetail = RemoteMovieDetail(
+            id: 1,
+            title: "T",
+            overview: "O",
+            posterPath: nil,
+            backdropPath: nil,
+            voteAverage: 7.1,
+            releaseDate: "2025-07-30",
+            runtime: 89,
+            originalLanguage: "en",
+            genres: [.init(id: 1, name: "Sci‑Fi"), .init(id: 2, name: "Thriller")],
+            productionCompanies: [.init(id: 1, name: "Universal Pictures"),
+                                  .init(id: 2, name: "Bazeleves")]
+        )
+        vm.crew = [
+            MovieCrew(id: 1, name: "Rich Lee", job: "Director", profilePath: nil),
+            MovieCrew(id: 2, name: "Patrick Aiello", job: "Producer", profilePath: nil),
+            MovieCrew(id: 3, name: "Kenny Golde", job: "Writer", profilePath: nil),
+            MovieCrew(id: 4, name: "Marc Hyman", job: "Screenplay", profilePath: nil),
+            MovieCrew(id: 5, name: "H.G. Wells", job: "Story", profilePath: nil),
+        ]
+
+        // When
+        let details = vm.detailsPresentation
+
+        // Then
+        XCTAssertEqual(details.directors, "Rich Lee")
+        XCTAssertEqual(details.producers, "Patrick Aiello")
+        XCTAssertEqual(details.screenwriters, "H.G. Wells, Kenny Golde, Marc Hyman")
+        XCTAssertEqual(details.productionCompanies, "Universal Pictures, Bazeleves")
+        XCTAssertEqual(details.genres, "Sci‑Fi, Thriller")
+        XCTAssertEqual(details.originalLanguage, "EN")
+        XCTAssertEqual(details.releaseDate, "2025-07-30")
+        XCTAssertEqual(details.runtime, "1h 29m")
+    }
+
+    func testDetailsPresentationHandlesMissingValues() {
+        // Given
+        let vm = MovieDetailViewModel(client: MockAPIClient { _, _ in () as Any })
+        vm.movieDetail = RemoteMovieDetail(
+            id: 1, title: "", overview: "", posterPath: nil, backdropPath: nil,
+            voteAverage: 0, releaseDate: "", runtime: nil, originalLanguage: "",
+            genres: [], productionCompanies: []
+        )
+        vm.crew = []
+
+        // When
+        let details = vm.detailsPresentation
+
+        // Then
+        XCTAssertEqual(details.directors, "—")
+        XCTAssertEqual(details.producers, "—")
+        XCTAssertEqual(details.screenwriters, "—")
+        XCTAssertEqual(details.productionCompanies, "—")
+        XCTAssertEqual(details.genres, "—")
+        XCTAssertEqual(details.originalLanguage, "—")
+        XCTAssertEqual(details.releaseDate, "—")
+        XCTAssertEqual(details.runtime, "—")
+    }
 }
