@@ -98,6 +98,11 @@ struct MovieInfo: View {
                     }
                     .padding(.bottom, sectionSpacing)
                 }
+
+                // MARK: - Detailed info
+
+                SectionHeader(title: "Movie Info")
+                MovieDetailSpecsView(movie: movie, viewModel: viewModel)
             }
             .padding(.top, sectionSpacing)
         }
