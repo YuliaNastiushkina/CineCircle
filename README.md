@@ -25,11 +25,11 @@ The CineCircle application allows you to search for movies or actors, mark your 
 <details>
     <summary>Inside the App</summary>
 <p align="center">
-<img src="https://github.com/user-attachments/assets/5c02bda6-b7ff-4c4c-90ae-057616adb893" alt="screen2" width="180">
-    &nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/83eac0b8-e29c-4f2a-b4bd-bacacaf0b31a" alt="screen3" width="180">
-    &nbsp;&nbsp;&nbsp;
-  <img src="https://github.com/user-attachments/assets/d883ff3a-348a-48ed-b01b-46af2ab9508d" alt="screen4" width="180">
+  <img src="https://github.com/user-attachments/assets/d8ef45a0-a449-4e63-8568-86786ac8399d" alt="screen2" width="180"/>
+  <img src="https://github.com/user-attachments/assets/5e56fbca-de7b-4435-a4bd-f82e6cde649a" alt="screen3" width="180"/>
+  <img src="https://github.com/user-attachments/assets/7b6f5cc6-f109-42cc-b1be-03b09436931c" alt="screen4" width="180">
+  <img src="https://github.com/user-attachments/assets/f37bf5fb-e04e-4474-bbc6-f7654ff9323f" alt="screen5" width="180"/>
+  <img src="https://github.com/user-attachments/assets/d883ff3a-348a-48ed-b01b-46af2ab9508d" alt="screen6" width="180">
 </p>
 </details>
 
