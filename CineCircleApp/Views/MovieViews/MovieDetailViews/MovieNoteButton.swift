@@ -9,18 +9,18 @@ struct MovieNoteButton: View {
             isPresentingNote = true
         } label: {
             HStack {
-                Text("Write a note")
-                Image("notebookImage")
+                Text(buttonTitle)
+                Image(buttonImageName)
                     .renderingMode(.template)
             }
-            .font(Font.custom("Poppins", size: 16))
+            .font(Font.custom(poppinsFont, size: fontSize))
             .foregroundColor(.black)
-            .padding(.horizontal, 24)
-            .padding(.vertical, 16)
-            .frame(width: 370, alignment: .center)
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, verticalPadding)
+            .frame(width: buttonWidth, alignment: .center)
             .background(Color.yellow)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .shadow(color: shadowColor, radius: shadowRadius, y: shadowYOffset)
         }
         .sheet(isPresented: $isPresentingNote) {
             MovieNoteView(movieId: movieId, userId: userId)
@@ -30,6 +30,17 @@ struct MovieNoteButton: View {
     // MARK: - Private interface
 
     @State private var isPresentingNote = false
+    private let buttonTitle = "Write a note"
+    private let buttonImageName = "notebookImage"
+    private let poppinsFont = "Poppins"
+    private let fontSize: CGFloat = 16
+    private let horizontalPadding: CGFloat = 24
+    private let verticalPadding: CGFloat = 16
+    private let buttonWidth: CGFloat = 370
+    private let cornerRadius: CGFloat = 24
+    private let shadowColor = Color.black.opacity(0.08)
+    private let shadowRadius: CGFloat = 8
+    private let shadowYOffset: CGFloat = 2
 }
 
 #Preview {
