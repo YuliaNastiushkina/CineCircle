@@ -21,6 +21,7 @@ struct PersonChipView: View {
                             .resizable()
                             .scaledToFill()
                             .frame(width: imageWidth, height: imageWidth)
+                            .clipped()
                             .clipShape(Circle())
                             .shadow(color: .gray, radius: shadowRadius)
                     case .failure:

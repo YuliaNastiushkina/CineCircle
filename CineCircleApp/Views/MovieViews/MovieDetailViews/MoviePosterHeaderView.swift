@@ -25,19 +25,11 @@ struct MoviePosterSectionView: View {
         static let posterBaseURL = "https://image.tmdb.org/t/p/w500"
         static let poppinsFont = "Poppins"
         static let ratingFormat = "%.1f"
-
-        // UI Constants
-//        static let overlayCircleSize: CGFloat = 45
-//        static let overlayCircleOpacity: Double = 0.8
-//        static let overlayCircleColor: Double = 0.32
-//        static let buttonIconFontSize: CGFloat = 20
         static let ratingFontSize: CGFloat = 16
         static let ratingPaddingVertical: CGFloat = 10
         static let ratingPaddingHorizontal: CGFloat = 16
         static let bottomPadding: CGFloat = 24
         static let topPadding: CGFloat = 84
-
-        // Layout Constants
         static let posterHeightRatio: CGFloat = 0.7
         static let overlayHeightRatio: CGFloat = 0.66
         static let posterContainerHeightRatio: CGFloat = 0.5
@@ -70,6 +62,17 @@ struct MoviePosterSectionView: View {
                                 height: geometry.size.height * Constants.posterHeightRatio
                             )
                             .clipped()
+                            .mask {
+                                LinearGradient(
+                                    gradient: Gradient(stops: [
+                                        .init(color: .white, location: 0.0),
+                                        .init(color: .white, location: 0.95),
+                                        .init(color: .clear, location: 1.0),
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            }
                     default:
                         Color.gray
                             .frame(

@@ -50,6 +50,7 @@ struct MovieScreenView: View {
                     .enabled(upThrough: .large)
                 )
                 .presentationCornerRadius(24)
+                .presentationBackground(Color(.systemBackground))
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
