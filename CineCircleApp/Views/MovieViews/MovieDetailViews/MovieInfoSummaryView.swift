@@ -87,7 +87,7 @@ struct MovieInfoSummaryView: View {
                 SectionTitleView(title: "Crew")
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
-                        ForEach(essentialCrew) { member in
+                        ForEach(Array(essentialCrew.enumerated()), id: \.offset) { _, member in
                             PersonChipView(
                                 name: member.name,
                                 role: member.job,
