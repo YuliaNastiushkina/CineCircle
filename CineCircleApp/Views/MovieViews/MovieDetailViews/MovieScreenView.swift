@@ -22,7 +22,7 @@ struct MovieScreenView: View {
                     movie: movie,
                     userSession: userSession,
                     onDismiss: {
-                        withAnimation(.easeOut(duration: 0.2)) {
+                        withAnimation(.easeOut(duration: animationDuration)) {
                             showingBottomSheet = false
                         }
                         dismiss()
@@ -40,16 +40,16 @@ struct MovieScreenView: View {
                         MovieNoteButton(movieId: movie.id, userId: userId)
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal)
-                            .padding(.vertical, 12)
+                            .padding(.vertical, verticalPadding)
                     }
                 }
                 .interactiveDismissDisabled()
                 .presentationDragIndicator(.hidden)
-                .presentationDetents([.fraction(0.47), .large])
+                .presentationDetents([.fraction(fractionalHeight), .large])
                 .presentationBackgroundInteraction(
                     .enabled(upThrough: .large)
                 )
-                .presentationCornerRadius(24)
+                .presentationCornerRadius(sheetCornerRadius)
                 .presentationBackground(Color(.systemBackground))
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
@@ -58,7 +58,7 @@ struct MovieScreenView: View {
             DragGesture()
                 .onEnded { value in
                     if value.translation.width > 100 {
-                        withAnimation(.easeOut(duration: 0.2)) {
+                        withAnimation(.easeOut(duration: animationDuration)) {
                             showingBottomSheet = false
                         }
                         dismiss()
@@ -66,6 +66,13 @@ struct MovieScreenView: View {
                 }
         )
     }
+
+    // MARK: Private interface
+
+    let animationDuration: TimeInterval = 0.2
+    let verticalPadding: CGFloat = 12
+    let fractionalHeight: CGFloat = 0.47
+    let sheetCornerRadius: CGFloat = 24
 }
 
 #Preview {
