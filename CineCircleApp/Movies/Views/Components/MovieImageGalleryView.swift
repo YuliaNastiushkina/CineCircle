@@ -1,0 +1,50 @@
+import SwiftUI
+
+struct MovieImageGalleryView: View {
+    let images: [MovieImage]
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach(images) { image in
+                    if let url = URL(string: "https://image.tmdb.org/t/p/w500\(image.filePath)") {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                                    .frame(width: Parameters.imageWidth, height: Parameters.imageHeight)
+                            case let .success(img):
+                                img
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: Parameters.imageWidth, height: Parameters.imageHeight)
+                                    .clipped()
+                                    .cornerRadius(Parameters.imageCornerRadius)
+                            case .failure:
+                                Color.gray.frame(width: Parameters.imageWidth, height: Parameters.imageHeight)
+                            @unknown default:
+                                EmptyView()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private enum Parameters {
+        static let imageWidth: CGFloat = 258
+        static let imageHeight: CGFloat = 167
+        static let imageCornerRadius: CGFloat = 12
+    }
+}
+
+#Preview {
+    let sampleImages = [
+        MovieImage(filePath: "/6DrHO1jr3qVrViUO6s6kFiAGM7.jpg"),
+        MovieImage(filePath: "/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg"),
+        MovieImage(filePath: "/iQFcwSGbZXMkeyKrxbPnwnRo5fl.jpg"),
+    ]
+
+    MovieImageGalleryView(images: sampleImages)
+}

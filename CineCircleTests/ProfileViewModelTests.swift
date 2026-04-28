@@ -29,7 +29,7 @@ class ProfileViewModelTests: XCTestCase {
     func testSaveProfileSavesAndLoadsProfile() async throws {
         // Given
         viewModel.name = "Alice"
-        viewModel.favoriteGenres = [.action, .comdey]
+        viewModel.favoriteGenres = [.action, .comedy]
 
         // When
         viewModel.saveProfile()
@@ -38,13 +38,13 @@ class ProfileViewModelTests: XCTestCase {
 
         // Then
         XCTAssertEqual(newViewModel.name, "Alice")
-        XCTAssertEqual(newViewModel.favoriteGenres, [.action, .comdey])
+        XCTAssertEqual(newViewModel.favoriteGenres, [.action, .comedy])
     }
 
     func testSaveProfileDoesNotSaveIfNameIsEmpty() async throws {
         // Given
         viewModel.name = ""
-        viewModel.favoriteGenres = [.action, .comdey]
+        viewModel.favoriteGenres = [.action, .comedy]
 
         // When
         let didSave = viewModel.saveProfile()

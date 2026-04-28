@@ -102,7 +102,7 @@ else
 fi
 
 # Run GYB
-python3 "${SRCROOT}/gyb.py" -o "${SRCROOT}/CineCircleApp/APIManager/APIKeys.swift" "${SRCROOT}/Scripts/APIKeys.swift.gyb"
+python3 "${SRCROOT}/gyb.py" -o "${SRCROOT}/CineCircleApp/Services/API/APIKeys.swift" "${SRCROOT}/Scripts/APIKeys.swift.gyb"
 ```
 
 ### 4. Add `gyb.py`
