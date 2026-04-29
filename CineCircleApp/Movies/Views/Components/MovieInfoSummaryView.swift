@@ -71,12 +71,21 @@ struct MovieInfoSummaryView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(viewModel.cast) { actor in
-                            PersonChipView(
-                                name: actor.name,
-                                role: nil,
-                                profilePath: actor.profilePath,
-                                nameLineLimit: 2
-                            )
+                            NavigationLink {
+                                CrewPersonDetailView(
+                                    personID: actor.id,
+                                    name: actor.name,
+                                    role: nil,
+                                    profilePath: actor.profilePath
+                                )
+                            } label: {
+                                PersonChipView(
+                                    name: actor.name,
+                                    role: nil,
+                                    profilePath: actor.profilePath,
+                                    nameLineLimit: 2
+                                )
+                            }
                         }
                     }
                     .padding(.bottom, Parameters.sectionSpacing)
@@ -88,12 +97,21 @@ struct MovieInfoSummaryView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(Array(essentialCrew.enumerated()), id: \.offset) { _, member in
-                            PersonChipView(
-                                name: member.name,
-                                role: member.job,
-                                profilePath: member.profilePath,
-                                nameLineLimit: 1
-                            )
+                            NavigationLink {
+                                CrewPersonDetailView(
+                                    personID: member.id,
+                                    name: member.name,
+                                    role: member.job,
+                                    profilePath: member.profilePath
+                                )
+                            } label: {
+                                PersonChipView(
+                                    name: member.name,
+                                    role: member.job,
+                                    profilePath: member.profilePath,
+                                    nameLineLimit: 1
+                                )
+                            }
                         }
                     }
                     .padding(.bottom, Parameters.sectionSpacing)

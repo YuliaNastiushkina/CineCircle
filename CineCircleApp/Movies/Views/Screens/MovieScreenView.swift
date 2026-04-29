@@ -31,9 +31,11 @@ struct MovieScreenView: View {
                 )
             }
             .sheet(isPresented: $showingBottomSheet) {
-                ScrollView {
-                    MovieInfoSummaryView(viewModel: viewModel, movie: movie)
-                        .padding(.top)
+                NavigationStack {
+                    ScrollView {
+                        MovieInfoSummaryView(viewModel: viewModel, movie: movie)
+                            .padding(.top)
+                    }
                 }
                 .safeAreaInset(edge: .bottom) {
                     if case let .authenticated(userId) = userSession.authState {

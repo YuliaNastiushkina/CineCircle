@@ -2,13 +2,30 @@ import SwiftData
 import SwiftUI
 
 struct ActorDetailView: View {
-    let actor: RemoteActor
+    let actorID: Int
+    let actorName: String
+    let profilePath: String?
+    let knownForTitles: [String]
+
+    init(actor: RemoteActor) {
+        actorID = actor.id
+        actorName = actor.name
+        profilePath = actor.profilePath
+        knownForTitles = actor.knownFor.map { $0.title ?? $0.name ?? "Unknown" }
+    }
+
+    init(actor: MovieCast) {
+        actorID = actor.id
+        actorName = actor.name
+        profilePath = actor.profilePath
+        knownForTitles = []
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Parameters.spacing) {
                 HStack {
-                    Text(actor.name)
+                    Text(actorName)
                         .font(Parameters.titleFont)
                         .bold()
                     Spacer()
@@ -16,7 +33,7 @@ struct ActorDetailView: View {
                 }
 
                 HStack(alignment: .top, spacing: Parameters.spacing) {
-                    if let path = actor.profilePath,
+                    if let path = profilePath,
                        let url = URL(string: Parameters.posterBaseURL + path) {
                         AsyncImage(url: url) { phase in
                             switch phase {
@@ -55,13 +72,9 @@ struct ActorDetailView: View {
                             .font(Parameters.infoFont)
                             .fontWeight(.semibold)
 
-                        Text(
-                            actor.knownFor
-                                .map { $0.title ?? $0.name ?? "Unknown" }
-                                .joined(separator: ", ")
-                        )
-                        .font(Parameters.infoFont)
-                        .foregroundStyle(.secondary)
+                        Text(knownForText)
+                            .font(Parameters.infoFont)
+                            .foregroundStyle(.secondary)
                     }
                 }
 
@@ -86,7 +99,7 @@ struct ActorDetailView: View {
             .padding()
         }
         .task {
-            await viewModel.fetchActorDetails(for: actor.id)
+            await viewModel.fetchActorDetails(for: actorID)
         }
         .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
             Button("OK", role: .cancel) { viewModel.errorMessage = nil }
@@ -98,6 +111,14 @@ struct ActorDetailView: View {
     // MARK: Private interface
 
     @State private var viewModel = ActorDetailsViewModel()
+
+    private var knownForText: String {
+        if knownForTitles.isEmpty {
+            return "No credits available."
+        }
+
+        return knownForTitles.joined(separator: ", ")
+    }
 
     private enum Parameters {
         static let titleFont = Font.system(.title3, design: .rounded)

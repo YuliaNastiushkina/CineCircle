@@ -38,6 +38,7 @@ class ActorDetailsViewModel {
                 responseType: ActorDetails.self
             )
             birthday = response.birthday
+            deathday = response.deathday
             biography = response.biography
         } catch {
             errorMessage = "Failded to fetch actor details: \(error.localizedDescription)"
