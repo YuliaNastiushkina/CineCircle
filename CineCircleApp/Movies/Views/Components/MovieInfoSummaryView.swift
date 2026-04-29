@@ -163,13 +163,12 @@ struct MovieInfoSummaryView: View {
         ]
 
         return viewModel.crew
-            .filter { essentialJobs.contains($0.job) }
+            .filter { member in
+                memberJobs(for: member).contains { essentialJobs.contains($0) }
+            }
             .sorted { first, second in
-                if first.job == "Director" { return true }
-                if second.job == "Director" { return false }
-
-                let firstIndex = essentialJobs.firstIndex(of: first.job) ?? Int.max
-                let secondIndex = essentialJobs.firstIndex(of: second.job) ?? Int.max
+                let firstIndex = topPriorityIndex(for: first, in: essentialJobs)
+                let secondIndex = topPriorityIndex(for: second, in: essentialJobs)
 
                 if firstIndex == secondIndex {
                     return first.name < second.name
@@ -177,6 +176,19 @@ struct MovieInfoSummaryView: View {
 
                 return firstIndex < secondIndex
             }
+    }
+
+    private func memberJobs(for member: MovieCrew) -> [String] {
+        member.job
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    private func topPriorityIndex(for member: MovieCrew, in essentialJobs: [String]) -> Int {
+        memberJobs(for: member)
+            .compactMap { essentialJobs.firstIndex(of: $0) }
+            .min() ?? Int.max
     }
 }
 

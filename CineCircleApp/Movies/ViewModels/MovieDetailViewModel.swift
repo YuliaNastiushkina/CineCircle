@@ -60,8 +60,8 @@ class MovieDetailViewModel {
                 query: [:],
                 responseType: MovieCreditsResponse.self
             )
-            cast = response.cast
-            crew = response.crew
+            cast = uniqueCast(from: response.cast)
+            crew = mergedCrew(from: response.crew)
         } catch {
             errorMessage = "Failed to fetch cast: \(error.localizedDescription)"
         }
@@ -79,7 +79,7 @@ class MovieDetailViewModel {
                 query: [:],
                 responseType: MovieImagesResponse.self
             )
-            images = response.backdrops
+            images = uniqueImages(from: response.backdrops)
         } catch {
             print("Failed to fetch images: \(error)")
         }
@@ -105,5 +105,57 @@ class MovieDetailViewModel {
                      originalLanguage: language,
                      releaseDate: release,
                      runtime: runtime)
+    }
+
+    private func uniqueCast(from cast: [MovieCast]) -> [MovieCast] {
+        var seenIDs = Set<Int>()
+
+        return cast.filter { member in
+            seenIDs.insert(member.id).inserted
+        }
+    }
+
+    private func mergedCrew(from crew: [MovieCrew]) -> [MovieCrew] {
+        var mergedByID: [Int: MovieCrew] = [:]
+        var orderedIDs: [Int] = []
+
+        for member in crew {
+            if var existing = mergedByID[member.id] {
+                let mergedJobs = mergeJobs(existing.job, member.job)
+                existing = MovieCrew(
+                    id: existing.id,
+                    name: existing.name,
+                    job: mergedJobs,
+                    profilePath: existing.profilePath ?? member.profilePath
+                )
+                mergedByID[member.id] = existing
+            } else {
+                mergedByID[member.id] = member
+                orderedIDs.append(member.id)
+            }
+        }
+
+        return orderedIDs.compactMap { mergedByID[$0] }
+    }
+
+    private func uniqueImages(from images: [MovieImage]) -> [MovieImage] {
+        var seenPaths = Set<String>()
+
+        return images.filter { image in
+            seenPaths.insert(image.filePath).inserted
+        }
+    }
+
+    private func mergeJobs(_ lhs: String, _ rhs: String) -> String {
+        var orderedJobs: [String] = []
+        var seenJobs = Set<String>()
+
+        for job in (lhs + "," + rhs).split(separator: ",") {
+            let trimmedJob = job.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmedJob.isEmpty, seenJobs.insert(trimmedJob).inserted else { continue }
+            orderedJobs.append(trimmedJob)
+        }
+
+        return orderedJobs.joined(separator: ", ")
     }
 }

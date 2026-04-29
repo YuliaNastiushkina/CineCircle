@@ -6,11 +6,15 @@ enum CrewFormatter {
     ///   - crew: Full list of crew members.
     /// - Returns: Comma-separated string of names, sorted with directors first, or "—" if empty.
     static func names(for jobs: [String], in crew: [MovieCrew]) -> String {
-        crew
-            .filter { jobs.contains($0.job) }
+        let targetJobs = Set(jobs)
+
+        return crew
+            .filter { member in
+                Set(jobList(from: member.job)).isDisjoint(with: targetJobs) == false
+            }
             .sorted { a, b in
-                let aIsDirector = a.job == "Director"
-                let bIsDirector = b.job == "Director"
+                let aIsDirector = jobList(from: a.job).contains("Director")
+                let bIsDirector = jobList(from: b.job).contains("Director")
                 if aIsDirector != bIsDirector {
                     return aIsDirector
                 }
@@ -19,5 +23,12 @@ enum CrewFormatter {
             .map(\.name)
             .joined(separator: ", ")
             .nonEmptyOrDash
+    }
+
+    private static func jobList(from value: String) -> [String] {
+        value
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
     }
 }
