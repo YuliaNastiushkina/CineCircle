@@ -28,6 +28,10 @@ class MovieDetailViewModel {
     var crew: [MovieCrew] = []
     /// A gallery of images of the movie.
     var images: [MovieImage] = []
+    /// Preferred trailer for the movie, if available.
+    var trailer: MovieVideo?
+    /// Indicates whether trailer loading has completed.
+    var hasLoadedTrailer = false
     /// An error message to be displayed if fetching fails.
     var errorMessage: String?
 
@@ -83,6 +87,26 @@ class MovieDetailViewModel {
         } catch {
             print("Failed to fetch images: \(error)")
         }
+    }
+
+    /// Fetches available videos and stores the preferred trailer.
+    /// - Parameter movieId: The ID of the movie for which videos are requested.
+    func fetchMovieTrailer(for movieId: Int) async {
+        hasLoadedTrailer = false
+
+        do {
+            let response: MovieVideosResponse = try await client.fetch(
+                path: "movie/\(movieId)/videos",
+                query: [:],
+                responseType: MovieVideosResponse.self
+            )
+            trailer = preferredTrailer(from: response.results)
+        } catch {
+            print("Failed to fetch trailer: \(error)")
+            trailer = nil
+        }
+
+        hasLoadedTrailer = true
     }
 
     /// Computed property that transforms raw movie/crew data into `DetailedInfoPresentation` ready for display in the UI.
@@ -157,5 +181,14 @@ class MovieDetailViewModel {
         }
 
         return orderedJobs.joined(separator: ", ")
+    }
+
+    private func preferredTrailer(from videos: [MovieVideo]) -> MovieVideo? {
+        let youtubeVideos = videos.filter { $0.site == "YouTube" }
+
+        return youtubeVideos.first(where: { $0.type == "Trailer" && $0.official })
+            ?? youtubeVideos.first(where: { $0.type == "Trailer" })
+            ?? youtubeVideos.first(where: { $0.type == "Teaser" })
+            ?? youtubeVideos.first
     }
 }

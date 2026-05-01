@@ -3,6 +3,8 @@ import SwiftUI
 struct MovieInfoSummaryView: View {
     let viewModel: MovieDetailViewModel
     let movie: RemoteMovieDetail
+    
+    @Environment(\.openURL) private var openURL
 
     var body: some View {
         // MARK: - Title + meta info
@@ -59,6 +61,26 @@ struct MovieInfoSummaryView: View {
             .padding(.top, Parameters.overviewTopPadding)
 
             VStack(alignment: .leading, spacing: Parameters.baseSpacing) {
+                // MARK: - Trailer
+
+                SectionTitleView(title: "Trailer")
+                Group {
+                    if let trailer = viewModel.trailer {
+                        MovieTrailerView(trailer: trailer) {
+                            if let url = trailer.youtubeWatchURL {
+                                openURL(url)
+                            }
+                        }
+                    } else if viewModel.hasLoadedTrailer {
+                        trailerEmptyState
+                    } else {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Parameters.trailerLoadingPadding)
+                    }
+                }
+                .padding(.bottom, Parameters.sectionSpacing)
+
                 // MARK: - Gallery
 
                 SectionTitleView(title: "Gallery")
@@ -144,6 +166,13 @@ struct MovieInfoSummaryView: View {
         static let dotPadding: CGFloat = 5
         static let seeMoreText = "See more"
         static let seeLessText = "See less"
+        static let emptyStatePadding: CGFloat = 16
+        static let emptyStateSpacing: CGFloat = 6
+        static let emptyStateCornerRadius: CGFloat = 16
+        static let emptyStateBackgroundOpacity: CGFloat = 0.12
+        static let emptyStateTitleFontSize: CGFloat = 15
+        static let emptyStateMessageFontSize: CGFloat = 13
+        static let trailerLoadingPadding: CGFloat = 40
     }
 
     @ViewBuilder private func dot() -> some View {
@@ -151,6 +180,22 @@ struct MovieInfoSummaryView: View {
             .fill(AppUI.ColorPalette.accent)
             .frame(width: Parameters.dotSize, height: Parameters.dotSize)
             .padding(Parameters.dotPadding)
+    }
+
+    private var trailerEmptyState: some View {
+        VStack(alignment: .leading, spacing: Parameters.emptyStateSpacing) {
+            Text("No trailer available")
+                .font(Font.custom(AppUI.FontName.poppins, size: Parameters.emptyStateTitleFontSize))
+                .foregroundStyle(.primary)
+
+            Text("This movie does not currently have a trailer in TMDB.")
+                .font(Font.custom(AppUI.FontName.poppins, size: Parameters.emptyStateMessageFontSize))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Parameters.emptyStatePadding)
+        .background(Color.secondary.opacity(Parameters.emptyStateBackgroundOpacity))
+        .clipShape(RoundedRectangle(cornerRadius: Parameters.emptyStateCornerRadius))
     }
 
     private var essentialCrew: [MovieCrew] {
