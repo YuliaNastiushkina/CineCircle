@@ -61,13 +61,22 @@ struct MovieInfoSummaryView: View {
             VStack(alignment: .leading, spacing: Parameters.baseSpacing) {
                 // MARK: - Gallery
 
-                SectionTitleView(title: "Gallery")
+                SectionTitleView(
+                    title: "Gallery",
+                    destination: MovieGalleryListView(
+                        title: "Gallery",
+                        images: viewModel.images
+                    )
+                )
                 MovieImageGalleryView(images: viewModel.images)
                     .padding(.bottom, Parameters.sectionSpacing)
 
                 // MARK: - Cast
 
-                SectionTitleView(title: "Cast")
+                SectionTitleView(
+                    title: "Cast",
+                    destination: MovieCastListView(cast: viewModel.cast)
+                )
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(viewModel.cast) { actor in
@@ -93,7 +102,10 @@ struct MovieInfoSummaryView: View {
 
                 // MARK: - Crew
 
-                SectionTitleView(title: "Crew")
+                SectionTitleView(
+                    title: "Crew",
+                    destination: MovieCrewListView(crew: essentialCrew)
+                )
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(Array(essentialCrew.enumerated()), id: \.offset) { _, member in
