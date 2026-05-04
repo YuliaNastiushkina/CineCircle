@@ -16,6 +16,7 @@ struct MovieDetailViewLoaderView: View {
             await viewModel.fetchMovieDetails(for: movieID)
             await viewModel.fetchCastAndCrew(for: movieID)
             await viewModel.fetchMovieImages(for: movieID)
+            await viewModel.fetchMovieTrailer(for: movieID)
         }
     }
 }
