@@ -3,7 +3,7 @@ import SwiftUI
 struct MovieInfoSummaryView: View {
     let viewModel: MovieDetailViewModel
     let movie: RemoteMovieDetail
-    
+
     @Environment(\.openURL) private var openURL
 
     var body: some View {

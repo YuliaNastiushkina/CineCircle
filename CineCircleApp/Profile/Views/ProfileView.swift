@@ -73,8 +73,7 @@ struct ProfileView: View {
                 profileGenresSection
                 nameEditingSection
                 if !isEditing {
-                    StatsDashboardView(
-                        stats: viewModel.movieStats,
+                    ProfileLibrarySectionsView(
                         userId: userId,
                         watchedMovieIDs: viewModel.watchedMovieIDs,
                         savedMovieIDs: viewModel.savedMovieIDs
