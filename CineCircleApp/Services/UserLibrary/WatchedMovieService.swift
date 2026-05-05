@@ -19,8 +19,8 @@ final class WatchedMovieService {
         impl.isSet(movieId: movieId, userId: userId)
     }
 
-    func toggleWatched(movieId: Int, userId: String) {
-        impl.toggle(movieId: movieId, userId: userId)
+    func toggleWatched(movieId: Int, userId: String, title: String, posterPath: String?) {
+        impl.toggle(movieId: movieId, userId: userId, title: title, posterPath: posterPath)
     }
 
     func watchedCount(for userId: String) -> Int {
@@ -29,5 +29,9 @@ final class WatchedMovieService {
 
     func allWatchedMovieIDs(for userId: String) -> [Int] {
         impl.allMovieIDs(for: userId)
+    }
+
+    func allWatchedMovies(for userId: String) -> [ProfileMovieSnapshot] {
+        impl.allMovieSnapshots(for: userId)
     }
 }

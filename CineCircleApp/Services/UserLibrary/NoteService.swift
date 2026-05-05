@@ -50,22 +50,30 @@ final class NoteService {
     ///   - userId: The ID of the user.
     ///   - content: The content of the note.
     /// - Returns: An optional error if the save operation fails.
-    @discardableResult func createOrUpdateNote(for movieId: Int, userId: String, content: String) -> Error? {
+    @discardableResult func createOrUpdateNote(
+        for movieId: Int,
+        userId: String,
+        content: String,
+        movieTitle: String
+    ) -> Error? {
         let existingNotes = fetchNotes(for: movieId, userId: userId)
 
         if let existingNote = existingNotes.first {
             existingNote.content = content
+            existingNote.movieTitle = movieTitle
         } else {
             let newNote = MovieNote(context: context)
             newNote.movieID = Int32(movieId)
             newNote.userID = userId
             newNote.content = content
+            newNote.movieTitle = movieTitle
             newNote.id = UUID()
             newNote.createdAt = Date()
         }
 
         do {
             try context.save()
+            NotificationCenter.default.post(name: .userLibraryDidChange, object: nil)
             return nil
         } catch {
             return error

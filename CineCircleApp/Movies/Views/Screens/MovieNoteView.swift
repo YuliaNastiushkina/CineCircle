@@ -11,6 +11,7 @@ struct MovieNoteView: View {
 
     let movieId: Int
     let userId: String
+    let movieTitle: String
 
     @Environment(\.dismiss) var dismiss
 
@@ -31,7 +32,8 @@ struct MovieNoteView: View {
                 let error = NoteService.shared.createOrUpdateNote(
                     for: movieId,
                     userId: userId,
-                    content: noteText
+                    content: noteText,
+                    movieTitle: movieTitle
                 )
 
                 if let error {
@@ -69,5 +71,5 @@ struct MovieNoteView: View {
 }
 
 #Preview {
-    MovieNoteView(movieId: 1, userId: "previewUser")
+    MovieNoteView(movieId: 1, userId: "previewUser", movieTitle: "Preview Movie")
 }

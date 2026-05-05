@@ -100,7 +100,12 @@ struct MoviePosterSectionView: View {
                 .foregroundStyle(Color.white)
             Spacer()
             if case let .authenticated(userId) = userSession.authState {
-                BookmarkButton(movieID: movie.id, userID: userId)
+                BookmarkButton(
+                    movieID: movie.id,
+                    userID: userId,
+                    movieTitle: movie.title,
+                    posterPath: movie.posterPath
+                )
             }
         }
         .padding(.horizontal)
@@ -136,11 +141,16 @@ struct MoviePosterSectionView: View {
     @ViewBuilder
     private var watchStatusView: some View {
         if case let .authenticated(userID) = userSession.authState {
-            WatchStatusButton(movieID: movie.id, userID: userID)
-                .padding(.vertical, Parameters.ratingPaddingVertical)
-                .padding(.horizontal, Parameters.ratingPaddingHorizontal)
-                .background(ratingBackgroundColor)
-                .clipShape(Capsule())
+            WatchStatusButton(
+                movieID: movie.id,
+                userID: userID,
+                movieTitle: movie.title,
+                posterPath: movie.posterPath
+            )
+            .padding(.vertical, Parameters.ratingPaddingVertical)
+            .padding(.horizontal, Parameters.ratingPaddingHorizontal)
+            .background(ratingBackgroundColor)
+            .clipShape(Capsule())
         }
     }
 }

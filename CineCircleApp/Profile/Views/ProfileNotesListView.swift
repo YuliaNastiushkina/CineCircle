@@ -46,8 +46,12 @@ struct ProfileNotesListView: View {
         isLoading = true
         notes = noteService.allNotes(for: userId)
 
-        // Fetch movie titles for each note
-        let uniqueIDs = Set(notes.map { Int($0.movieID) })
+        // Fetch movie titles only for legacy notes that do not store a local title yet.
+        let uniqueIDs = Set(
+            notes
+                .filter { ($0.movieTitle ?? "").isEmpty }
+                .map { Int($0.movieID) }
+        )
         for id in uniqueIDs {
             do {
                 let detail = try await apiClient.fetch(
@@ -72,7 +76,7 @@ private struct NoteRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(movieTitle ?? "Movie #\(note.movieID)")
+            Text(note.movieTitle ?? movieTitle ?? "Movie #\(note.movieID)")
                 .font(Font.custom("Poppins-SemiBold", size: 14))
                 .foregroundColor(.primary)
 

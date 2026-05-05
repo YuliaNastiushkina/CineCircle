@@ -46,3 +46,10 @@ struct ProfileCustomList: Codable { // Renamed to avoid conflicts
     let icon: String
     let createdDate: Date
 }
+
+struct ProfileMovieSnapshot: Identifiable, Hashable {
+    let id: Int
+    let title: String
+    let posterPath: String?
+    let createdAt: Date?
+}

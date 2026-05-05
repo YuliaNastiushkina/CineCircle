@@ -47,7 +47,11 @@ final class CoreDataManager: ObservableObject {
         if inMemory {
             let description = NSPersistentStoreDescription()
             description.type = NSInMemoryStoreType
+            description.shouldMigrateStoreAutomatically = true
+            description.shouldInferMappingModelAutomatically = true
             container.persistentStoreDescriptions = [description]
+        } else {
+            configurePersistentStoreDescriptions()
         }
         container.loadPersistentStores { _, error in
             if let error {
@@ -60,10 +64,18 @@ final class CoreDataManager: ObservableObject {
 
     private init() {
         container = NSPersistentContainer(name: "MovieDataModel")
+        configurePersistentStoreDescriptions()
         container.loadPersistentStores { _, error in
             if let error {
                 fatalError("Failed to load Core Data: \(error)")
             }
+        }
+    }
+
+    private func configurePersistentStoreDescriptions() {
+        for description in container.persistentStoreDescriptions {
+            description.shouldMigrateStoreAutomatically = true
+            description.shouldInferMappingModelAutomatically = true
         }
     }
 }

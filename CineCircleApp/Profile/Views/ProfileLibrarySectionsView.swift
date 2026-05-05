@@ -4,9 +4,12 @@ struct ProfileLibrarySectionsView: View {
     let userId: String
     let watchedMovieIDs: [Int]
     let savedMovieIDs: [Int]
+    let watchedMovies: [ProfileMovieSnapshot]
+    let savedMovies: [ProfileMovieSnapshot]
+    let refreshToken: UUID
 
-    @State private var watchedMovies: [RemoteMovieDetail] = []
-    @State private var savedMovies: [RemoteMovieDetail] = []
+    @State private var displayedWatchedMovies: [ProfileMovieSnapshot] = []
+    @State private var displayedSavedMovies: [ProfileMovieSnapshot] = []
     @State private var noteItems: [ProfileNoteItem] = []
 
     private let apiClient = APIClient()
@@ -17,7 +20,7 @@ struct ProfileLibrarySectionsView: View {
             movieSection(
                 title: "Recently watched",
                 movieIDs: watchedMovieIDs,
-                movies: watchedMovies,
+                movies: displayedWatchedMovies,
                 emptyMessage: "Movies marked as watched will appear here.",
                 destinationTitle: "Watched"
             )
@@ -25,14 +28,14 @@ struct ProfileLibrarySectionsView: View {
             movieSection(
                 title: "Saved",
                 movieIDs: savedMovieIDs,
-                movies: savedMovies,
+                movies: displayedSavedMovies,
                 emptyMessage: "Movies you save will appear here.",
                 destinationTitle: "Saved"
             )
 
             notesSection
         }
-        .task {
+        .task(id: refreshToken) {
             await loadSections()
         }
     }
@@ -40,7 +43,7 @@ struct ProfileLibrarySectionsView: View {
     @ViewBuilder private func movieSection(
         title: String,
         movieIDs: [Int],
-        movies: [RemoteMovieDetail],
+        movies: [ProfileMovieSnapshot],
         emptyMessage: String,
         destinationTitle: String
     ) -> some View {
@@ -124,37 +127,56 @@ struct ProfileLibrarySectionsView: View {
     }
 
     private func loadSections() async {
-        async let watched = loadMovies(for: Array(watchedMovieIDs.prefix(Parameters.previewMovieCount)))
-        async let saved = loadMovies(for: Array(savedMovieIDs.prefix(Parameters.previewMovieCount)))
-        async let notes = loadNoteItems()
+        let watchedPreview = Array(watchedMovies.prefix(Parameters.previewMovieCount))
+        let savedPreview = Array(savedMovies.prefix(Parameters.previewMovieCount))
 
-        watchedMovies = await watched
-        savedMovies = await saved
-        noteItems = await notes
+        async let enrichedWatched = enrichMovies(watchedPreview)
+        async let enrichedSaved = enrichMovies(savedPreview)
+        async let loadedNotes = loadNoteItems()
+
+        displayedWatchedMovies = await enrichedWatched
+        displayedSavedMovies = await enrichedSaved
+        noteItems = await loadedNotes
     }
 
-    private func loadMovies(for ids: [Int]) async -> [RemoteMovieDetail] {
-        var loaded: [RemoteMovieDetail] = []
+    private func enrichMovies(_ movies: [ProfileMovieSnapshot]) async -> [ProfileMovieSnapshot] {
+        var enrichedMovies = movies
 
-        for id in ids {
+        for index in enrichedMovies.indices {
+            guard needsEnrichment(enrichedMovies[index]) else { continue }
+
             do {
                 let detail = try await apiClient.fetch(
-                    path: "movie/\(id)",
+                    path: "movie/\(enrichedMovies[index].id)",
                     query: [:],
                     responseType: RemoteMovieDetail.self
                 )
-                loaded.append(detail)
+
+                enrichedMovies[index] = ProfileMovieSnapshot(
+                    id: detail.id,
+                    title: detail.title,
+                    posterPath: detail.posterPath,
+                    createdAt: enrichedMovies[index].createdAt
+                )
             } catch {
                 continue
             }
         }
 
-        return loaded
+        return enrichedMovies
+    }
+
+    private func needsEnrichment(_ movie: ProfileMovieSnapshot) -> Bool {
+        movie.posterPath == nil || movie.title == "Movie #\(movie.id)"
     }
 
     private func loadNoteItems() async -> [ProfileNoteItem] {
         let notes = Array(noteService.allNotes(for: userId).prefix(Parameters.previewNoteCount))
-        let ids = Set(notes.map { Int($0.movieID) })
+        let ids = Set(
+            notes
+                .filter { ($0.movieTitle ?? "").isEmpty }
+                .map { Int($0.movieID) }
+        )
         var titlesByID: [Int: String] = [:]
 
         for id in ids {
@@ -175,7 +197,7 @@ struct ProfileLibrarySectionsView: View {
             return ProfileNoteItem(
                 id: note.objectID.uriRepresentation().absoluteString,
                 movieID: movieID,
-                movieTitle: titlesByID[movieID] ?? "Movie #\(movieID)",
+                movieTitle: note.movieTitle ?? titlesByID[movieID] ?? "Movie #\(movieID)",
                 content: note.content ?? "",
                 createdAt: note.createdAt
             )
@@ -198,7 +220,7 @@ struct ProfileLibrarySectionsView: View {
 }
 
 private struct ProfileMoviePosterCard: View {
-    let movie: RemoteMovieDetail
+    let movie: ProfileMovieSnapshot
 
     var body: some View {
         VStack(alignment: .leading, spacing: Parameters.textSpacing) {
@@ -208,9 +230,11 @@ private struct ProfileMoviePosterCard: View {
                 .font(Font.custom(AppUI.FontName.poppins, size: Parameters.titleFontSize))
                 .foregroundStyle(.primary)
                 .lineLimit(2)
+                .multilineTextAlignment(.leading)
                 .frame(width: Parameters.posterWidth, alignment: .leading)
+                .frame(height: Parameters.titleHeight, alignment: .topLeading)
         }
-        .frame(width: Parameters.posterWidth, alignment: .leading)
+        .frame(width: Parameters.posterWidth, height: Parameters.cardHeight, alignment: .topLeading)
     }
 
     @ViewBuilder
@@ -253,6 +277,8 @@ private struct ProfileMoviePosterCard: View {
         static let placeholderIconSize: CGFloat = 20
         static let textSpacing: CGFloat = 8
         static let titleFontSize: CGFloat = 12
+        static let titleHeight: CGFloat = 32
+        static let cardHeight: CGFloat = posterHeight + textSpacing + titleHeight
     }
 }
 
@@ -307,7 +333,15 @@ private struct ProfileNotePreviewCard: View {
         ProfileLibrarySectionsView(
             userId: "previewUser",
             watchedMovieIDs: [550, 680],
-            savedMovieIDs: [13]
+            savedMovieIDs: [13],
+            watchedMovies: [
+                ProfileMovieSnapshot(id: 550, title: "Fight Club", posterPath: nil, createdAt: .now),
+                ProfileMovieSnapshot(id: 680, title: "Pulp Fiction", posterPath: nil, createdAt: .now),
+            ],
+            savedMovies: [
+                ProfileMovieSnapshot(id: 13, title: "Forrest Gump", posterPath: nil, createdAt: .now),
+            ],
+            refreshToken: UUID()
         )
         .padding()
     }

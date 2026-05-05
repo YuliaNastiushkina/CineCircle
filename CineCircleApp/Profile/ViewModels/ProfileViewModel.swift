@@ -21,6 +21,9 @@ class ProfileViewModel: ObservableObject {
     /// Movie IDs for navigation from stat cards
     @Published var watchedMovieIDs: [Int] = []
     @Published var savedMovieIDs: [Int] = []
+    @Published var watchedMovies: [ProfileMovieSnapshot] = []
+    @Published var savedMovies: [ProfileMovieSnapshot] = []
+    @Published var libraryRefreshToken = UUID()
 
     private let statsService: MovieStatsService
     private let watchedService: WatchedMovieService
@@ -134,6 +137,9 @@ class ProfileViewModel: ObservableObject {
         movieStats = statsService.calculateStats(for: userId)
         watchedMovieIDs = watchedService.allWatchedMovieIDs(for: userId)
         savedMovieIDs = savedService.allSavedMovieIDs(for: userId)
+        watchedMovies = watchedService.allWatchedMovies(for: userId)
+        savedMovies = savedService.allSavedMovies(for: userId)
+        libraryRefreshToken = UUID()
     }
 
     func signOut() {

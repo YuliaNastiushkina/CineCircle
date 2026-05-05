@@ -5,6 +5,8 @@ struct BookmarkButton: View {
 
     let movieID: Int
     let userID: String
+    let movieTitle: String
+    let posterPath: String?
 
     @State private var isSaved = false
 
@@ -23,7 +25,7 @@ struct BookmarkButton: View {
 
     private func toggleSaved() {
         let service = SavedMovieService(context: context)
-        service.toggleSaved(movieId: movieID, userId: userID)
+        service.toggleSaved(movieId: movieID, userId: userID, title: movieTitle, posterPath: posterPath)
         withAnimation(.spring(response: Parameters.springResponse, dampingFraction: Parameters.springDampingFraction)) {
             isSaved = service.isSaved(movieId: movieID, userId: userID)
         }
@@ -36,5 +38,5 @@ struct BookmarkButton: View {
 }
 
 #Preview {
-    BookmarkButton(movieID: 1, userID: "previewUser")
+    BookmarkButton(movieID: 1, userID: "previewUser", movieTitle: "Preview Movie", posterPath: nil)
 }

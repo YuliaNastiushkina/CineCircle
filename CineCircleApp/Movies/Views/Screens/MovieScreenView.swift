@@ -39,7 +39,7 @@ struct MovieScreenView: View {
                 }
                 .safeAreaInset(edge: .bottom) {
                     if case let .authenticated(userId) = userSession.authState {
-                        MovieNoteButton(movieId: movie.id, userId: userId)
+                        MovieNoteButton(movieId: movie.id, userId: userId, movieTitle: movie.title)
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal)
                             .padding(.vertical, verticalPadding)

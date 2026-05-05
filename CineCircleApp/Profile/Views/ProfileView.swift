@@ -53,6 +53,9 @@ struct ProfileView: View {
                 .onAppear {
                     viewModel.loadStats()
                 }
+                .onReceive(NotificationCenter.default.publisher(for: .userLibraryDidChange)) { _ in
+                    viewModel.loadStats()
+                }
                 .onChange(of: selectedProfileImage) { _, newImage in
                     if newImage != nil {
                         let impactFeedback = UIImpactFeedbackGenerator(style: .light)
@@ -76,7 +79,10 @@ struct ProfileView: View {
                     ProfileLibrarySectionsView(
                         userId: userId,
                         watchedMovieIDs: viewModel.watchedMovieIDs,
-                        savedMovieIDs: viewModel.savedMovieIDs
+                        savedMovieIDs: viewModel.savedMovieIDs,
+                        watchedMovies: viewModel.watchedMovies,
+                        savedMovies: viewModel.savedMovies,
+                        refreshToken: viewModel.libraryRefreshToken
                     )
                     .transition(.opacity)
                 }

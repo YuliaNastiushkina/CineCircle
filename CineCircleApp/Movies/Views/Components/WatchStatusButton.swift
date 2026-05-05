@@ -5,6 +5,8 @@ struct WatchStatusButton: View {
 
     let movieID: Int
     let userID: String
+    let movieTitle: String
+    let posterPath: String?
 
     var body: some View {
         Button(action: toggleWatched) {
@@ -35,7 +37,7 @@ struct WatchStatusButton: View {
 
     private func toggleWatched() {
         let service = WatchedMovieService(context: context)
-        service.toggleWatched(movieId: movieID, userId: userID)
+        service.toggleWatched(movieId: movieID, userId: userID, title: movieTitle, posterPath: posterPath)
 
         withAnimation {
             isWatched = service.isWatched(movieId: movieID, userId: userID)
@@ -44,5 +46,5 @@ struct WatchStatusButton: View {
 }
 
 #Preview {
-    WatchStatusButton(movieID: 1, userID: "1")
+    WatchStatusButton(movieID: 1, userID: "1", movieTitle: "Preview Movie", posterPath: nil)
 }

@@ -3,6 +3,7 @@ import SwiftUI
 struct MovieNoteButton: View {
     let movieId: Int
     let userId: String
+    let movieTitle: String
 
     var body: some View {
         Button {
@@ -27,7 +28,7 @@ struct MovieNoteButton: View {
             )
         }
         .sheet(isPresented: $isPresentingNote) {
-            MovieNoteView(movieId: movieId, userId: userId)
+            MovieNoteView(movieId: movieId, userId: userId, movieTitle: movieTitle)
         }
     }
 
@@ -49,5 +50,5 @@ struct MovieNoteButton: View {
 }
 
 #Preview {
-    MovieNoteButton(movieId: 1, userId: "previewUser")
+    MovieNoteButton(movieId: 1, userId: "previewUser", movieTitle: "Preview Movie")
 }

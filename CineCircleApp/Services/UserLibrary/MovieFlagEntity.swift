@@ -6,6 +6,9 @@ protocol MovieFlagEntity where Self: NSManagedObject {
     var id: UUID? { get set }
     var movieID: Int32 { get set }
     var userID: String? { get set }
+    var title: String? { get set }
+    var posterPath: String? { get set }
+    var createdAt: Date? { get set }
 }
 
 extension WatchedMovie: MovieFlagEntity {}
