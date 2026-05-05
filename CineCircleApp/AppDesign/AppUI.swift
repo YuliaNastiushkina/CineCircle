@@ -7,6 +7,10 @@ enum AppUI {
         static let secondarySurface = Color(.systemGray6)
         static let softCardBackground = Color.secondary.opacity(0.15)
         static let chipText = Color(.darkGray)
+        static let tabBarBackground = Color.white
+        static let tabBarSelectedBackground = Color.black.opacity(0.88)
+        static let tabBarInactive = Color(.darkGray)
+        static let tabBarShadow = Color.black.opacity(0.08)
     }
 
     enum FontName {
