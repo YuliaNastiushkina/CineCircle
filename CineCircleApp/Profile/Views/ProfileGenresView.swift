@@ -2,63 +2,52 @@ import SwiftUI
 
 struct ProfileGenresView: View {
     let viewModel: ProfileViewModel
-    let isEditing: Bool
     let showGenrePicker: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Parameters.sectionSpacing) {
-            Text("Favorite Genres")
-                .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.titleFontSize))
-                .foregroundColor(.primary)
+        Button(action: showGenrePicker) {
+            VStack(alignment: .leading, spacing: Parameters.sectionSpacing) {
+                HStack {
+                    Text("Favorite Genres")
+                        .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.titleFontSize))
+                        .foregroundColor(.primary)
 
-            if isEditing {
-                Button(action: showGenrePicker) {
-                    HStack {
-                        Image(systemName: "list.bullet")
-                            .foregroundColor(AppUI.ColorPalette.accent)
-                        Text(viewModel.favoriteGenres.isEmpty ? "Select genres" : "\(viewModel.favoriteGenres.count) selected")
-                            .font(Font.custom(AppUI.FontName.poppins, size: Parameters.selectionFontSize))
-                            .foregroundColor(.primary)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: Parameters.chevronSize, weight: .semibold))
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, Parameters.buttonVerticalPadding)
-                    .padding(.horizontal, Parameters.buttonHorizontalPadding)
-                    .background(AppUI.ColorPalette.softCardBackground.opacity(Parameters.buttonBackgroundOpacity))
-                    .clipShape(Capsule())
-                }
-            } else if viewModel.favoriteGenres.isEmpty {
-                HStack(spacing: Parameters.emptyStateSpacing) {
-                    Image(systemName: "tag")
-                        .foregroundColor(.secondary.opacity(Parameters.emptyStateIconOpacity))
-                    Text("No genres selected")
-                        .font(Font.custom(AppUI.FontName.poppins, size: Parameters.emptyStateFontSize))
+                    Spacer()
+
+                    Image(systemName: "pencil")
+                        .font(.system(size: Parameters.pencilSize, weight: .bold))
                         .foregroundColor(.secondary)
                 }
-                .padding(.vertical, Parameters.emptyStateVerticalPadding)
-            } else {
-                FlowLayout(spacing: Parameters.flowLayoutSpacing) {
-                    ForEach(viewModel.favoriteGenres, id: \.self) { genre in
-                        GenreChipView(genre: genre)
+
+                if viewModel.favoriteGenres.isEmpty {
+                    HStack(spacing: Parameters.emptyStateSpacing) {
+                        Image(systemName: "tag")
+                            .foregroundColor(.secondary.opacity(Parameters.emptyStateIconOpacity))
+                        Text("No genres selected")
+                            .font(Font.custom(AppUI.FontName.poppins, size: Parameters.emptyStateFontSize))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, Parameters.emptyStateVerticalPadding)
+                } else {
+                    FlowLayout(spacing: Parameters.flowLayoutSpacing) {
+                        ForEach(viewModel.favoriteGenres, id: \.self) { genre in
+                            GenreChipView(genre: genre)
+                        }
                     }
                 }
             }
+            .padding(Parameters.containerPadding)
+            .background(AppUI.ColorPalette.softCardBackground)
+            .cornerRadius(AppUI.Radius.card)
+            .contentShape(RoundedRectangle(cornerRadius: AppUI.Radius.card))
         }
-        .padding(Parameters.containerPadding)
-        .background(AppUI.ColorPalette.softCardBackground)
-        .cornerRadius(AppUI.Radius.card)
+        .buttonStyle(.plain)
     }
 
     private enum Parameters {
         static let sectionSpacing: CGFloat = 12
         static let titleFontSize: CGFloat = 16
-        static let selectionFontSize: CGFloat = 15
-        static let chevronSize: CGFloat = 13
-        static let buttonVerticalPadding: CGFloat = 12
-        static let buttonHorizontalPadding: CGFloat = 16
-        static let buttonBackgroundOpacity: Double = 2.0 / 3.0
+        static let pencilSize: CGFloat = 16
         static let emptyStateSpacing: CGFloat = 8
         static let emptyStateIconOpacity: Double = 0.6
         static let emptyStateFontSize: CGFloat = 14
@@ -160,7 +149,6 @@ extension Array {
 #Preview {
     ProfileGenresView(
         viewModel: ProfileViewModel(userId: "previewUser", authService: FirebaseAuthService()),
-        isEditing: false,
         showGenrePicker: {}
     )
     .padding()

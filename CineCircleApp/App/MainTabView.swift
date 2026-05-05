@@ -16,7 +16,7 @@ struct MainTabView: View {
 
         [appearance.stackedLayoutAppearance,
          appearance.inlineLayoutAppearance,
-         appearance.compactInlineLayoutAppearance,].forEach { itemAppearance in
+         appearance.compactInlineLayoutAppearance].forEach { itemAppearance in
             itemAppearance.normal.iconColor = normalColor
             itemAppearance.normal.titleTextAttributes = [.foregroundColor: normalColor]
             itemAppearance.selected.iconColor = selectedColor

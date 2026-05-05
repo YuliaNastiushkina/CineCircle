@@ -34,7 +34,9 @@ struct ProfileView: View {
                 .toolbar {
                     toolbarContent
                 }
-                .sheet(isPresented: $showGenrePicker) {
+                .sheet(isPresented: $showGenrePicker, onDismiss: {
+                    _ = viewModel.saveProfile()
+                }) {
                     GenrePickerView(selectedGenres: $viewModel.favoriteGenres)
                 }
                 .sheet(isPresented: $showImagePicker) {
@@ -108,13 +110,14 @@ struct ProfileView: View {
 
     @ViewBuilder
     private var profileGenresSection: some View {
-        ProfileGenresView(
-            viewModel: viewModel,
-            isEditing: isEditing,
-            showGenrePicker: {
-                showGenrePicker = true
-            }
-        )
+        if !isEditing {
+            ProfileGenresView(
+                viewModel: viewModel,
+                showGenrePicker: {
+                    showGenrePicker = true
+                }
+            )
+        }
     }
 
     @ViewBuilder
