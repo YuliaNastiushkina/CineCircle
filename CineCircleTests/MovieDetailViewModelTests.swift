@@ -14,6 +14,7 @@ final class MovieDetailViewModelTests: XCTestCase {
                 posterPath: "/poster.jpg",
                 backdropPath: "/backdrop.jpg",
                 voteAverage: 8.5,
+                voteCount: 1000,
                 releaseDate: "2025-01-01",
                 runtime: 120,
                 originalLanguage: "EN",
@@ -161,6 +162,7 @@ final class MovieDetailViewModelTests: XCTestCase {
             posterPath: nil,
             backdropPath: nil,
             voteAverage: 7.1,
+            voteCount: 500,
             releaseDate: "2025-07-30",
             runtime: 89,
             originalLanguage: "en",
@@ -195,7 +197,7 @@ final class MovieDetailViewModelTests: XCTestCase {
         let vm = MovieDetailViewModel(client: MockAPIClient { _, _ in () as Any })
         vm.movieDetail = RemoteMovieDetail(
             id: 1, title: "", overview: "", posterPath: nil, backdropPath: nil,
-            voteAverage: 0, releaseDate: "", runtime: nil, originalLanguage: "",
+            voteAverage: 0, voteCount: 0, releaseDate: "", runtime: nil, originalLanguage: "",
             genres: [], productionCompanies: []
         )
         vm.crew = []

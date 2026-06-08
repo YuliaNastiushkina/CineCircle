@@ -48,13 +48,19 @@ final class NoteServiceTests: XCTestCase {
 
     func testCreateOrUpdateNoteCreatesNewNote() {
         // When
-        let error = sut.createOrUpdateNote(for: 1, userId: "testUser", content: "New note")
+        let error = sut.createOrUpdateNote(
+            for: 1,
+            userId: "testUser",
+            content: "New note",
+            movieTitle: "Test Movie"
+        )
 
         // Then
         XCTAssertNil(error)
         let notes = sut.fetchNotes(for: 1, userId: "testUser")
         XCTAssertEqual(notes.count, 1)
         XCTAssertEqual(notes.first?.content, "New note")
+        XCTAssertEqual(notes.first?.movieTitle, "Test Movie")
     }
 
     func testCreateOrUpdateNoteUpdatesExistingNote() throws {
@@ -63,18 +69,29 @@ final class NoteServiceTests: XCTestCase {
         try context.save()
 
         // When
-        let error = sut.createOrUpdateNote(for: 1, userId: "testUser", content: "Updated content")
+        let error = sut.createOrUpdateNote(
+            for: 1,
+            userId: "testUser",
+            content: "Updated content",
+            movieTitle: "Updated Movie"
+        )
 
         // Then
         XCTAssertNil(error)
         let notes = sut.fetchNotes(for: 1, userId: "testUser")
         XCTAssertEqual(notes.count, 1)
         XCTAssertEqual(notes.first?.content, "Updated content")
+        XCTAssertEqual(notes.first?.movieTitle, "Updated Movie")
     }
 
     func testCreateOrUpdateNoteHandlesEmptyContent() {
         // When
-        let error = sut.createOrUpdateNote(for: 1, userId: "testUser", content: "")
+        let error = sut.createOrUpdateNote(
+            for: 1,
+            userId: "testUser",
+            content: "",
+            movieTitle: "Test Movie"
+        )
 
         // Then
         XCTAssertNil(error)
@@ -90,7 +107,12 @@ final class NoteServiceTests: XCTestCase {
         let service = NoteService(context: failingContext)
 
         // When
-        let error = service.createOrUpdateNote(for: 1, userId: "testUser", content: "Will fail")
+        let error = service.createOrUpdateNote(
+            for: 1,
+            userId: "testUser",
+            content: "Will fail",
+            movieTitle: "Test Movie"
+        )
 
         // Then
         XCTAssertNotNil(error)

@@ -6,8 +6,8 @@ class MovieListViewModelTests: XCTestCase {
     func testFetchPopularMoviesSuccess() async throws {
         // Given
         let expectedMovies = [
-            RemoteMovie(id: 1, title: "Movie One", overview: "", posterPath: nil, voteAverage: 7.0, releaseDate: "2025-01-01"),
-            RemoteMovie(id: 2, title: "Movie Two", overview: "", posterPath: nil, voteAverage: 8.0, releaseDate: "2025-01-02"),
+            RemoteMovie(id: 1, title: "Movie One", overview: "", posterPath: nil, voteAverage: 7.0, voteCount: 100, releaseDate: "2025-01-01", originalLanguage: "en", genreIDs: []),
+            RemoteMovie(id: 2, title: "Movie Two", overview: "", posterPath: nil, voteAverage: 8.0, voteCount: 200, releaseDate: "2025-01-02", originalLanguage: "en", genreIDs: []),
         ]
 
         let mockClient = MockAPIClient { path, _ in
@@ -44,8 +44,8 @@ class MovieListViewModelTests: XCTestCase {
 
     func testFetchNextPageIfNeededLoadsMoreMovies() async {
         // Given
-        let pageOneMovies = [RemoteMovie(id: 1, title: "Movie One", overview: "", posterPath: nil, voteAverage: 7.0, releaseDate: "2025-01-01")]
-        let pageTwoMovies = [RemoteMovie(id: 2, title: "Movie Two", overview: "", posterPath: nil, voteAverage: 8.0, releaseDate: "2025-01-02")]
+        let pageOneMovies = [RemoteMovie(id: 1, title: "Movie One", overview: "", posterPath: nil, voteAverage: 7.0, voteCount: 100, releaseDate: "2025-01-01", originalLanguage: "en", genreIDs: [])]
+        let pageTwoMovies = [RemoteMovie(id: 2, title: "Movie Two", overview: "", posterPath: nil, voteAverage: 8.0, voteCount: 200, releaseDate: "2025-01-02", originalLanguage: "en", genreIDs: [])]
 
         let mockClient = MockAPIClient { _, query in
             if query["page"] == "1" {
@@ -69,8 +69,8 @@ class MovieListViewModelTests: XCTestCase {
 
     func testDisplayedMoviesFilteringAndSorting() {
         // Given
-        let movie1 = RemoteMovie(id: 1, title: "Z Movie", overview: "", posterPath: nil, voteAverage: 7.0, releaseDate: "")
-        let movie2 = RemoteMovie(id: 2, title: "A Movie", overview: "", posterPath: nil, voteAverage: 8.0, releaseDate: "")
+        let movie1 = RemoteMovie(id: 1, title: "Z Movie", overview: "", posterPath: nil, voteAverage: 7.0, voteCount: 100, releaseDate: "", originalLanguage: "en", genreIDs: [])
+        let movie2 = RemoteMovie(id: 2, title: "A Movie", overview: "", posterPath: nil, voteAverage: 8.0, voteCount: 200, releaseDate: "", originalLanguage: "en", genreIDs: [])
         let viewModel = MovieListViewModel()
         viewModel.movies = [movie1, movie2]
 
@@ -89,8 +89,8 @@ class MovieListViewModelTests: XCTestCase {
 
     func testDisplayedMoviesShowSavedOnly() {
         // Given
-        let movie1 = RemoteMovie(id: 1, title: "Movie 1", overview: "", posterPath: nil, voteAverage: 7.0, releaseDate: "")
-        let movie2 = RemoteMovie(id: 2, title: "Movie 2", overview: "", posterPath: nil, voteAverage: 8.0, releaseDate: "")
+        let movie1 = RemoteMovie(id: 1, title: "Movie 1", overview: "", posterPath: nil, voteAverage: 7.0, voteCount: 100, releaseDate: "", originalLanguage: "en", genreIDs: [])
+        let movie2 = RemoteMovie(id: 2, title: "Movie 2", overview: "", posterPath: nil, voteAverage: 8.0, voteCount: 200, releaseDate: "", originalLanguage: "en", genreIDs: [])
         let viewModel = MovieListViewModel()
         viewModel.movies = [movie1, movie2]
         viewModel.savedIDs = [2]

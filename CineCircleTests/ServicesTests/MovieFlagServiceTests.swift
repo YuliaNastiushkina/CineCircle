@@ -26,13 +26,15 @@ final class MovieFlagServiceTests: XCTestCase {
     func testToggleCreatesRecord_Watched() throws {
         let sut = MovieFlagService<WatchedMovie>(context: context)
 
-        sut.toggle(movieId: 10, userId: "userA")
+        sut.toggle(movieId: 10, userId: "userA", title: "Movie 10", posterPath: "/10.jpg")
 
         let request: NSFetchRequest<WatchedMovie> = WatchedMovie.fetchRequest()
         let results = try context.fetch(request)
         XCTAssertEqual(results.count, 1)
         XCTAssertEqual(results.first?.movieID, 10)
         XCTAssertEqual(results.first?.userID, "userA")
+        XCTAssertEqual(results.first?.title, "Movie 10")
+        XCTAssertEqual(results.first?.posterPath, "/10.jpg")
         XCTAssertTrue(sut.isSet(movieId: 10, userId: "userA"))
     }
 
@@ -40,10 +42,10 @@ final class MovieFlagServiceTests: XCTestCase {
         // Given
         let sut = MovieFlagService<WatchedMovie>(context: context)
 
-        sut.toggle(movieId: 5, userId: "u1")
+        sut.toggle(movieId: 5, userId: "u1", title: "Movie 5", posterPath: nil)
         XCTAssertTrue(sut.isSet(movieId: 5, userId: "u1"))
 
-        sut.toggle(movieId: 5, userId: "u1")
+        sut.toggle(movieId: 5, userId: "u1", title: "Movie 5", posterPath: nil)
         XCTAssertFalse(sut.isSet(movieId: 5, userId: "u1"))
 
         let request: NSFetchRequest<WatchedMovie> = WatchedMovie.fetchRequest()
@@ -54,7 +56,7 @@ final class MovieFlagServiceTests: XCTestCase {
     func testMultipleUsersIsolated_Watched() throws {
         let sut = MovieFlagService<WatchedMovie>(context: context)
 
-        sut.toggle(movieId: 7, userId: "alice")
+        sut.toggle(movieId: 7, userId: "alice", title: "Movie 7", posterPath: nil)
         XCTAssertTrue(sut.isSet(movieId: 7, userId: "alice"))
         XCTAssertFalse(sut.isSet(movieId: 7, userId: "bob"))
 
@@ -65,7 +67,7 @@ final class MovieFlagServiceTests: XCTestCase {
 
     func testToggleCreatesRecord_Saved() throws {
         let sut = MovieFlagService<SavedMovie>(context: context)
-        sut.toggle(movieId: 99, userId: "uX")
+        sut.toggle(movieId: 99, userId: "uX", title: "Movie 99", posterPath: nil)
 
         let request: NSFetchRequest<SavedMovie> = SavedMovie.fetchRequest()
         let results = try context.fetch(request)
@@ -77,8 +79,8 @@ final class MovieFlagServiceTests: XCTestCase {
 
     func testToggleTwiceRemovesRecord_Saved() throws {
         let sut = MovieFlagService<SavedMovie>(context: context)
-        sut.toggle(movieId: 3, userId: "uY")
-        sut.toggle(movieId: 3, userId: "uY")
+        sut.toggle(movieId: 3, userId: "uY", title: "Movie 3", posterPath: nil)
+        sut.toggle(movieId: 3, userId: "uY", title: "Movie 3", posterPath: nil)
 
         XCTAssertFalse(sut.isSet(movieId: 3, userId: "uY"))
 
