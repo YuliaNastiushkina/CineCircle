@@ -67,7 +67,9 @@ private struct TVShowScreenView: View {
 private struct TVShowInfoView: View {
     let show: RemoteTVShowDetail
 
+    @EnvironmentObject private var userSession: UserSession
     @State private var expanded = false
+    @State private var watchedCount = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -101,6 +103,11 @@ private struct TVShowInfoView: View {
             }
             .padding(.top, 22)
 
+            if case let .authenticated(userID) = userSession.authState {
+                episodeProgressCard(userID: userID)
+                    .padding(.top, 32)
+            }
+
             VStack(alignment: .leading, spacing: 12) {
                 SectionTitleView(title: "TV Show Info")
                 infoRow(title: "First aired", value: show.firstAirDate)
@@ -117,6 +124,11 @@ private struct TVShowInfoView: View {
         }
         .padding(.horizontal)
         .background(Color(.systemBackground))
+        .onAppear(perform: refreshProgress)
+        .onReceive(NotificationCenter.default.publisher(for: .tvEpisodeProgressDidChange)) { notification in
+            guard notification.userInfo?["showID"] as? Int == show.id else { return }
+            refreshProgress()
+        }
     }
 
     private var metadata: some View {
@@ -141,6 +153,50 @@ private struct TVShowInfoView: View {
             .padding(5)
     }
 
+    private func episodeProgressCard(userID: String) -> some View {
+        let total = max(show.numberOfEpisodes, 1)
+        let progress = min(Double(watchedCount) / Double(total), 1)
+
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Episode Progress")
+                        .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 18))
+                    Text("\(watchedCount) of \(show.numberOfEpisodes) episodes watched")
+                        .font(Font.custom(AppUI.FontName.poppins, size: 13))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Text("\(Int(progress * 100))%")
+                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 16))
+            }
+
+            ProgressView(value: progress)
+                .tint(AppUI.ColorPalette.accent)
+
+            NavigationLink {
+                TVEpisodesView(
+                    showID: show.id,
+                    showName: show.name,
+                    seasons: show.seasons,
+                    userID: userID
+                )
+            } label: {
+                Label(watchedCount == 0 ? "Start tracking episodes" : "Continue tracking", systemImage: "list.bullet.rectangle")
+                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 14))
+                    .foregroundStyle(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(AppUI.ColorPalette.accent)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(16)
+        .background(AppUI.ColorPalette.secondarySurface)
+        .clipShape(RoundedRectangle(cornerRadius: AppUI.Radius.card))
+    }
+
     private func infoRow(title: String, value: String) -> some View {
         HStack(alignment: .top) {
             Text(title)
@@ -151,6 +207,16 @@ private struct TVShowInfoView: View {
         }
         .font(Font.custom(AppUI.FontName.poppins, size: 14))
     }
+
+    private func refreshProgress() {
+        guard case let .authenticated(userID) = userSession.authState else {
+            watchedCount = 0
+            return
+        }
+        watchedCount = progressService.watchedEpisodeIDs(userID: userID, showID: show.id).count
+    }
+
+    private let progressService = TVEpisodeProgressService()
 }
 
 #Preview {
