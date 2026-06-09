@@ -1,24 +1,29 @@
 import Foundation
 
-/// Responsible for managing and loading a list of popular movies.
-/// It fetches data from the API and exposes it to the view layer.
+enum MovieListFilter: Equatable {
+    case all
+    case popular
+    case genre(MoviesGenre)
+}
+
+/// Responsible for managing and loading movie lists from TMDB.
 @Observable
 @MainActor
 final class MovieListViewModel {
-    /// A list of popular movies fetched from the API.
     var movies: [RemoteMovie] = []
-    /// An error message to be displayed if fetching fails.
     var errorMessage: String?
-    /// Text used to filter movies by title.
     var filterText = ""
-    /// Indicates whether the movies should be sorted alphabetically by title.
     var isSorted = false
-    /// Indicates whether only saved movies should be displayed.
     var showSavedOnly = false
-    /// Set of saved movie IDs used to filter the displayed movies.
     var savedIDs: Set<Int> = []
+    var selectedFilter: MovieListFilter = .all
+    private(set) var isLoading = false
 
-    /// Computed property that returns the list of movies after filtering and sorting.
+    var selectedGenre: MoviesGenre? {
+        guard case let .genre(genre) = selectedFilter else { return nil }
+        return genre
+    }
+
     var displayedMovies: [RemoteMovie] {
         let searched = filterText.isEmpty
             ? movies
@@ -31,65 +36,115 @@ final class MovieListViewModel {
         return showSavedOnly ? sorted.filter { savedIDs.contains($0.id) } : sorted
     }
 
-    /// Initializes the view model with a given API client.
-    /// - Parameter client: An object conforming to `APIClientProtocol`. Defaults to `APIClient()`.
     init(client: APIClientProtocol = APIClient()) {
         self.client = client
     }
 
-    /// Fetches the list of popular movies from the TMDB API.
-    ///
-    /// If the request is successful, the movies array is updated.
-    /// If the request fails, an error message is set.
+    /// Loads TMDB's broad movie catalog, ordered by popularity.
+    func fetchAllMovies() async {
+        await selectFilter(.all)
+    }
+
+    /// Loads TMDB's current popular movie feed.
     func fetchPopularMovies() async {
+        await selectFilter(.popular)
+    }
+
+    /// Loads movies for a single TMDB genre.
+    func selectGenre(_ genre: MoviesGenre?) async {
+        await selectFilter(genre.map(MovieListFilter.genre) ?? .all)
+    }
+
+    /// Replaces the current list using the selected catalog filter.
+    func selectFilter(_ filter: MovieListFilter) async {
+        selectedFilter = filter
+        movies = []
+        currentPage = 1
+        totalPages = 1
+        errorMessage = nil
+        isLoading = true
+
+        let requestID = UUID()
+        activeRequestID = requestID
+        defer {
+            if activeRequestID == requestID {
+                isLoading = false
+            }
+        }
+
         do {
-            let response: MovieResponse = try await client.fetch(
-                path: "movie/popular",
-                query: ["language": "EN-US", "page": "1"],
-                responseType: MovieResponse.self
-            )
+            let response = try await fetchPage(1, filter: filter)
+            guard activeRequestID == requestID else { return }
             movies = response.results
             currentPage = response.page
             totalPages = response.totalPages
+        } catch is CancellationError {
+            return
         } catch {
-            print("Fetch error: \(error)")
+            guard activeRequestID == requestID else { return }
             errorMessage = "Error: \(error.localizedDescription)"
         }
     }
 
-    /// Loads the next page if the user has scrolled to the last item.
-    /// - Parameter currentMovie: The movie that is currently being rendered.
+    /// Loads the next page for the active catalog filter.
     func fetchNextPageIfNeeded(currentMovie: RemoteMovie) async {
         guard let last = movies.last, last.id == currentMovie.id else { return }
         guard currentPage < totalPages, !isFetching else { return }
 
         isFetching = true
+        let requestID = activeRequestID
+        let filter = selectedFilter
         defer { isFetching = false }
 
         do {
-            let response: MovieResponse = try await client.fetch(
-                path: "movie/popular",
-                query: ["language": "en-US", "page": "\(currentPage + 1)"],
-                responseType: MovieResponse.self
-            )
+            let response = try await fetchPage(currentPage + 1, filter: filter)
+            guard activeRequestID == requestID, selectedFilter == filter else { return }
             addUniqueMovies(response.results)
             currentPage = response.page
             totalPages = response.totalPages
+        } catch is CancellationError {
+            return
         } catch {
-            errorMessage = "Failed to load more actors: \(error.localizedDescription)"
+            guard activeRequestID == requestID else { return }
+            errorMessage = "Failed to load more movies: \(error.localizedDescription)"
         }
     }
-
-    // MARK: - Private interface.
 
     private let client: APIClientProtocol
     private(set) var currentPage = 1
     private(set) var totalPages = 1
     private var isFetching = false
+    private var activeRequestID = UUID()
 
-    private func addUniqueMovies(_ newMovie: [RemoteMovie]) {
-        let unique = newMovie.filter { new in
-            !movies.contains(where: { $0.id == new.id })
+    private func fetchPage(_ page: Int, filter: MovieListFilter) async throws -> MovieResponse {
+        var query = [
+            "language": "en-US",
+            "page": "\(page)",
+        ]
+
+        let path: String
+        switch filter {
+        case .popular:
+            path = "movie/popular"
+        case .all:
+            path = "discover/movie"
+            query["sort_by"] = "popularity.desc"
+        case let .genre(genre):
+            path = "discover/movie"
+            query["with_genres"] = "\(genre.id)"
+            query["sort_by"] = "popularity.desc"
+        }
+
+        return try await client.fetch(
+            path: path,
+            query: query,
+            responseType: MovieResponse.self
+        )
+    }
+
+    private func addUniqueMovies(_ newMovies: [RemoteMovie]) {
+        let unique = newMovies.filter { newMovie in
+            !movies.contains(where: { $0.id == newMovie.id })
         }
         movies.append(contentsOf: unique)
     }
