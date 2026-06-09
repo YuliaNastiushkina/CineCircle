@@ -6,6 +6,8 @@ struct ProfileLibrarySectionsView: View {
     let savedMovieIDs: [Int]
     let watchedMovies: [ProfileMovieSnapshot]
     let savedMovies: [ProfileMovieSnapshot]
+    let seenTVShows: [TVShowLibraryRecord]
+    let savedTVShows: [TVShowLibraryRecord]
     let refreshToken: UUID
 
     @State private var displayedWatchedMovies: [ProfileMovieSnapshot] = []
@@ -17,20 +19,18 @@ struct ProfileLibrarySectionsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Parameters.sectionSpacing) {
-            movieSection(
+            mediaSection(
                 title: "Recently watched",
-                movieIDs: watchedMovieIDs,
                 movies: displayedWatchedMovies,
-                emptyMessage: "Movies marked as watched will appear here.",
-                destinationTitle: "Watched"
+                tvShows: seenTVShows,
+                emptyMessage: "Movies and TV shows marked as watched will appear here."
             )
 
-            movieSection(
+            mediaSection(
                 title: "Saved",
-                movieIDs: savedMovieIDs,
                 movies: displayedSavedMovies,
-                emptyMessage: "Movies you save will appear here.",
-                destinationTitle: "Saved"
+                tvShows: savedTVShows,
+                emptyMessage: "Movies and TV shows you save will appear here."
             )
 
             notesSection
@@ -40,28 +40,33 @@ struct ProfileLibrarySectionsView: View {
         }
     }
 
-    @ViewBuilder private func movieSection(
+    @ViewBuilder private func mediaSection(
         title: String,
-        movieIDs: [Int],
         movies: [ProfileMovieSnapshot],
-        emptyMessage: String,
-        destinationTitle: String
+        tvShows: [TVShowLibraryRecord],
+        emptyMessage: String
     ) -> some View {
+        let items = Array(
+            (movies.map(ProfileLibraryMediaItem.movie) + tvShows.map(ProfileLibraryMediaItem.tvShow))
+                .sorted { $0.date > $1.date }
+                .prefix(Parameters.previewMovieCount)
+        )
+
         VStack(alignment: .leading, spacing: Parameters.contentSpacing) {
             sectionHeader(title: title) {
-                ProfileMovieListView(title: destinationTitle, movieIDs: movieIDs)
+                ProfileMediaListView(title: title, movies: movies, tvShows: tvShows)
             }
 
-            if movies.isEmpty {
+            if items.isEmpty {
                 emptyCard(message: emptyMessage)
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Parameters.movieCardSpacing) {
-                        ForEach(movies) { movie in
+                        ForEach(items) { item in
                             NavigationLink {
-                                MovieDetailViewLoaderView(movieID: movie.id)
+                                mediaDestination(for: item)
                             } label: {
-                                ProfileMoviePosterCard(movie: movie)
+                                ProfileMediaPosterCard(item: item)
                             }
                             .buttonStyle(.plain)
                         }
@@ -69,6 +74,15 @@ struct ProfileLibrarySectionsView: View {
                     .padding(.horizontal, Parameters.horizontalInset)
                 }
             }
+        }
+    }
+
+    @ViewBuilder private func mediaDestination(for item: ProfileLibraryMediaItem) -> some View {
+        switch item {
+        case let .movie(movie):
+            MovieDetailViewLoaderView(movieID: movie.id)
+        case let .tvShow(show):
+            TVShowDetailLoaderView(showID: show.id)
         }
     }
 
@@ -282,6 +296,42 @@ private struct ProfileMoviePosterCard: View {
     }
 }
 
+private struct ProfileMediaPosterCard: View {
+    let item: ProfileLibraryMediaItem
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Group {
+                if let posterPath = item.posterPath,
+                   let url = URL(string: "https://image.tmdb.org/t/p/w342\(posterPath)") {
+                    AsyncImage(url: url) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        placeholder
+                    }
+                } else {
+                    placeholder
+                }
+            }
+            .frame(width: 100, height: 150)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipped()
+
+            Text(item.title)
+                .font(Font.custom(AppUI.FontName.poppins, size: 12))
+                .foregroundStyle(.primary)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .frame(width: 100, height: 32, alignment: .topLeading)
+        }
+        .frame(width: 100, height: 190, alignment: .topLeading)
+    }
+
+    private var placeholder: some View {
+        PosterPlaceholderView(cornerRadius: 12, iconSize: 20)
+    }
+}
+
 private struct ProfileNoteItem: Identifiable {
     let id: String
     let movieID: Int
@@ -341,6 +391,8 @@ private struct ProfileNotePreviewCard: View {
             savedMovies: [
                 ProfileMovieSnapshot(id: 13, title: "Forrest Gump", posterPath: nil, createdAt: .now),
             ],
+            seenTVShows: [],
+            savedTVShows: [],
             refreshToken: UUID()
         )
         .padding()

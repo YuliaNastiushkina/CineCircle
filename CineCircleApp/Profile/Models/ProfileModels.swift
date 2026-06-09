@@ -53,3 +53,36 @@ struct ProfileMovieSnapshot: Identifiable, Hashable {
     let posterPath: String?
     let createdAt: Date?
 }
+
+enum ProfileLibraryMediaItem: Identifiable {
+    case movie(ProfileMovieSnapshot)
+    case tvShow(TVShowLibraryRecord)
+
+    var id: String {
+        switch self {
+        case let .movie(movie): "movie-\(movie.id)"
+        case let .tvShow(show): "tv-\(show.id)"
+        }
+    }
+
+    var title: String {
+        switch self {
+        case let .movie(movie): movie.title
+        case let .tvShow(show): show.title
+        }
+    }
+
+    var posterPath: String? {
+        switch self {
+        case let .movie(movie): movie.posterPath
+        case let .tvShow(show): show.posterPath
+        }
+    }
+
+    var date: Date {
+        switch self {
+        case let .movie(movie): movie.createdAt ?? .distantPast
+        case let .tvShow(show): show.updatedAt
+        }
+    }
+}

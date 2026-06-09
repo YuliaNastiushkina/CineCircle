@@ -34,9 +34,9 @@ struct MainTabView: View {
                     Label("Movies", systemImage: "film.stack")
                 }
 
-            ActorListView()
+            TVShowsListView(userID: userId)
                 .tabItem {
-                    Label("Actors", systemImage: "video")
+                    Label("TV Shows", systemImage: "tv")
                 }
 
             ProfileView(userId: userId)

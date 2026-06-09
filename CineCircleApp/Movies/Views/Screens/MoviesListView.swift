@@ -181,83 +181,19 @@ private struct MovieListRow: View {
     private let apiClient = APIClient()
 
     var body: some View {
-        HStack(alignment: .top, spacing: Parameters.rowSpacing) {
-            posterImage
-            movieInfo
-        }
-        .padding(.vertical, Parameters.rowVerticalPadding)
+        MediaListRow(
+            title: movie.title,
+            posterPath: movie.posterPath,
+            primaryMetadata: releaseYear,
+            secondaryMetadata: runtimeText,
+            language: languageText,
+            genres: genreLine,
+            rating: movie.voteAverage,
+            ratingCount: ratingCount
+        )
         .task {
             await loadMovieDetailIfNeeded()
         }
-    }
-
-    private var posterImage: some View {
-        Group {
-            if let path = movie.posterPath {
-                AsyncImage(url: URL(string: "https://image.tmdb.org/t/p/w342\(path)")) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    posterPlaceholder
-                }
-            } else {
-                posterPlaceholder
-            }
-        }
-        .frame(width: Parameters.posterWidth, height: Parameters.posterHeight)
-        .clipShape(RoundedRectangle(cornerRadius: Parameters.posterCornerRadius))
-        .clipped()
-    }
-
-    private var posterPlaceholder: some View {
-        PosterPlaceholderView(
-            cornerRadius: Parameters.posterCornerRadius,
-            iconSize: Parameters.placeholderIconSize
-        )
-    }
-
-    private var movieInfo: some View {
-        VStack(alignment: .leading, spacing: Parameters.contentSpacing) {
-            Text(movie.title)
-                .font(Font.custom(AppUI.FontName.poppinsLight, size: Parameters.titleFontSize))
-                .foregroundColor(.primary)
-                .lineLimit(2)
-                .padding(.bottom, Parameters.titleBottomPadding)
-
-            HStack(spacing: Parameters.metadataSpacing) {
-                metadataChip(text: releaseYear)
-
-                if let runtimeText {
-                    metadataChip(text: runtimeText)
-                }
-
-                if !languageText.isEmpty {
-                    metadataChip(text: languageText)
-                }
-            }
-
-            if !genreLine.isEmpty {
-                metadataChip(text: genreLine)
-            }
-
-            Spacer()
-
-            HStack(spacing: Parameters.ratingSpacing) {
-                Text(String(format: "%.1f", movie.voteAverage))
-                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.ratingFontSize))
-                    .foregroundColor(.primary)
-
-                Image(systemName: "star.fill")
-                    .foregroundColor(AppUI.ColorPalette.accent)
-                    .font(.system(size: Parameters.ratingFontSize))
-
-                Text("(\(ratingCount))")
-                    .font(Font.custom(AppUI.FontName.poppinsLight, size: Parameters.ratingFontSize))
-                    .foregroundColor(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var releaseYear: String {
@@ -292,15 +228,6 @@ private struct MovieListRow: View {
         movieDetail?.voteCount ?? movie.voteCount
     }
 
-    @ViewBuilder private func metadataChip(text: String) -> some View {
-        MetadataChip(
-            text: text,
-            font: Font.custom(AppUI.FontName.poppinsLight, size: Parameters.metadataFontSize),
-            horizontalPadding: Parameters.metadataHorizontalPadding,
-            verticalPadding: Parameters.metadataVerticalPadding
-        )
-    }
-
     private func loadMovieDetailIfNeeded() async {
         guard movieDetail == nil else { return }
 
@@ -313,24 +240,6 @@ private struct MovieListRow: View {
         } catch {
             // Keep the row usable with the basic list data if detail loading fails.
         }
-    }
-
-    private enum Parameters {
-        static let rowSpacing: CGFloat = 12
-        static let rowVerticalPadding: CGFloat = 2
-        static let posterWidth: CGFloat = 124
-        static let posterHeight: CGFloat = 186
-        static let posterCornerRadius: CGFloat = AppUI.Radius.medium
-        static let placeholderIconSize: CGFloat = 24
-        static let contentSpacing: CGFloat = 10
-        static let titleFontSize: CGFloat = 20
-        static let titleBottomPadding: CGFloat = 10
-        static let metadataSpacing: CGFloat = 8
-        static let metadataFontSize: CGFloat = 14
-        static let metadataHorizontalPadding: CGFloat = 10
-        static let metadataVerticalPadding: CGFloat = 4
-        static let ratingSpacing: CGFloat = 6
-        static let ratingFontSize: CGFloat = 14
     }
 }
 
