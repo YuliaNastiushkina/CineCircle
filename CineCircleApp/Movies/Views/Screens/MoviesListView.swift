@@ -6,35 +6,41 @@ struct MoviesListView: View {
     @Environment(\.managedObjectContext) private var context
     @EnvironmentObject private var userSession: UserSession
 
-    @State private var isLoading = false
+    let userId: String
+
     @State private var viewModel = MovieListViewModel()
+    @State private var favoriteGenres: [MoviesGenre] = []
 
     var body: some View {
         NavigationStack {
-            Group {
-                if isLoading {
-                    ProgressView("Loading...")
-                } else if viewModel.displayedMovies.isEmpty {
-                    ContentUnavailableView(viewModel.showSavedOnly ? "No Saved Movies" : "No Movies Found",
-                                           systemImage: "film.stack")
-                } else {
-                    List(viewModel.displayedMovies, id: \.id) { movie in
-                        NavigationLink {
-                            MovieDetailViewLoaderView(movieID: movie.id)
-                        } label: {
-                            MovieListRow(movie: movie)
-                        }
-                        .listRowSeparator(.hidden)
-                        .task {
-                            if movie.id == viewModel.movies.last?.id {
-                                await viewModel.fetchNextPageIfNeeded(currentMovie: movie)
+            VStack(spacing: 0) {
+                genreFilter
+
+                Group {
+                    if viewModel.isLoading, viewModel.movies.isEmpty {
+                        ProgressView("Loading...")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else if viewModel.displayedMovies.isEmpty {
+                        ContentUnavailableView(emptyStateTitle, systemImage: "film.stack")
+                    } else {
+                        List(viewModel.displayedMovies, id: \.id) { movie in
+                            NavigationLink {
+                                MovieDetailViewLoaderView(movieID: movie.id)
+                            } label: {
+                                MovieListRow(movie: movie)
+                            }
+                            .listRowSeparator(.hidden)
+                            .task {
+                                if movie.id == viewModel.movies.last?.id {
+                                    await viewModel.fetchNextPageIfNeeded(currentMovie: movie)
+                                }
                             }
                         }
+                        .listStyle(.plain)
                     }
-                    .listStyle(.plain)
                 }
             }
-            .navigationTitle(viewModel.showSavedOnly ? "Saved" : "Popular Movies")
+            .navigationTitle(navigationTitle)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack {
@@ -60,8 +66,9 @@ struct MoviesListView: View {
         }
         .searchable(text: $viewModel.filterText)
         .task {
+            loadFavoriteGenres()
             if viewModel.movies.isEmpty {
-                await loadMovies()
+                await viewModel.fetchAllMovies()
             }
         }
         .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
@@ -69,18 +76,89 @@ struct MoviesListView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-        .onAppear(perform: loadSavedIDs)
+        .onAppear {
+            loadSavedIDs()
+            loadFavoriteGenres()
+        }
         .onReceive(userSession.$authState) { _ in
             loadSavedIDs()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .profileFavoriteGenresDidChange)) { notification in
+            guard notification.userInfo?["userID"] as? String == userId else { return }
+            loadFavoriteGenres()
         }
     }
 
     // MARK: - Private interface
 
-    private func loadMovies() async {
-        isLoading = true
-        await viewModel.fetchPopularMovies()
-        isLoading = false
+    private var navigationTitle: String {
+        let title: String = switch viewModel.selectedFilter {
+        case .all: "Movies"
+        case .popular: "Popular Movies"
+        case let .genre(genre): genre.displayName
+        }
+        return viewModel.showSavedOnly ? "Saved \(title)" : title
+    }
+
+    private var emptyStateTitle: String {
+        let title = switch viewModel.selectedFilter {
+        case .all: "Movies"
+        case .popular: "Popular Movies"
+        case let .genre(genre): "\(genre.displayName) Movies"
+        }
+        return viewModel.showSavedOnly ? "No Saved \(title)" : "No \(title) Found"
+    }
+
+    private var orderedGenres: [MoviesGenre] {
+        favoriteGenres + MoviesGenre.allCases.filter { !favoriteGenres.contains($0) }
+    }
+
+    private var genreFilter: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                filterButton(title: "All", filter: .all)
+                filterButton(title: "Popular", filter: .popular)
+
+                ForEach(orderedGenres) { genre in
+                    filterButton(title: genre.displayName, filter: .genre(genre))
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+        }
+        .background(Color(.systemBackground))
+    }
+
+    private func filterButton(title: String, filter: MovieListFilter) -> some View {
+        let isSelected = viewModel.selectedFilter == filter
+
+        return Button {
+            guard viewModel.selectedFilter != filter else { return }
+            Task {
+                await viewModel.selectFilter(filter)
+            }
+        } label: {
+            Text(title)
+                .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 13))
+                .foregroundColor(isSelected ? .black : .primary)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(isSelected ? AppUI.ColorPalette.accent : AppUI.ColorPalette.secondarySurface)
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func loadFavoriteGenres() {
+        let stored = UserDefaults.standard.stringArray(
+            forKey: ProfileUserDefaultsKeys.favoriteGenres(for: userId)
+        ) ?? []
+        favoriteGenres = stored.compactMap(MoviesGenre.fromStoredValue).reduce(into: []) { result, genre in
+            if !result.contains(genre) {
+                result.append(genre)
+            }
+        }
     }
 
     private func loadSavedIDs() {
@@ -101,27 +179,6 @@ private struct MovieListRow: View {
     @State private var movieDetail: RemoteMovieDetail?
 
     private let apiClient = APIClient()
-    private let genreLookup: [Int: String] = [
-        28: "Action",
-        12: "Adventure",
-        16: "Animation",
-        35: "Comedy",
-        80: "Crime",
-        99: "Documentary",
-        18: "Drama",
-        10751: "Family",
-        14: "Fantasy",
-        36: "History",
-        27: "Horror",
-        10402: "Music",
-        9648: "Mystery",
-        10749: "Romance",
-        878: "Sci-Fi",
-        10770: "TV Movie",
-        53: "Thriller",
-        10752: "War",
-        37: "Western",
-    ]
 
     var body: some View {
         HStack(alignment: .top, spacing: Parameters.rowSpacing) {
@@ -224,7 +281,7 @@ private struct MovieListRow: View {
             return Array(movieDetail.genres.map(\.name).prefix(3))
         }
 
-        return movie.genreIDs.compactMap { genreLookup[$0] }.prefix(3).map { $0 }
+        return movie.genreIDs.compactMap { MoviesGenre.genre(forTMDBID: $0)?.displayName }.prefix(3).map { $0 }
     }
 
     private var genreLine: String {
@@ -278,6 +335,6 @@ private struct MovieListRow: View {
 }
 
 #Preview {
-    MoviesListView()
+    MoviesListView(userId: "previewUser")
         .environmentObject(UserSession())
 }

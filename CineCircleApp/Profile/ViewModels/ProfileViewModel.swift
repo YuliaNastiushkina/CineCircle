@@ -6,8 +6,8 @@ class ProfileViewModel: ObservableObject {
 
     /// A unique key used to store the user's name in UserDefaults.
     private let nameKey = ProfileUserDefaultsKeys.name
-    /// A unique key used to store the user's favorite genres in UserDefaults.
-    private let genresKey = ProfileUserDefaultsKeys.favoriteGenres
+    /// A user-specific key used to store favorite genres in UserDefaults.
+    private let genresKey: String
     /// A unique key used to store the user's profile image in UserDefaults.
     private let profileImageKey: String
     private let authService: AuthServiceProtocol
@@ -51,6 +51,7 @@ class ProfileViewModel: ObservableObject {
         self.statsService = statsService
         self.watchedService = watchedService
         self.savedService = savedService
+        genresKey = ProfileUserDefaultsKeys.favoriteGenres(for: userId)
         profileImageKey = "profile_image_\(userId)"
     }
 
@@ -70,9 +71,12 @@ class ProfileViewModel: ObservableObject {
     /// Loads the user's profile data from UserDefaults. If no saved data is found, default values are used.
     func loadProfile() async {
         name = UserDefaults.standard.string(forKey: nameKey) ?? ""
-        if let saved = UserDefaults.standard.array(forKey: genresKey) as? [String] {
-            favoriteGenres = saved.compactMap { MoviesGenre(rawValue: $0) }
-        }
+        let saved = UserDefaults.standard.stringArray(forKey: genresKey)
+            ?? UserDefaults.standard.stringArray(forKey: ProfileUserDefaultsKeys.favoriteGenres)
+            ?? []
+        favoriteGenres = saved.compactMap(MoviesGenre.fromStoredValue)
+        let migratedValues = favoriteGenres.map(\.rawValue)
+        UserDefaults.standard.set(migratedValues, forKey: genresKey)
         profileImageData = UserDefaults.standard.data(forKey: profileImageKey)
         loadStats()
         // Store original values for potential cancellation
@@ -96,8 +100,7 @@ class ProfileViewModel: ObservableObject {
         }
 
         UserDefaults.standard.set(name, forKey: nameKey)
-        let rawGenres = favoriteGenres.map(\.rawValue)
-        UserDefaults.standard.set(rawGenres, forKey: genresKey)
+        saveFavoriteGenres()
 
         // Save profile image if available
         if let imageData = profileImageData {
@@ -112,6 +115,18 @@ class ProfileViewModel: ObservableObject {
         originalProfileImageData = profileImageData
 
         return true
+    }
+
+    /// Saves favorite genres independently from the profile name.
+    func saveFavoriteGenres() {
+        let rawGenres = favoriteGenres.map(\.rawValue)
+        UserDefaults.standard.set(rawGenres, forKey: genresKey)
+        originalGenres = favoriteGenres
+        NotificationCenter.default.post(
+            name: .profileFavoriteGenresDidChange,
+            object: nil,
+            userInfo: ["userID": userId]
+        )
     }
 
     /// Sets the profile image from a UIImage

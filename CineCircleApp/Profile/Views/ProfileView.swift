@@ -35,7 +35,7 @@ struct ProfileView: View {
                     toolbarContent
                 }
                 .sheet(isPresented: $showGenrePicker, onDismiss: {
-                    _ = viewModel.saveProfile()
+                    viewModel.saveFavoriteGenres()
                 }) {
                     GenrePickerView(selectedGenres: $viewModel.favoriteGenres)
                 }
