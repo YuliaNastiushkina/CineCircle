@@ -3,7 +3,7 @@
 ## Description
 
 The repository contains the source code of the CineCircle application.  
-The CineCircle application allows you to search for movies or actors, mark your favorites and share your thoughts about a particular movie.
+CineCircle is an iOS app for discovering movies and TV shows, tracking watched titles and episodes, saving favorites, and writing personal notes. Explore genres, view cast details, and manage your media library from one profile.
 
 ## 🛠️ Tech Stack
 - **SwiftUI** — user interface framework  
@@ -14,22 +14,26 @@ The CineCircle application allows you to search for movies or actors, mark your 
 - **Swift Package Manager (SPM)** — dependency management  
 - **GYB + `.env`** — secure API keys configuration
 ## 📱 Screenshots
-<details>
-    <summary> Main Screen </summary>
+
+### Main Screen
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/6254d8d9-a191-48b1-92f5-c69b554cf436" alt="screen1" width="220">
-    &nbsp;&nbsp;&nbsp;
+    <img src="https://github.com/user-attachments/assets/3f0d06b6-7e82-4b3d-99f9-46c665e9f8c8" alt="screen1" width="220">
+    <img src="https://github.com/user-attachments/assets/7ddcbb9b-1876-4556-a9c8-0598df7cc7ed" alt="screen2" width="220">
 </p>
-</details>
 
 <details>
-    <summary>Inside the App</summary>
+    <summary><strong>▶️ View more screens inside the app</strong></summary>
+
+<br>
+    
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/d8ef45a0-a449-4e63-8568-86786ac8399d" alt="screen2" width="180"/>
-  <img src="https://github.com/user-attachments/assets/5e56fbca-de7b-4435-a4bd-f82e6cde649a" alt="screen3" width="180"/>
-  <img src="https://github.com/user-attachments/assets/7b6f5cc6-f109-42cc-b1be-03b09436931c" alt="screen4" width="180">
-  <img src="https://github.com/user-attachments/assets/f37bf5fb-e04e-4474-bbc6-f7654ff9323f" alt="screen5" width="180"/>
-  <img src="https://github.com/user-attachments/assets/d883ff3a-348a-48ed-b01b-46af2ab9508d" alt="screen6" width="180">
+<img src="https://github.com/user-attachments/assets/a055d3a4-27cd-4986-8b81-370a710a5f78" alt="screen3" width="180"/>
+    
+<img src="https://github.com/user-attachments/assets/1a56df13-db4a-4913-8e37-8d22549d7240" alt="screen4" width="180"/>
+    
+<img src="https://github.com/user-attachments/assets/5f59fec2-1f77-41c7-9f65-219a53222536" alt="screen5" width="180"/>
+    
+<img src="https://github.com/user-attachments/assets/9a9ae7c0-7514-4ed1-b231-0588ae209907" alt="screen6" width="180"/>
 </p>
 </details>
 
