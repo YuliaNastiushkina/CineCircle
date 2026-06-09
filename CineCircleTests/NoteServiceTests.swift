@@ -131,7 +131,7 @@ final class NoteServiceTests: XCTestCase {
     }
 }
 
-final class FailingContext: NSManagedObjectContext {
+final class FailingContext: NSManagedObjectContext, @unchecked Sendable {
     override func save() throws {
         throw NSError(domain: "TestError", code: 999, userInfo: nil)
     }

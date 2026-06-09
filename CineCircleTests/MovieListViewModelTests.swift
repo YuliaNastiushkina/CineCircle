@@ -3,6 +3,24 @@ import XCTest
 
 @MainActor
 class MovieListViewModelTests: XCTestCase {
+    func testFetchAllMoviesUsesDiscoverEndpoint() async {
+        // Given
+        let mockClient = MockAPIClient { path, query in
+            XCTAssertEqual(path, "discover/movie")
+            XCTAssertEqual(query["sort_by"], "popularity.desc")
+            XCTAssertNil(query["with_genres"])
+            return MovieResponse(results: [], page: 1, totalResults: 0, totalPages: 1)
+        }
+        let viewModel = MovieListViewModel(client: mockClient)
+
+        // When
+        await viewModel.fetchAllMovies()
+
+        // Then
+        XCTAssertEqual(viewModel.selectedFilter, .all)
+        XCTAssertNil(viewModel.errorMessage)
+    }
+
     func testFetchPopularMoviesSuccess() async throws {
         // Given
         let expectedMovies = [
@@ -65,6 +83,49 @@ class MovieListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.movies.count, 2)
         XCTAssertEqual(viewModel.movies.map(\.id), [1, 2])
         XCTAssertNil(viewModel.errorMessage)
+    }
+
+    func testSelectGenreUsesDiscoverEndpoint() async {
+        // Given
+        let movie = RemoteMovie(id: 3, title: "Action Movie", overview: "", posterPath: nil, voteAverage: 7.5, voteCount: 50, releaseDate: "2025-03-01", originalLanguage: "en", genreIDs: [28])
+        let mockClient = MockAPIClient { path, query in
+            XCTAssertEqual(path, "discover/movie")
+            XCTAssertEqual(query["with_genres"], "28")
+            XCTAssertEqual(query["sort_by"], "popularity.desc")
+            XCTAssertEqual(query["page"], "1")
+            return MovieResponse(results: [movie], page: 1, totalResults: 1, totalPages: 1)
+        }
+        let viewModel = MovieListViewModel(client: mockClient)
+
+        // When
+        await viewModel.selectGenre(.action)
+
+        // Then
+        XCTAssertEqual(viewModel.selectedGenre, .action)
+        XCTAssertEqual(viewModel.movies.map(\.id), [3])
+    }
+
+    func testGenrePaginationRetainsSelectedGenre() async {
+        // Given
+        let pageOneMovie = RemoteMovie(id: 4, title: "Mystery One", overview: "", posterPath: nil, voteAverage: 7.0, voteCount: 10, releaseDate: "", originalLanguage: "en", genreIDs: [9648])
+        let pageTwoMovie = RemoteMovie(id: 5, title: "Mystery Two", overview: "", posterPath: nil, voteAverage: 8.0, voteCount: 20, releaseDate: "", originalLanguage: "en", genreIDs: [9648])
+        let mockClient = MockAPIClient { path, query in
+            XCTAssertEqual(path, "discover/movie")
+            XCTAssertEqual(query["with_genres"], "9648")
+            if query["page"] == "1" {
+                return MovieResponse(results: [pageOneMovie], page: 1, totalResults: 2, totalPages: 2)
+            }
+            return MovieResponse(results: [pageTwoMovie], page: 2, totalResults: 2, totalPages: 2)
+        }
+        let viewModel = MovieListViewModel(client: mockClient)
+
+        // When
+        await viewModel.selectGenre(.mystery)
+        await viewModel.fetchNextPageIfNeeded(currentMovie: pageOneMovie)
+
+        // Then
+        XCTAssertEqual(viewModel.movies.map(\.id), [4, 5])
+        XCTAssertEqual(viewModel.currentPage, 2)
     }
 
     func testDisplayedMoviesFilteringAndSorting() {
