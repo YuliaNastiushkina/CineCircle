@@ -26,14 +26,21 @@ CineCircle is an iOS app for discovering movies and TV shows, tracking watched t
 
 <br>
     
-<p align="center">
-<img src="https://github.com/user-attachments/assets/a055d3a4-27cd-4986-8b81-370a710a5f78" alt="screen3" width="180"/>
+<p align="leading">
+<img src="https://github.com/user-attachments/assets/5e927ddb-4dcd-4f01-bdb4-b8fe461041a2" alt="screen3" width="180"/>
+
+<img src="https://github.com/user-attachments/assets/87f83977-ea07-4f55-81da-b5def3663c8f" alt="screen4" width="180"/>
+
+<img src="https://github.com/user-attachments/assets/db463249-7132-48cc-93b1-61ca0dfdc238" alt="screen5" width="180"/>
+   
+<img src="https://github.com/user-attachments/assets/1a56df13-db4a-4913-8e37-8d22549d7240" alt="screen6" width="180"/>
     
-<img src="https://github.com/user-attachments/assets/1a56df13-db4a-4913-8e37-8d22549d7240" alt="screen4" width="180"/>
+<img src="https://github.com/user-attachments/assets/5f59fec2-1f77-41c7-9f65-219a53222536" alt="screen7" width="180"/>
     
-<img src="https://github.com/user-attachments/assets/5f59fec2-1f77-41c7-9f65-219a53222536" alt="screen5" width="180"/>
-    
-<img src="https://github.com/user-attachments/assets/9a9ae7c0-7514-4ed1-b231-0588ae209907" alt="screen6" width="180"/>
+<img src="https://github.com/user-attachments/assets/9a9ae7c0-7514-4ed1-b231-0588ae209907" alt="screen8" width="180"/>
+
+<img src="https://github.com/user-attachments/assets/fe86fe6e-284a-4d6c-80ed-54b2fc5cae02" alt="screen9" width="180"/>
+
 </p>
 </details>
 
