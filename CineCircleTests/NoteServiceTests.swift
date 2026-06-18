@@ -100,6 +100,74 @@ final class NoteServiceTests: XCTestCase {
         XCTAssertEqual(notes.first?.content, "")
     }
 
+    func testCreateOrUpdateDiaryEntryCreatesEntryWithMetadata() {
+        // Given
+        let watchedDate = Date(timeIntervalSince1970: 1_700_000_000)
+        let draft = MovieDiaryEntryDraft(
+            privateReflection: "This stayed with me.",
+            movieTitle: "Past Lives",
+            watchedDate: watchedDate,
+            watchType: .rewatch,
+            moods: [.moved, .thoughtful, .nostalgic],
+            watchedWith: .partner,
+            hasSpoilers: true
+        )
+
+        // When
+        let error = sut.createOrUpdateDiaryEntry(
+            for: 42,
+            userId: "testUser",
+            draft: draft
+        )
+
+        // Then
+        XCTAssertNil(error)
+        let entries = sut.fetchNotes(for: 42, userId: "testUser")
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries.first?.content, "This stayed with me.")
+        XCTAssertEqual(entries.first?.movieTitle, "Past Lives")
+        XCTAssertEqual(entries.first?.watchedDate, watchedDate)
+        XCTAssertEqual(entries.first?.watchType, MovieDiaryWatchType.rewatch.rawValue)
+        XCTAssertEqual(entries.first?.mood, "moved,thoughtful,nostalgic")
+        XCTAssertEqual(entries.first?.watchedWith, MovieDiaryWatchedWith.partner.rawValue)
+        XCTAssertEqual(entries.first?.hasSpoilers, true)
+    }
+
+    func testCreateOrUpdateDiaryEntryUpdatesExistingMetadata() throws {
+        // Given
+        let _ = createTestNote(movieId: 7, userId: "testUser")
+        try context.save()
+        let watchedDate = Date(timeIntervalSince1970: 1_800_000_000)
+        let draft = MovieDiaryEntryDraft(
+            privateReflection: "Changed my mind on rewatch.",
+            movieTitle: "Arrival",
+            watchedDate: watchedDate,
+            watchType: .rewatch,
+            moods: [.awed, .haunted],
+            watchedWith: .friends,
+            hasSpoilers: true
+        )
+
+        // When
+        let error = sut.createOrUpdateDiaryEntry(
+            for: 7,
+            userId: "testUser",
+            draft: draft
+        )
+
+        // Then
+        XCTAssertNil(error)
+        let entries = sut.fetchNotes(for: 7, userId: "testUser")
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries.first?.content, "Changed my mind on rewatch.")
+        XCTAssertEqual(entries.first?.movieTitle, "Arrival")
+        XCTAssertEqual(entries.first?.watchedDate, watchedDate)
+        XCTAssertEqual(entries.first?.watchType, MovieDiaryWatchType.rewatch.rawValue)
+        XCTAssertEqual(entries.first?.mood, "awed,haunted")
+        XCTAssertEqual(entries.first?.watchedWith, MovieDiaryWatchedWith.friends.rawValue)
+        XCTAssertEqual(entries.first?.hasSpoilers, true)
+    }
+
     func testCreateOrUpdateNoteReturnsErrorWhenContextFailsToSave() {
         // Given
         let failingContext = FailingContext(concurrencyType: .mainQueueConcurrencyType)
