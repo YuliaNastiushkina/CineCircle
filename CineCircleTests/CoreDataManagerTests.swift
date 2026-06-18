@@ -26,7 +26,7 @@ final class CoreDataManagerTests: XCTestCase {
         sut.save()
 
         // Then
-        let fetchRequest: NSFetchRequest<MovieNote> = MovieNote.fetchRequest()
+        let fetchRequest: NSFetchRequest<MovieDiary> = MovieDiary.fetchRequest()
         let results = try context.fetch(fetchRequest)
 
         XCTAssertEqual(results.count, 1)
@@ -42,7 +42,7 @@ final class CoreDataManagerTests: XCTestCase {
 
         // When
         sut.delete(item: note)
-        let fetchRequest: NSFetchRequest<MovieNote> = MovieNote.fetchRequest()
+        let fetchRequest: NSFetchRequest<MovieDiary> = MovieDiary.fetchRequest()
         let results = try context.fetch(fetchRequest)
 
         // Then
@@ -51,7 +51,7 @@ final class CoreDataManagerTests: XCTestCase {
 
     func testDeleteNonExistingNote() {
         // Given
-        let fakeNote = MovieNote(context: context)
+        let fakeNote = MovieDiary(context: context)
         fakeNote.id = UUID()
 
         // When
@@ -71,7 +71,7 @@ final class CoreDataManagerTests: XCTestCase {
         sut.save()
 
         // Then
-        let fetchRequest: NSFetchRequest<MovieNote> = MovieNote.fetchRequest()
+        let fetchRequest: NSFetchRequest<MovieDiary> = MovieDiary.fetchRequest()
         let results = try context.fetch(fetchRequest)
 
         XCTAssertEqual(results.count, 1)
@@ -91,8 +91,8 @@ final class CoreDataManagerTests: XCTestCase {
 
     // MARK: - Helper Methods
 
-    private func createTestNote() -> MovieNote {
-        let note = MovieNote(context: context)
+    private func createTestNote() -> MovieDiary {
+        let note = MovieDiary(context: context)
         note.movieID = 1
         note.userID = "testUser"
         note.content = "This is a test note."

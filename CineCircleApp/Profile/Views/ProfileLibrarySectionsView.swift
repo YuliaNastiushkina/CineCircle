@@ -88,12 +88,12 @@ struct ProfileLibrarySectionsView: View {
 
     private var notesSection: some View {
         VStack(alignment: .leading, spacing: Parameters.contentSpacing) {
-            sectionHeader(title: "Notes") {
+            sectionHeader(title: "Diary") {
                 ProfileNotesListView(userId: userId)
             }
 
             if noteItems.isEmpty {
-                emptyCard(message: "Notes you write for movies will appear here.")
+                emptyCard(message: "Private movie diary entries will appear here.")
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Parameters.noteCardSpacing) {
@@ -213,7 +213,12 @@ struct ProfileLibrarySectionsView: View {
                 movieID: movieID,
                 movieTitle: note.movieTitle ?? titlesByID[movieID] ?? "Movie #\(movieID)",
                 content: note.content ?? "",
-                createdAt: note.createdAt
+                createdAt: note.createdAt,
+                watchedDate: note.watchedDate,
+                moods: MovieDiaryMood.decoded(from: note.mood),
+                watchType: MovieDiaryWatchType(rawValue: note.watchType ?? "") ?? .firstWatch,
+                watchedWith: MovieDiaryWatchedWith(rawValue: note.watchedWith ?? "") ?? .alone,
+                hasSpoilers: note.hasSpoilers
             )
         }
     }
@@ -338,6 +343,11 @@ private struct ProfileNoteItem: Identifiable {
     let movieTitle: String
     let content: String
     let createdAt: Date?
+    let watchedDate: Date?
+    let moods: [MovieDiaryMood]
+    let watchType: MovieDiaryWatchType
+    let watchedWith: MovieDiaryWatchedWith
+    let hasSpoilers: Bool
 }
 
 private struct ProfileNotePreviewCard: View {
@@ -350,13 +360,28 @@ private struct ProfileNotePreviewCard: View {
                 .foregroundStyle(.primary)
                 .lineLimit(1)
 
-            Text(item.content)
-                .font(Font.custom(AppUI.FontName.poppins, size: Parameters.bodyFontSize))
-                .foregroundStyle(.secondary)
-                .lineLimit(4)
+            LazyVGrid(columns: Parameters.metadataColumns, alignment: .leading, spacing: Parameters.metaSpacing) {
+                ForEach(Array(item.moods.prefix(Parameters.previewMoodCount)), id: \.self) { mood in
+                    metadataChip(mood.title)
+                }
 
-            if let createdAt = item.createdAt {
-                Text(createdAt, style: .date)
+                metadataChip(item.watchType.title)
+                metadataChip("With: \(item.watchedWith.title)")
+
+                if item.hasSpoilers {
+                    metadataChip("Spoilers")
+                }
+            }
+
+            if !item.content.isEmpty {
+                Text(item.content)
+                    .font(Font.custom(AppUI.FontName.poppins, size: Parameters.bodyFontSize))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(3)
+            }
+
+            if let date = item.watchedDate ?? item.createdAt {
+                Text(date, style: .date)
                     .font(Font.custom(AppUI.FontName.poppins, size: Parameters.dateFontSize))
                     .foregroundStyle(.secondary)
             }
@@ -367,14 +392,30 @@ private struct ProfileNotePreviewCard: View {
         .clipShape(RoundedRectangle(cornerRadius: AppUI.Radius.card))
     }
 
+    private func metadataChip(_ title: String) -> some View {
+        Text(title)
+            .font(Font.custom(AppUI.FontName.poppins, size: Parameters.chipFontSize))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, Parameters.chipHorizontalPadding)
+            .padding(.vertical, Parameters.chipVerticalPadding)
+            .background(Color(.systemBackground))
+            .clipShape(Capsule())
+    }
+
     private enum Parameters {
-        static let cardWidth: CGFloat = 220
-        static let cardHeight: CGFloat = 140
+        static let cardWidth: CGFloat = 240
+        static let cardHeight: CGFloat = 160
         static let cardPadding: CGFloat = 14
         static let contentSpacing: CGFloat = 8
+        static let metaSpacing: CGFloat = 6
         static let titleFontSize: CGFloat = 14
         static let bodyFontSize: CGFloat = 12
         static let dateFontSize: CGFloat = 11
+        static let chipFontSize: CGFloat = 10
+        static let previewMoodCount = 2
+        static let chipHorizontalPadding: CGFloat = 7
+        static let chipVerticalPadding: CGFloat = 3
+        static let metadataColumns = [GridItem(.adaptive(minimum: 88), spacing: metaSpacing)]
     }
 }
 

@@ -120,8 +120,8 @@ final class NoteServiceTests: XCTestCase {
 
     // MARK: - Helper Methods
 
-    private func createTestNote(movieId: Int = 1, userId: String = "testUser") -> MovieNote {
-        let note = MovieNote(context: context)
+    private func createTestNote(movieId: Int = 1, userId: String = "testUser") -> MovieDiary {
+        let note = MovieDiary(context: context)
         note.movieID = Int32(movieId)
         note.userID = userId
         note.content = "Test note content"

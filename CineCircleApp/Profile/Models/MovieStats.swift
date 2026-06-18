@@ -6,6 +6,6 @@ struct MovieStats {
     var totalWatched: Int = 0
     /// Number of movies saved to watchlist
     var totalSaved: Int = 0
-    /// Number of movie notes written
+    /// Number of movie diary entries written
     var totalNotes: Int = 0
 }

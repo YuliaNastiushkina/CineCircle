@@ -1,7 +1,7 @@
 import CoreData
 import Foundation
 
-/// A service responsible for managing movie notes using Core Data.
+/// A service responsible for managing private movie diary entries using Core Data.
 final class NoteService {
     // MARK: Private interface
 
@@ -22,54 +22,55 @@ final class NoteService {
     /// - Parameters:
     ///   - movieId: The ID of the movie.
     ///   - userId: The ID of the user.
-    /// - Returns: An array of `MovieNote` objects matching the movie and user.
-    func fetchNotes(for movieId: Int, userId: String) -> [MovieNote] {
-        let request = MovieNote.fetchRequest()
+    /// - Returns: An array of `MovieDiary` objects matching the movie and user.
+    func fetchNotes(for movieId: Int, userId: String) -> [MovieDiary] {
+        let request = MovieDiary.fetchRequest()
         request.predicate = NSPredicate(format: "movieID == %d AND userID == %@", movieId, userId)
         return (try? context.fetch(request)) ?? []
     }
 
     /// Returns the total number of notes for a given user.
     func notesCount(for userId: String) -> Int {
-        let request = MovieNote.fetchRequest()
+        let request = MovieDiary.fetchRequest()
         request.predicate = NSPredicate(format: "userID == %@", userId)
         return (try? context.count(for: request)) ?? 0
     }
 
-    /// Returns all notes for a given user, sorted by creation date (newest first).
-    func allNotes(for userId: String) -> [MovieNote] {
-        let request = MovieNote.fetchRequest()
+    /// Returns all diary entries for a given user, sorted by watched date (newest first).
+    func allNotes(for userId: String) -> [MovieDiary] {
+        let request = MovieDiary.fetchRequest()
         request.predicate = NSPredicate(format: "userID == %@", userId)
-        request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+        request.sortDescriptors = [
+            NSSortDescriptor(key: "watchedDate", ascending: false),
+            NSSortDescriptor(key: "createdAt", ascending: false),
+        ]
         return (try? context.fetch(request)) ?? []
     }
 
-    /// Creates a new note or updates the existing one for a given movie and user.
-    /// - Parameters:
-    ///   - movieId: The ID of the movie.
-    ///   - userId: The ID of the user.
-    ///   - content: The content of the note.
+    /// Creates a new diary entry or updates the existing one for a given movie and user.
     /// - Returns: An optional error if the save operation fails.
-    @discardableResult func createOrUpdateNote(
+    @discardableResult func createOrUpdateDiaryEntry(
         for movieId: Int,
         userId: String,
-        content: String,
-        movieTitle: String
+        draft: MovieDiaryEntryDraft
     ) -> Error? {
-        let existingNotes = fetchNotes(for: movieId, userId: userId)
+        let existingEntries = fetchNotes(for: movieId, userId: userId)
+        let entry = existingEntries.first ?? MovieDiary(context: context)
 
-        if let existingNote = existingNotes.first {
-            existingNote.content = content
-            existingNote.movieTitle = movieTitle
-        } else {
-            let newNote = MovieNote(context: context)
-            newNote.movieID = Int32(movieId)
-            newNote.userID = userId
-            newNote.content = content
-            newNote.movieTitle = movieTitle
-            newNote.id = UUID()
-            newNote.createdAt = Date()
+        if entry.id == nil {
+            entry.id = UUID()
+            entry.createdAt = Date()
+            entry.movieID = Int32(movieId)
+            entry.userID = userId
         }
+
+        entry.content = draft.privateReflection
+        entry.movieTitle = draft.movieTitle
+        entry.watchedDate = draft.watchedDate
+        entry.watchType = draft.watchType.rawValue
+        entry.watchedWith = draft.watchedWith.rawValue
+        entry.mood = MovieDiaryMood.encoded(draft.moods)
+        entry.hasSpoilers = draft.hasSpoilers
 
         do {
             try context.save()
@@ -78,5 +79,27 @@ final class NoteService {
         } catch {
             return error
         }
+    }
+
+    /// Backward-compatible note save wrapper. New UI should use `createOrUpdateDiaryEntry`.
+    @discardableResult func createOrUpdateNote(
+        for movieId: Int,
+        userId: String,
+        content: String,
+        movieTitle: String
+    ) -> Error? {
+        createOrUpdateDiaryEntry(
+            for: movieId,
+            userId: userId,
+            draft: MovieDiaryEntryDraft(
+                privateReflection: content,
+                movieTitle: movieTitle,
+                watchedDate: Date(),
+                watchType: .firstWatch,
+                moods: [],
+                watchedWith: .alone,
+                hasSpoilers: false
+            )
+        )
     }
 }

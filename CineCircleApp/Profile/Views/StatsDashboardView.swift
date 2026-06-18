@@ -50,11 +50,11 @@ struct StatsDashboardView: View {
                 NavigationLink {
                     ProfileNotesListView(userId: userId)
                 } label: {
-                    StatCard(title: "Notes", value: "\(stats.totalNotes)", icon: "note.text", iconColor: .purple)
+                    StatCard(title: "Diary", value: "\(stats.totalNotes)", icon: "book.closed", iconColor: .purple)
                 }
                 .buttonStyle(.plain)
             } else {
-                StatCard(title: "Notes", value: "0", icon: "note.text", iconColor: .purple)
+                StatCard(title: "Diary", value: "0", icon: "book.closed", iconColor: .purple)
             }
         }
     }
