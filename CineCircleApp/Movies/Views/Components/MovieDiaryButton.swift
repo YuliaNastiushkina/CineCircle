@@ -1,16 +1,16 @@
 import SwiftUI
 
-struct MovieNoteButton: View {
+struct MovieDiaryButton: View {
     let movieId: Int
     let userId: String
     let movieTitle: String
 
     var body: some View {
         Button {
-            isPresentingNote = true
+            isPresentingDiary = true
         } label: {
             HStack {
-                Text(Parameters.buttonTitle)
+                Text(buttonTitle)
                 Image(Parameters.buttonImageName)
                     .renderingMode(.template)
             }
@@ -27,17 +27,29 @@ struct MovieNoteButton: View {
                 y: Parameters.shadowYOffset
             )
         }
-        .sheet(isPresented: $isPresentingNote) {
-            MovieNoteView(movieId: movieId, userId: userId, movieTitle: movieTitle)
+        .sheet(isPresented: $isPresentingDiary, onDismiss: loadDiaryState) {
+            MovieDiaryView(movieId: movieId, userId: userId, movieTitle: movieTitle)
+        }
+        .onAppear(perform: loadDiaryState)
+        .onReceive(NotificationCenter.default.publisher(for: .userLibraryDidChange)) { _ in
+            loadDiaryState()
         }
     }
 
     // MARK: - Private interface
 
-    @State private var isPresentingNote = false
+    @State private var isPresentingDiary = false
+    @State private var hasDiaryEntry = false
+
+    private var buttonTitle: String {
+        hasDiaryEntry ? "Revisit this watch" : "Capture this watch"
+    }
+
+    private func loadDiaryState() {
+        hasDiaryEntry = !NoteService.shared.fetchNotes(for: movieId, userId: userId).isEmpty
+    }
 
     private enum Parameters {
-        static let buttonTitle = "Write a note"
         static let buttonImageName = "notebookImage"
         static let fontSize: CGFloat = 16
         static let horizontalPadding: CGFloat = 24
@@ -50,5 +62,5 @@ struct MovieNoteButton: View {
 }
 
 #Preview {
-    MovieNoteButton(movieId: 1, userId: "previewUser", movieTitle: "Preview Movie")
+    MovieDiaryButton(movieId: 1, userId: "previewUser", movieTitle: "Preview Movie")
 }

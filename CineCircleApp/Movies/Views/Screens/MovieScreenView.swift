@@ -18,7 +18,7 @@ struct MovieScreenView: View {
             MovieInfoSummaryView(viewModel: viewModel, movie: movie)
         } bottomInset: {
             if case let .authenticated(userID) = userSession.authState {
-                MovieNoteButton(movieId: movie.id, userId: userID, movieTitle: movie.title)
+                MovieDiaryButton(movieId: movie.id, userId: userID, movieTitle: movie.title)
                     .frame(maxWidth: .infinity)
                     .padding(.horizontal)
                     .padding(.vertical, 12)
