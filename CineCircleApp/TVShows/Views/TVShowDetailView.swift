@@ -89,7 +89,7 @@ private struct TVShowInfoView: View {
                 .padding(.top, Parameters.overviewTopPadding)
 
             if case let .authenticated(userID) = userSession.authState {
-                episodeProgressCard(userID: userID)
+                TVShowEpisodeProgressCard(show: show, userID: userID, watchedCount: watchedCount)
                     .padding(.top, Parameters.largeSectionSpacing)
             }
 
@@ -354,51 +354,6 @@ private struct TVShowInfoView: View {
         return "\(start) – present"
     }
 
-    private func episodeProgressCard(userID: String) -> some View {
-        let total = max(show.numberOfEpisodes, 1)
-        let progress = min(Double(watchedCount) / Double(total), 1)
-
-        return VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Episode Progress")
-                        .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 18))
-                    Text("\(watchedCount) of \(show.numberOfEpisodes) episodes watched")
-                        .font(Font.custom(AppUI.FontName.poppins, size: 13))
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Text("\(Int(progress * 100))%")
-                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 16))
-            }
-
-            ProgressView(value: progress)
-                .tint(AppUI.ColorPalette.accent)
-
-            NavigationLink {
-                TVEpisodesView(
-                    showID: show.id,
-                    showName: show.name,
-                    posterPath: show.posterPath,
-                    seasons: show.seasons,
-                    userID: userID
-                )
-            } label: {
-                Label(watchedCount == 0 ? "Start tracking episodes" : "Continue tracking", systemImage: "list.bullet.rectangle")
-                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 14))
-                    .foregroundStyle(.black)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(AppUI.ColorPalette.accent)
-                    .clipShape(Capsule())
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(16)
-        .background(AppUI.ColorPalette.secondarySurface)
-        .clipShape(RoundedRectangle(cornerRadius: AppUI.Radius.card))
-    }
-
     private func metadataChip(_ title: String) -> some View {
         Text(title)
             .font(Font.custom(AppUI.FontName.poppins, size: Parameters.chipFontSize))
@@ -429,15 +384,15 @@ private struct TVShowInfoView: View {
     }
 
     private static let apiDateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        return f
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
     }()
 
     private static let displayDateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "MMM d, yyyy"
-        return f
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, yyyy"
+        return formatter
     }()
 
     private func refreshProgress() {
@@ -492,6 +447,57 @@ private struct TVShowInfoView: View {
         static let previewPersonCount = 10
         static let galleryPreviewCount = 15
         static let lineLimitCollapsed = 3
+    }
+}
+
+private struct TVShowEpisodeProgressCard: View {
+    let show: RemoteTVShowDetail
+    let userID: String
+    let watchedCount: Int
+
+    var body: some View {
+        let total = max(show.numberOfEpisodes, 1)
+        let progress = min(Double(watchedCount) / Double(total), 1)
+
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Episode Progress")
+                        .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 18))
+                    Text("\(watchedCount) of \(show.numberOfEpisodes) episodes watched")
+                        .font(Font.custom(AppUI.FontName.poppins, size: 13))
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Text("\(Int(progress * 100))%")
+                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 16))
+            }
+
+            ProgressView(value: progress)
+                .tint(AppUI.ColorPalette.accent)
+
+            NavigationLink {
+                TVEpisodesView(
+                    showID: show.id,
+                    showName: show.name,
+                    posterPath: show.posterPath,
+                    seasons: show.seasons,
+                    userID: userID
+                )
+            } label: {
+                Label(watchedCount == 0 ? "Start tracking episodes" : "Continue tracking", systemImage: "list.bullet.rectangle")
+                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 14))
+                    .foregroundStyle(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(AppUI.ColorPalette.accent)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(16)
+        .background(AppUI.ColorPalette.secondarySurface)
+        .clipShape(RoundedRectangle(cornerRadius: AppUI.Radius.card))
     }
 }
 
