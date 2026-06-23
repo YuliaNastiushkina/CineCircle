@@ -16,7 +16,7 @@ struct TVShowsListView: View {
                         ProgressView("Loading TV shows...")
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else if viewModel.displayedShows.isEmpty {
-                        ContentUnavailableView("No TV Shows Found", systemImage: "tv")
+                        ContentUnavailableView(emptyStateTitle, systemImage: "tv")
                     } else {
                         List(viewModel.displayedShows) { show in
                             NavigationLink {
@@ -56,8 +56,8 @@ struct TVShowsListView: View {
                     LogoView()
                 }
             }
+            .searchable(text: $viewModel.searchText, prompt: "Search TV shows")
         }
-        .searchable(text: $viewModel.searchText, prompt: "Search TV shows")
         .task {
             loadFavoriteGenres()
             if viewModel.shows.isEmpty {
@@ -90,6 +90,19 @@ struct TVShowsListView: View {
         case let .genre(genre): genre.displayName
         }
         return viewModel.showSavedOnly ? "Saved \(title)" : title
+    }
+
+    private var emptyStateTitle: String {
+        if !viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return "No TV Shows Found"
+        }
+
+        let title = switch viewModel.selectedFilter {
+        case .all: "TV Shows"
+        case .popular: "Popular TV Shows"
+        case let .genre(genre): "\(genre.displayName) TV Shows"
+        }
+        return viewModel.showSavedOnly ? "No Saved \(title)" : "No \(title) Found"
     }
 
     private var filterRow: some View {
