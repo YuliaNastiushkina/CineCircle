@@ -89,16 +89,36 @@ final class TVShowListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.displayedShows.map(\.id), [2])
     }
 
-    func testSearchFiltersShowsByName() {
+    func testSavedOnlySearchFiltersShowsByName() {
         let viewModel = TVShowListViewModel()
         viewModel.shows = [
             makeShow(id: 1, name: "Breaking Bad"),
             makeShow(id: 2, name: "The Bear"),
         ]
+        viewModel.savedIDs = [1, 2]
+        viewModel.showSavedOnly = true
+
+        viewModel.searchText = "braking bad"
+
+        XCTAssertEqual(viewModel.displayedShows.map(\.id), [1])
+    }
+
+    func testSearchShowsUsesSearchEndpoint() async throws {
+        let expectedShow = makeShow(id: 3, name: "The Bear")
+        let client = MockAPIClient { path, query in
+            XCTAssertEqual(path, "search/tv")
+            XCTAssertEqual(query["query"], "bear")
+            XCTAssertEqual(query["page"], "1")
+            return TVShowResponse(page: 1, results: [expectedShow], totalResults: 1, totalPages: 1)
+        }
+        let viewModel = TVShowListViewModel(client: client)
 
         viewModel.searchText = "bear"
+        viewModel.scheduleSearch()
+        try await Task.sleep(nanoseconds: 450_000_000)
 
-        XCTAssertEqual(viewModel.displayedShows.map(\.id), [2])
+        XCTAssertEqual(viewModel.displayedShows.map(\.id), [3])
+        XCTAssertFalse(viewModel.isSearching)
     }
 
     private func makeShow(id: Int, name: String) -> RemoteTVShow {

@@ -128,15 +128,17 @@ class MovieListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.currentPage, 2)
     }
 
-    func testDisplayedMoviesFilteringAndSorting() {
+    func testDisplayedMoviesSavedOnlyFilteringAndSorting() {
         // Given
         let movie1 = RemoteMovie(id: 1, title: "Z Movie", overview: "", posterPath: nil, voteAverage: 7.0, voteCount: 100, releaseDate: "", originalLanguage: "en", genreIDs: [])
         let movie2 = RemoteMovie(id: 2, title: "A Movie", overview: "", posterPath: nil, voteAverage: 8.0, voteCount: 200, releaseDate: "", originalLanguage: "en", genreIDs: [])
         let viewModel = MovieListViewModel()
         viewModel.movies = [movie1, movie2]
+        viewModel.savedIDs = [1, 2]
+        viewModel.showSavedOnly = true
 
         // Filtering
-        viewModel.filterText = "Z"
+        viewModel.filterText = "Z Movi"
         XCTAssertEqual(viewModel.displayedMovies.count, 1)
         XCTAssertEqual(viewModel.displayedMovies.first?.title, "Z Movie")
 
@@ -163,5 +165,38 @@ class MovieListViewModelTests: XCTestCase {
         // Then
         XCTAssertEqual(filtered.count, 1)
         XCTAssertEqual(filtered.first?.id, 2)
+    }
+
+    func testOneCharacterSearchDoesNotCallSearchEndpoint() async throws {
+        let mockClient = MockAPIClient { _, _ in
+            XCTFail("One-character search should not hit the network")
+            return MovieResponse(results: [], page: 1, totalResults: 0, totalPages: 1)
+        }
+        let viewModel = MovieListViewModel(client: mockClient)
+
+        viewModel.filterText = "u"
+        viewModel.scheduleSearch()
+        try await Task.sleep(nanoseconds: 450_000_000)
+
+        XCTAssertTrue(viewModel.displayedMovies.isEmpty)
+        XCTAssertFalse(viewModel.isSearching)
+    }
+
+    func testSearchMoviesUsesSearchEndpoint() async throws {
+        let movie = RemoteMovie(id: 7, title: "Interstellar", overview: "", posterPath: nil, voteAverage: 8.7, voteCount: 500, releaseDate: "2014-11-07", originalLanguage: "en", genreIDs: [])
+        let mockClient = MockAPIClient { path, query in
+            XCTAssertEqual(path, "search/movie")
+            XCTAssertEqual(query["query"], "interstelar")
+            XCTAssertEqual(query["page"], "1")
+            return MovieResponse(results: [movie], page: 1, totalResults: 1, totalPages: 1)
+        }
+        let viewModel = MovieListViewModel(client: mockClient)
+
+        viewModel.filterText = "interstelar"
+        viewModel.scheduleSearch()
+        try await Task.sleep(nanoseconds: 450_000_000)
+
+        XCTAssertEqual(viewModel.displayedMovies.map(\.id), [7])
+        XCTAssertFalse(viewModel.isSearching)
     }
 }
