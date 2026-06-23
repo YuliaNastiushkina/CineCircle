@@ -90,7 +90,7 @@ struct MovieInfoSummaryView: View {
                         images: viewModel.images
                     )
                 )
-                MovieImageGalleryView(images: viewModel.images)
+                MovieImageGalleryView(images: Array(viewModel.images.prefix(15)))
                     .padding(.bottom, Parameters.sectionSpacing)
 
                 // MARK: - Cast

@@ -80,7 +80,7 @@ class MovieDetailViewModel {
         do {
             let response: MovieImagesResponse = try await client.fetch(
                 path: "movie/\(movieId)/images",
-                query: [:],
+                query: ["include_image_language": "en,null"],
                 responseType: MovieImagesResponse.self
             )
             images = uniqueImages(from: response.backdrops)
