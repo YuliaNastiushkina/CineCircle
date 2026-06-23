@@ -31,6 +31,31 @@ final class TVEpisodeProgressTests: XCTestCase {
         XCTAssertTrue(service.watchedEpisodeIDs(userID: "userA", showID: 99).isEmpty)
     }
 
+    func testTrackedShowsIncludeProgressMetadata() throws {
+        let suiteName = "TVEpisodeProgressTrackedTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let service = TVEpisodeProgressService(defaults: defaults)
+
+        service.setWatched(
+            true,
+            episodeID: 101,
+            userID: "userA",
+            showID: 55,
+            seasonNumber: 2,
+            episodeNumber: 4
+        )
+        service.setWatched(true, episodeID: 102, userID: "userA", showID: 55)
+        service.setWatched(true, episodeID: 301, userID: "userA", showID: 99)
+
+        let trackedShows = service.trackedShows(userID: "userA")
+
+        XCTAssertEqual(Set(trackedShows.map(\.id)), [55, 99])
+        let show = try XCTUnwrap(trackedShows.first { $0.id == 55 })
+        XCTAssertEqual(show.watchedEpisodeCount, 2)
+        XCTAssertEqual(show.lastEpisodeCode, "S2 E4")
+    }
+
     func testMarkAndClearEntireSeason() throws {
         let suiteName = "TVEpisodeProgressSeasonTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
