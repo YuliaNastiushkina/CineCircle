@@ -1,9 +1,41 @@
 import SwiftUI
 
 struct MovieDiaryView: View {
-    let movieId: Int
+    let target: MovieDiaryEntryTarget
     let userId: String
-    let movieTitle: String
+    let title: String
+    let subtitle: String?
+    let parentTitle: String?
+    let navigationTitle: String
+    let onSave: (() -> Void)?
+
+    init(movieId: Int, userId: String, movieTitle: String) {
+        target = .movie(movieId: movieId)
+        self.userId = userId
+        title = movieTitle
+        subtitle = nil
+        parentTitle = nil
+        navigationTitle = "Movie Diary"
+        onSave = nil
+    }
+
+    init(
+        target: MovieDiaryEntryTarget,
+        userId: String,
+        title: String,
+        subtitle: String? = nil,
+        parentTitle: String? = nil,
+        navigationTitle: String = "Diary",
+        onSave: (() -> Void)? = nil
+    ) {
+        self.target = target
+        self.userId = userId
+        self.title = title
+        self.subtitle = subtitle
+        self.parentTitle = parentTitle ?? subtitle
+        self.navigationTitle = navigationTitle
+        self.onSave = onSave
+    }
 
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isReflectionFocused: Bool
@@ -34,7 +66,7 @@ struct MovieDiaryView: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .background(Color(.systemBackground))
-            .navigationTitle("Movie Diary")
+            .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -63,9 +95,15 @@ struct MovieDiaryView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: Parameters.headerSpacing) {
-            Text(movieTitle)
+            Text(title)
                 .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.movieTitleFontSize))
                 .foregroundStyle(.primary)
+
+            if let subtitle {
+                Text(subtitle)
+                    .font(Font.custom(AppUI.FontName.poppins, size: Parameters.subtitleFontSize))
+                    .foregroundStyle(.secondary)
+            }
 
             Text("Capture what this watch felt like. This stays private unless sharing is added later.")
                 .font(Font.custom(AppUI.FontName.poppins, size: Parameters.captionFontSize))
@@ -210,7 +248,7 @@ struct MovieDiaryView: View {
     }
 
     private func loadExistingEntry() {
-        guard let existing = NoteService.shared.fetchNotes(for: movieId, userId: userId).first else { return }
+        guard let existing = NoteService.shared.fetchDiaryEntries(for: target, userId: userId).first else { return }
 
         privateReflection = existing.content ?? ""
         watchedDate = existing.watchedDate ?? existing.createdAt ?? .now
@@ -222,11 +260,12 @@ struct MovieDiaryView: View {
 
     private func saveDiaryEntry() {
         let error = NoteService.shared.createOrUpdateDiaryEntry(
-            for: movieId,
+            for: target,
             userId: userId,
             draft: MovieDiaryEntryDraft(
                 privateReflection: privateReflection,
-                movieTitle: movieTitle,
+                title: title,
+                parentTitle: parentTitle,
                 watchedDate: watchedDate,
                 watchType: watchType,
                 moods: selectedMoods,
@@ -239,6 +278,7 @@ struct MovieDiaryView: View {
             saveError = error.localizedDescription
             isSaveErrorPresented = true
         } else {
+            onSave?()
             dismiss()
         }
     }
@@ -277,6 +317,7 @@ struct MovieDiaryView: View {
         static let chipMinimumScaleFactor: CGFloat = 0.85
         static let toolbarFontSize: CGFloat = 16
         static let movieTitleFontSize: CGFloat = 20
+        static let subtitleFontSize: CGFloat = 13
         static let sectionTitleFontSize: CGFloat = 16
         static let bodyFontSize: CGFloat = 14
         static let captionFontSize: CGFloat = 12

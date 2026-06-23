@@ -168,6 +168,169 @@ final class NoteServiceTests: XCTestCase {
         XCTAssertEqual(entries.first?.hasSpoilers, true)
     }
 
+    func testCreateOrUpdateDiaryEntryCreatesTVEpisodeEntry() {
+        // Given
+        let watchedDate = Date(timeIntervalSince1970: 1_750_000_000)
+        let target = MovieDiaryEntryTarget.tvEpisode(
+            showId: 55,
+            episodeId: 101,
+            seasonNumber: 2,
+            episodeNumber: 3
+        )
+        let draft = MovieDiaryEntryDraft(
+            privateReflection: "The ending changed the whole season.",
+            title: "The Long Night",
+            parentTitle: "Example Show",
+            watchedDate: watchedDate,
+            watchType: .firstWatch,
+            moods: [.awed, .unsettled],
+            watchedWith: .friends,
+            hasSpoilers: true
+        )
+
+        // When
+        let error = sut.createOrUpdateDiaryEntry(
+            for: target,
+            userId: "testUser",
+            draft: draft
+        )
+
+        // Then
+        XCTAssertNil(error)
+        XCTAssertTrue(sut.fetchNotes(for: 55, userId: "testUser").isEmpty)
+
+        let entries = sut.fetchDiaryEntries(for: target, userId: "testUser")
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries.first?.mediaType, MovieDiaryMediaType.tvEpisode.rawValue)
+        XCTAssertEqual(entries.first?.showID, 55)
+        XCTAssertEqual(entries.first?.episodeID, 101)
+        XCTAssertEqual(entries.first?.seasonNumber, 2)
+        XCTAssertEqual(entries.first?.episodeNumber, 3)
+        XCTAssertEqual(entries.first?.movieID, 0)
+        XCTAssertEqual(entries.first?.movieTitle, "The Long Night")
+        XCTAssertEqual(entries.first?.parentTitle, "Example Show")
+        XCTAssertEqual(entries.first?.content, "The ending changed the whole season.")
+        XCTAssertEqual(entries.first?.watchedDate, watchedDate)
+        XCTAssertEqual(entries.first?.mood, "awed,unsettled")
+        XCTAssertEqual(entries.first?.watchedWith, MovieDiaryWatchedWith.friends.rawValue)
+        XCTAssertEqual(entries.first?.hasSpoilers, true)
+    }
+
+    func testCreateOrUpdateDiaryEntryUpdatesExistingTVEpisodeEntry() {
+        // Given
+        let target = MovieDiaryEntryTarget.tvEpisode(
+            showId: 55,
+            episodeId: 101,
+            seasonNumber: 2,
+            episodeNumber: 3
+        )
+        let firstDraft = MovieDiaryEntryDraft(
+            privateReflection: "First reaction.",
+            title: "Episode Three",
+            parentTitle: "Example Show",
+            watchedDate: Date(timeIntervalSince1970: 1_750_000_000),
+            watchType: .firstWatch,
+            moods: [.thoughtful],
+            watchedWith: .alone,
+            hasSpoilers: false
+        )
+        let updatedDate = Date(timeIntervalSince1970: 1_760_000_000)
+        let updatedDraft = MovieDiaryEntryDraft(
+            privateReflection: "I noticed more on rewatch.",
+            title: "Episode Three",
+            parentTitle: "Example Show",
+            watchedDate: updatedDate,
+            watchType: .rewatch,
+            moods: [.haunted, .moved],
+            watchedWith: .partner,
+            hasSpoilers: true
+        )
+
+        // When
+        XCTAssertNil(sut.createOrUpdateDiaryEntry(for: target, userId: "testUser", draft: firstDraft))
+        let error = sut.createOrUpdateDiaryEntry(for: target, userId: "testUser", draft: updatedDraft)
+
+        // Then
+        XCTAssertNil(error)
+        let entries = sut.fetchDiaryEntries(for: target, userId: "testUser")
+        XCTAssertEqual(entries.count, 1)
+        XCTAssertEqual(entries.first?.content, "I noticed more on rewatch.")
+        XCTAssertEqual(entries.first?.watchedDate, updatedDate)
+        XCTAssertEqual(entries.first?.watchType, MovieDiaryWatchType.rewatch.rawValue)
+        XCTAssertEqual(entries.first?.mood, "haunted,moved")
+        XCTAssertEqual(entries.first?.watchedWith, MovieDiaryWatchedWith.partner.rawValue)
+        XCTAssertEqual(entries.first?.hasSpoilers, true)
+    }
+
+    func testTVEpisodeDiaryEntryIDsReturnOnlyEntriesForShowAndUser() {
+        // Given
+        let firstTarget = MovieDiaryEntryTarget.tvEpisode(
+            showId: 55,
+            episodeId: 101,
+            seasonNumber: 1,
+            episodeNumber: 1
+        )
+        let secondTarget = MovieDiaryEntryTarget.tvEpisode(
+            showId: 55,
+            episodeId: 102,
+            seasonNumber: 1,
+            episodeNumber: 2
+        )
+        let otherShowTarget = MovieDiaryEntryTarget.tvEpisode(
+            showId: 99,
+            episodeId: 201,
+            seasonNumber: 1,
+            episodeNumber: 1
+        )
+        let draft = MovieDiaryEntryDraft(
+            privateReflection: "A note.",
+            title: "Episode",
+            parentTitle: "Example Show",
+            watchedDate: Date(timeIntervalSince1970: 1_750_000_000),
+            watchType: .firstWatch,
+            moods: [],
+            watchedWith: .alone,
+            hasSpoilers: false
+        )
+
+        // When
+        XCTAssertNil(sut.createOrUpdateDiaryEntry(for: firstTarget, userId: "testUser", draft: draft))
+        XCTAssertNil(sut.createOrUpdateDiaryEntry(for: secondTarget, userId: "testUser", draft: draft))
+        XCTAssertNil(sut.createOrUpdateDiaryEntry(for: otherShowTarget, userId: "testUser", draft: draft))
+        XCTAssertNil(sut.createOrUpdateDiaryEntry(for: firstTarget, userId: "otherUser", draft: draft))
+
+        // Then
+        XCTAssertEqual(sut.tvEpisodeDiaryEntryIDs(showId: 55, userId: "testUser"), [101, 102])
+    }
+
+    func testTVEpisodeDiaryDisplayUsesShowAndEpisodeCodeAsTitle() {
+        // Given
+        let target = MovieDiaryEntryTarget.tvEpisode(
+            showId: 55,
+            episodeId: 101,
+            seasonNumber: 2,
+            episodeNumber: 3
+        )
+        let draft = MovieDiaryEntryDraft(
+            privateReflection: "A note.",
+            title: "The Long Night",
+            parentTitle: "Example Show",
+            watchedDate: Date(timeIntervalSince1970: 1_750_000_000),
+            watchType: .firstWatch,
+            moods: [],
+            watchedWith: .alone,
+            hasSpoilers: false
+        )
+
+        // When
+        XCTAssertNil(sut.createOrUpdateDiaryEntry(for: target, userId: "testUser", draft: draft))
+        let entry = sut.fetchDiaryEntries(for: target, userId: "testUser").first
+
+        // Then
+        XCTAssertEqual(entry?.diaryDisplayTitle, "Example Show · S2 E3")
+        XCTAssertEqual(entry?.diarySubtitle, "The Long Night")
+    }
+
     func testCreateOrUpdateNoteReturnsErrorWhenContextFailsToSave() {
         // Given
         let failingContext = FailingContext(concurrencyType: .mainQueueConcurrencyType)
