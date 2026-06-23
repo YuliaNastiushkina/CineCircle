@@ -20,6 +20,9 @@ struct MoviesListView: View {
                     if viewModel.isLoading, viewModel.movies.isEmpty {
                         ProgressView("Loading...")
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else if viewModel.isSearching, viewModel.displayedMovies.isEmpty {
+                        ProgressView("Searching...")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else if viewModel.displayedMovies.isEmpty {
                         ContentUnavailableView(emptyStateTitle, systemImage: "film.stack")
                     } else {
@@ -31,9 +34,7 @@ struct MoviesListView: View {
                             }
                             .listRowSeparator(.hidden)
                             .task {
-                                if movie.id == viewModel.movies.last?.id {
-                                    await viewModel.fetchNextPageIfNeeded(currentMovie: movie)
-                                }
+                                await viewModel.fetchNextPageIfNeeded(currentMovie: movie)
                             }
                         }
                         .listStyle(.plain)
@@ -64,7 +65,10 @@ struct MoviesListView: View {
                 }
             }
         }
-        .searchable(text: $viewModel.filterText)
+        .searchable(text: $viewModel.filterText, prompt: "Search movies")
+        .onChange(of: viewModel.filterText) { _, _ in
+            viewModel.scheduleSearch()
+        }
         .task {
             loadFavoriteGenres()
             if viewModel.movies.isEmpty {
@@ -101,6 +105,10 @@ struct MoviesListView: View {
     }
 
     private var emptyStateTitle: String {
+        if !viewModel.filterText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return "No Movies Found"
+        }
+
         let title = switch viewModel.selectedFilter {
         case .all: "Movies"
         case .popular: "Popular Movies"

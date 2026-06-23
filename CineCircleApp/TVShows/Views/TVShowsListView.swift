@@ -15,6 +15,9 @@ struct TVShowsListView: View {
                     if viewModel.isLoading, viewModel.shows.isEmpty {
                         ProgressView("Loading TV shows...")
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else if viewModel.isSearching, viewModel.displayedShows.isEmpty {
+                        ProgressView("Searching TV shows...")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else if viewModel.displayedShows.isEmpty {
                         ContentUnavailableView(emptyStateTitle, systemImage: "tv")
                     } else {
@@ -57,6 +60,9 @@ struct TVShowsListView: View {
                 }
             }
             .searchable(text: $viewModel.searchText, prompt: "Search TV shows")
+            .onChange(of: viewModel.searchText) { _, _ in
+                viewModel.scheduleSearch()
+            }
         }
         .task {
             loadFavoriteGenres()
