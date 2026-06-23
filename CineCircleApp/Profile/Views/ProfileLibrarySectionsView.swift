@@ -93,17 +93,21 @@ struct ProfileLibrarySectionsView: View {
             }
 
             if noteItems.isEmpty {
-                emptyCard(message: "Private movie diary entries will appear here.")
+                emptyCard(message: "Private movie and episode diary entries will appear here.")
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Parameters.noteCardSpacing) {
                         ForEach(noteItems) { item in
-                            NavigationLink {
-                                MovieDetailViewLoaderView(movieID: item.movieID)
-                            } label: {
+                            if item.mediaType == .movie {
+                                NavigationLink {
+                                    MovieDetailViewLoaderView(movieID: item.movieID)
+                                } label: {
+                                    ProfileNotePreviewCard(item: item)
+                                }
+                                .buttonStyle(.plain)
+                            } else {
                                 ProfileNotePreviewCard(item: item)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal, Parameters.horizontalInset)
@@ -188,7 +192,7 @@ struct ProfileLibrarySectionsView: View {
         let notes = Array(noteService.allNotes(for: userId).prefix(Parameters.previewNoteCount))
         let ids = Set(
             notes
-                .filter { ($0.movieTitle ?? "").isEmpty }
+                .filter { $0.diaryMediaType == .movie && ($0.movieTitle ?? "").isEmpty }
                 .map { Int($0.movieID) }
         )
         var titlesByID: [Int: String] = [:]
@@ -210,8 +214,12 @@ struct ProfileLibrarySectionsView: View {
             let movieID = Int(note.movieID)
             return ProfileNoteItem(
                 id: note.objectID.uriRepresentation().absoluteString,
+                mediaType: note.diaryMediaType,
                 movieID: movieID,
-                movieTitle: note.movieTitle ?? titlesByID[movieID] ?? "Movie #\(movieID)",
+                title: note.diaryMediaType == .movie
+                    ? note.movieTitle ?? titlesByID[movieID] ?? "Movie #\(movieID)"
+                    : note.diaryDisplayTitle,
+                subtitle: note.diarySubtitle,
                 content: note.content ?? "",
                 createdAt: note.createdAt,
                 watchedDate: note.watchedDate,
@@ -339,8 +347,10 @@ private struct ProfileMediaPosterCard: View {
 
 private struct ProfileNoteItem: Identifiable {
     let id: String
+    let mediaType: MovieDiaryMediaType
     let movieID: Int
-    let movieTitle: String
+    let title: String
+    let subtitle: String?
     let content: String
     let createdAt: Date?
     let watchedDate: Date?
@@ -355,10 +365,17 @@ private struct ProfileNotePreviewCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Parameters.contentSpacing) {
-            Text(item.movieTitle)
+            Text(item.title)
                 .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.titleFontSize))
                 .foregroundStyle(.primary)
                 .lineLimit(1)
+
+            if let subtitle = item.subtitle {
+                Text(subtitle)
+                    .font(Font.custom(AppUI.FontName.poppins, size: Parameters.subtitleFontSize))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
 
             LazyVGrid(columns: Parameters.metadataColumns, alignment: .leading, spacing: Parameters.metaSpacing) {
                 ForEach(Array(item.moods.prefix(Parameters.previewMoodCount)), id: \.self) { mood in
@@ -409,6 +426,7 @@ private struct ProfileNotePreviewCard: View {
         static let contentSpacing: CGFloat = 8
         static let metaSpacing: CGFloat = 6
         static let titleFontSize: CGFloat = 14
+        static let subtitleFontSize: CGFloat = 11
         static let bodyFontSize: CGFloat = 12
         static let dateFontSize: CGFloat = 11
         static let chipFontSize: CGFloat = 10

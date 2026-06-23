@@ -19,18 +19,11 @@ struct ProfileNotesListView: View {
                 ContentUnavailableView(
                     "No Diary Entries",
                     systemImage: "book.closed",
-                    description: Text("Private movie reflections you write will appear here.")
+                    description: Text("Private movie and episode reflections you write will appear here.")
                 )
             } else {
                 List(entries, id: \.objectID) { entry in
-                    NavigationLink {
-                        MovieDetailViewLoaderView(movieID: Int(entry.movieID))
-                    } label: {
-                        DiaryEntryRow(
-                            entry: entry,
-                            movieTitle: movieTitles[Int(entry.movieID)]
-                        )
-                    }
+                    diaryRow(for: entry)
                 }
                 .listStyle(.plain)
             }
@@ -48,7 +41,7 @@ struct ProfileNotesListView: View {
 
         let uniqueIDs = Set(
             entries
-                .filter { ($0.movieTitle ?? "").isEmpty }
+                .filter { $0.diaryMediaType == .movie && ($0.movieTitle ?? "").isEmpty }
                 .map { Int($0.movieID) }
         )
         for id in uniqueIDs {
@@ -65,6 +58,23 @@ struct ProfileNotesListView: View {
         }
         isLoading = false
     }
+
+    @ViewBuilder private func diaryRow(for entry: MovieDiary) -> some View {
+        let row = DiaryEntryRow(
+            entry: entry,
+            movieTitle: movieTitles[Int(entry.movieID)]
+        )
+
+        if entry.diaryMediaType == .movie {
+            NavigationLink {
+                MovieDetailViewLoaderView(movieID: Int(entry.movieID))
+            } label: {
+                row
+            }
+        } else {
+            row
+        }
+    }
 }
 
 private struct DiaryEntryRow: View {
@@ -73,9 +83,15 @@ private struct DiaryEntryRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Parameters.contentSpacing) {
-            Text(entry.movieTitle ?? movieTitle ?? "Movie #\(entry.movieID)")
+            Text(title)
                 .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.titleFontSize))
                 .foregroundColor(.primary)
+
+            if let subtitle = entry.diarySubtitle {
+                Text(subtitle)
+                    .font(Font.custom(AppUI.FontName.poppins, size: Parameters.subtitleFontSize))
+                    .foregroundColor(.secondary)
+            }
 
             if let reflection = entry.content, !reflection.isEmpty {
                 Text(reflection)
@@ -102,6 +118,14 @@ private struct DiaryEntryRow: View {
                 .foregroundColor(.secondary.opacity(Parameters.dateOpacity))
         }
         .padding(.vertical, Parameters.verticalPadding)
+    }
+
+    private var title: String {
+        if entry.diaryMediaType == .movie {
+            entry.movieTitle ?? movieTitle ?? "Movie #\(entry.movieID)"
+        } else {
+            entry.diaryDisplayTitle
+        }
     }
 
     private var moodTitles: [String] {
@@ -132,6 +156,7 @@ private struct DiaryEntryRow: View {
         static let metaSpacing: CGFloat = 6
         static let verticalPadding: CGFloat = 4
         static let titleFontSize: CGFloat = 14
+        static let subtitleFontSize: CGFloat = 12
         static let bodyFontSize: CGFloat = 13
         static let dateFontSize: CGFloat = 11
         static let chipFontSize: CGFloat = 11
