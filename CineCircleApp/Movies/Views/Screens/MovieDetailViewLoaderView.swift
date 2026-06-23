@@ -13,10 +13,14 @@ struct MovieDetailViewLoaderView: View {
             }
         }
         .task {
-            await viewModel.fetchMovieDetails(for: movieID)
-            await viewModel.fetchCastAndCrew(for: movieID)
-            await viewModel.fetchMovieImages(for: movieID)
-            await viewModel.fetchMovieTrailer(for: movieID)
+            async let details: Void = viewModel.fetchMovieDetails(for: movieID)
+            async let castCrew: Void = viewModel.fetchCastAndCrew(for: movieID)
+            async let images: Void = viewModel.fetchMovieImages(for: movieID)
+            async let trailer: Void = viewModel.fetchMovieTrailer(for: movieID)
+            await details
+            await castCrew
+            await images
+            await trailer
         }
     }
 }
