@@ -62,6 +62,10 @@ struct ProfileView: View {
                     guard notification.userInfo?["userID"] as? String == userId else { return }
                     viewModel.loadStats()
                 }
+                .onReceive(NotificationCenter.default.publisher(for: .tvEpisodeProgressDidChange)) { notification in
+                    guard notification.userInfo?["userID"] as? String == userId else { return }
+                    viewModel.loadStats()
+                }
                 .onChange(of: selectedProfileImage) { _, newImage in
                     if newImage != nil {
                         let impactFeedback = UIImpactFeedbackGenerator(style: .light)
@@ -90,6 +94,7 @@ struct ProfileView: View {
                         savedMovies: viewModel.savedMovies,
                         seenTVShows: viewModel.seenTVShows,
                         savedTVShows: viewModel.savedTVShows,
+                        trackedTVShows: viewModel.trackedTVShows,
                         refreshToken: viewModel.libraryRefreshToken
                     )
                     .transition(.opacity)

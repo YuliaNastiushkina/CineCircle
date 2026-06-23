@@ -8,10 +8,13 @@ struct ProfileLibrarySectionsView: View {
     let savedMovies: [ProfileMovieSnapshot]
     let seenTVShows: [TVShowLibraryRecord]
     let savedTVShows: [TVShowLibraryRecord]
+    let trackedTVShows: [TVShowProgressRecord]
     let refreshToken: UUID
 
     @State private var displayedWatchedMovies: [ProfileMovieSnapshot] = []
     @State private var displayedSavedMovies: [ProfileMovieSnapshot] = []
+    @State private var displayedSeenTVShows: [TVShowLibraryRecord] = []
+    @State private var displayedTrackedShows: [ProfileTrackedTVShowItem] = []
     @State private var noteItems: [ProfileNoteItem] = []
 
     private let apiClient = APIClient()
@@ -19,12 +22,7 @@ struct ProfileLibrarySectionsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Parameters.sectionSpacing) {
-            mediaSection(
-                title: "Recently watched",
-                movies: displayedWatchedMovies,
-                tvShows: seenTVShows,
-                emptyMessage: "Movies and TV shows marked as watched will appear here."
-            )
+            trackedShowsSection
 
             mediaSection(
                 title: "Saved",
@@ -33,10 +31,43 @@ struct ProfileLibrarySectionsView: View {
                 emptyMessage: "Movies and TV shows you save will appear here."
             )
 
+            mediaSection(
+                title: "Recently watched",
+                movies: displayedWatchedMovies,
+                tvShows: displayedSeenTVShows,
+                emptyMessage: "Movies and TV shows marked as watched will appear here."
+            )
+
             notesSection
         }
         .task(id: refreshToken) {
             await loadSections()
+        }
+    }
+
+    private var trackedShowsSection: some View {
+        VStack(alignment: .leading, spacing: Parameters.contentSpacing) {
+            sectionHeader(title: "Tracking") {
+                ProfileTrackedTVShowsListView(shows: displayedTrackedShows)
+            }
+
+            if displayedTrackedShows.isEmpty {
+                emptyCard(message: "Series you start tracking by marking episodes will appear here.")
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: Parameters.movieCardSpacing) {
+                        ForEach(displayedTrackedShows) { show in
+                            NavigationLink {
+                                TVShowDetailLoaderView(showID: show.id)
+                            } label: {
+                                ProfileTrackedTVShowCard(show: show)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, Parameters.horizontalInset)
+                }
+            }
         }
     }
 
@@ -150,10 +181,14 @@ struct ProfileLibrarySectionsView: View {
 
         async let enrichedWatched = enrichMovies(watchedPreview)
         async let enrichedSaved = enrichMovies(savedPreview)
+        async let loadedTrackedShows = loadTrackedShowItems()
         async let loadedNotes = loadNoteItems()
 
+        let trackedShowResult = await loadedTrackedShows
         displayedWatchedMovies = await enrichedWatched
         displayedSavedMovies = await enrichedSaved
+        displayedSeenTVShows = mergedSeenShows(with: trackedShowResult.completedShows)
+        displayedTrackedShows = trackedShowResult.trackingShows
         noteItems = await loadedNotes
     }
 
@@ -186,6 +221,78 @@ struct ProfileLibrarySectionsView: View {
 
     private func needsEnrichment(_ movie: ProfileMovieSnapshot) -> Bool {
         movie.posterPath == nil || movie.title == "Movie #\(movie.id)"
+    }
+
+    private func mergedSeenShows(with completedShows: [TVShowLibraryRecord]) -> [TVShowLibraryRecord] {
+        var recordsByID = Dictionary(uniqueKeysWithValues: seenTVShows.map { ($0.id, $0) })
+        for show in completedShows where recordsByID[show.id] == nil {
+            recordsByID[show.id] = show
+        }
+        return recordsByID.values.sorted { $0.updatedAt > $1.updatedAt }
+    }
+
+    private func loadTrackedShowItems() async -> ProfileTrackedShowLoadResult {
+        let progressRecords = Array(trackedTVShows.prefix(Parameters.previewMovieCount))
+        var trackingShows: [ProfileTrackedTVShowItem] = []
+        var completedShows: [TVShowLibraryRecord] = []
+
+        for record in progressRecords {
+            do {
+                let detail = try await apiClient.fetch(
+                    path: "tv/\(record.id)",
+                    query: [:],
+                    responseType: RemoteTVShowDetail.self
+                )
+
+                if detail.numberOfEpisodes > 0, record.watchedEpisodeCount >= detail.numberOfEpisodes {
+                    let completedShow = TVShowLibraryRecord(
+                        id: detail.id,
+                        title: detail.name,
+                        posterPath: detail.posterPath,
+                        updatedAt: record.updatedAt == .distantPast ? Date() : record.updatedAt
+                    )
+                    completedShows.append(completedShow)
+                    TVShowLibraryService().set(
+                        .seen,
+                        isSet: true,
+                        showID: detail.id,
+                        userID: userId,
+                        title: detail.name,
+                        posterPath: detail.posterPath
+                    )
+                    continue
+                }
+
+                trackingShows.append(
+                    ProfileTrackedTVShowItem(
+                        id: detail.id,
+                        title: detail.name,
+                        posterPath: detail.posterPath,
+                        watchedEpisodeCount: record.watchedEpisodeCount,
+                        totalEpisodeCount: detail.numberOfEpisodes,
+                        updatedAt: record.updatedAt,
+                        lastEpisodeCode: record.lastEpisodeCode
+                    )
+                )
+            } catch {
+                trackingShows.append(
+                    ProfileTrackedTVShowItem(
+                        id: record.id,
+                        title: "TV Show #\(record.id)",
+                        posterPath: nil,
+                        watchedEpisodeCount: record.watchedEpisodeCount,
+                        totalEpisodeCount: nil,
+                        updatedAt: record.updatedAt,
+                        lastEpisodeCode: record.lastEpisodeCode
+                    )
+                )
+            }
+        }
+
+        return ProfileTrackedShowLoadResult(
+            trackingShows: trackingShows.sorted { $0.updatedAt > $1.updatedAt },
+            completedShows: completedShows
+        )
     }
 
     private func loadNoteItems() async -> [ProfileNoteItem] {
@@ -233,7 +340,7 @@ struct ProfileLibrarySectionsView: View {
 
     private enum Parameters {
         static let sectionSpacing: CGFloat = 28
-        static let contentSpacing: CGFloat = 12
+        static let contentSpacing: CGFloat = 8
         static let horizontalInset: CGFloat = 2
         static let movieCardSpacing: CGFloat = 12
         static let noteCardSpacing: CGFloat = 12
@@ -338,6 +445,175 @@ private struct ProfileMediaPosterCard: View {
                 .frame(width: 100, height: 32, alignment: .topLeading)
         }
         .frame(width: 100, height: 190, alignment: .topLeading)
+    }
+
+    private var placeholder: some View {
+        PosterPlaceholderView(cornerRadius: 12, iconSize: 20)
+    }
+}
+
+private struct ProfileTrackedShowLoadResult {
+    let trackingShows: [ProfileTrackedTVShowItem]
+    let completedShows: [TVShowLibraryRecord]
+}
+
+private struct ProfileTrackedTVShowItem: Identifiable, Hashable {
+    let id: Int
+    let title: String
+    let posterPath: String?
+    let watchedEpisodeCount: Int
+    let totalEpisodeCount: Int?
+    let updatedAt: Date
+    let lastEpisodeCode: String?
+
+    var progressValue: Double {
+        guard let totalEpisodeCount, totalEpisodeCount > 0 else { return 0 }
+        return min(Double(watchedEpisodeCount) / Double(totalEpisodeCount), 1)
+    }
+
+    var progressText: String {
+        guard let totalEpisodeCount, totalEpisodeCount > 0 else {
+            return "\(watchedEpisodeCount) watched"
+        }
+        return "\(watchedEpisodeCount) of \(totalEpisodeCount) watched"
+    }
+
+    var subtitle: String? {
+        guard let lastEpisodeCode else { return nil }
+        return "Last: \(lastEpisodeCode)"
+    }
+}
+
+private struct ProfileTrackedTVShowCard: View {
+    let show: ProfileTrackedTVShowItem
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Parameters.textSpacing) {
+            poster
+                .frame(width: Parameters.cardWidth, height: Parameters.posterHeight)
+                .clipShape(RoundedRectangle(cornerRadius: Parameters.posterCornerRadius))
+                .clipped()
+
+            Text(show.title)
+                .font(Font.custom(AppUI.FontName.poppins, size: Parameters.titleFontSize))
+                .foregroundStyle(.primary)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .frame(width: Parameters.cardWidth, height: Parameters.titleHeight, alignment: .topLeading)
+
+            VStack(alignment: .leading, spacing: Parameters.progressSpacing) {
+                ProgressView(value: show.progressValue)
+                    .tint(AppUI.ColorPalette.accent)
+                    .frame(width: Parameters.cardWidth)
+
+                Text(show.progressText)
+                    .font(Font.custom(AppUI.FontName.poppins, size: Parameters.captionFontSize))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .frame(width: Parameters.cardWidth, alignment: .leading)
+            }
+        }
+        .frame(width: Parameters.cardWidth, height: Parameters.cardHeight, alignment: .topLeading)
+    }
+
+    @ViewBuilder
+    private var poster: some View {
+        if let posterPath = show.posterPath,
+           let url = URL(string: "https://image.tmdb.org/t/p/w342\(posterPath)") {
+            AsyncImage(url: url) { image in
+                image.resizable().scaledToFill()
+            } placeholder: {
+                placeholder
+            }
+        } else {
+            placeholder
+        }
+    }
+
+    private var placeholder: some View {
+        PosterPlaceholderView(cornerRadius: Parameters.posterCornerRadius, iconSize: Parameters.placeholderIconSize)
+            .frame(width: Parameters.cardWidth, height: Parameters.posterHeight)
+            .clipShape(RoundedRectangle(cornerRadius: Parameters.posterCornerRadius))
+    }
+
+    private enum Parameters {
+        static let cardWidth: CGFloat = 100
+        static let posterHeight: CGFloat = 150
+        static let posterCornerRadius: CGFloat = 12
+        static let placeholderIconSize: CGFloat = 20
+        static let textSpacing: CGFloat = 8
+        static let progressSpacing: CGFloat = 5
+        static let titleFontSize: CGFloat = 12
+        static let captionFontSize: CGFloat = 10
+        static let titleHeight: CGFloat = 32
+        static let cardHeight: CGFloat = posterHeight + textSpacing + titleHeight + 28
+    }
+}
+
+private struct ProfileTrackedTVShowsListView: View {
+    let shows: [ProfileTrackedTVShowItem]
+
+    var body: some View {
+        Group {
+            if shows.isEmpty {
+                ContentUnavailableView(
+                    "No Tracked Shows",
+                    systemImage: "play.tv",
+                    description: Text("Series you start tracking by marking episodes will appear here.")
+                )
+            } else {
+                List(shows) { show in
+                    NavigationLink {
+                        TVShowDetailLoaderView(showID: show.id)
+                    } label: {
+                        HStack(spacing: 14) {
+                            poster(for: show)
+
+                            VStack(alignment: .leading, spacing: 7) {
+                                Text(show.title)
+                                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 17))
+                                    .lineLimit(2)
+
+                                if let subtitle = show.subtitle {
+                                    Text(subtitle)
+                                        .font(Font.custom(AppUI.FontName.poppins, size: 12))
+                                        .foregroundStyle(.secondary)
+                                }
+
+                                ProgressView(value: show.progressValue)
+                                    .tint(AppUI.ColorPalette.accent)
+
+                                Text(show.progressText)
+                                    .font(Font.custom(AppUI.FontName.poppins, size: 12))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .listRowSeparator(.hidden)
+                }
+                .listStyle(.plain)
+            }
+        }
+        .navigationTitle("Tracking")
+    }
+
+    private func poster(for show: ProfileTrackedTVShowItem) -> some View {
+        Group {
+            if let path = show.posterPath,
+               let url = URL(string: "https://image.tmdb.org/t/p/w342\(path)") {
+                AsyncImage(url: url) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    placeholder
+                }
+            } else {
+                placeholder
+            }
+        }
+        .frame(width: 72, height: 108)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .clipped()
     }
 
     private var placeholder: some View {
@@ -452,6 +728,15 @@ private struct ProfileNotePreviewCard: View {
             ],
             seenTVShows: [],
             savedTVShows: [],
+            trackedTVShows: [
+                TVShowProgressRecord(
+                    id: 1399,
+                    watchedEpisodeCount: 12,
+                    updatedAt: .now,
+                    lastSeasonNumber: 2,
+                    lastEpisodeNumber: 3
+                ),
+            ],
             refreshToken: UUID()
         )
         .padding()

@@ -25,6 +25,7 @@ class ProfileViewModel: ObservableObject {
     @Published var savedMovies: [ProfileMovieSnapshot] = []
     @Published var seenTVShows: [TVShowLibraryRecord] = []
     @Published var savedTVShows: [TVShowLibraryRecord] = []
+    @Published var trackedTVShows: [TVShowProgressRecord] = []
     @Published var libraryRefreshToken = UUID()
 
     private let statsService: MovieStatsService
@@ -159,6 +160,7 @@ class ProfileViewModel: ObservableObject {
         let tvLibrary = TVShowLibraryService()
         seenTVShows = tvLibrary.records(.seen, userID: userId)
         savedTVShows = tvLibrary.records(.saved, userID: userId)
+        trackedTVShows = TVEpisodeProgressService().trackedShows(userID: userId)
         libraryRefreshToken = UUID()
     }
 
