@@ -178,6 +178,7 @@ private struct TVShowInfoView: View {
                 TVEpisodesView(
                     showID: show.id,
                     showName: show.name,
+                    posterPath: show.posterPath,
                     seasons: show.seasons,
                     userID: userID
                 )
@@ -214,6 +215,23 @@ private struct TVShowInfoView: View {
             return
         }
         watchedCount = progressService.watchedEpisodeIDs(userID: userID, showID: show.id).count
+        syncSeenStatusIfCompleted(userID: userID)
+    }
+
+    private func syncSeenStatusIfCompleted(userID: String) {
+        let totalEpisodeCount = show.seasons
+            .filter { $0.seasonNumber > 0 }
+            .reduce(0) { $0 + $1.episodeCount }
+        guard totalEpisodeCount > 0, watchedCount >= totalEpisodeCount else { return }
+
+        TVShowLibraryService().set(
+            .seen,
+            isSet: true,
+            showID: show.id,
+            userID: userID,
+            title: show.name,
+            posterPath: show.posterPath
+        )
     }
 
     private let progressService = TVEpisodeProgressService()

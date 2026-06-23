@@ -26,6 +26,32 @@ final class TVShowLibraryServiceTests: XCTestCase {
         XCTAssertFalse(service.isSet(.seen, showID: 10, userID: "userB"))
     }
 
+    func testSetIsIdempotent() throws {
+        let suiteName = "TVShowLibrarySetTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let service = TVShowLibraryService(defaults: defaults)
+
+        var notificationCount = 0
+        let observer = NotificationCenter.default.addObserver(
+            forName: .tvShowLibraryDidChange,
+            object: nil,
+            queue: nil
+        ) { _ in
+            notificationCount += 1
+        }
+        defer { NotificationCenter.default.removeObserver(observer) }
+
+        service.set(.seen, isSet: true, showID: 10, userID: "user", title: "Show", posterPath: nil)
+        let record = try XCTUnwrap(service.records(.seen, userID: "user").first)
+        service.set(.seen, isSet: true, showID: 10, userID: "user", title: "Show", posterPath: nil)
+
+        XCTAssertTrue(service.isSet(.seen, showID: 10, userID: "user"))
+        XCTAssertEqual(service.records(.seen, userID: "user").count, 1)
+        XCTAssertEqual(service.records(.seen, userID: "user").first?.updatedAt, record.updatedAt)
+        XCTAssertEqual(notificationCount, 1)
+    }
+
     func testToggleRemovesExistingFlag() throws {
         let suiteName = "TVShowLibraryToggleTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))

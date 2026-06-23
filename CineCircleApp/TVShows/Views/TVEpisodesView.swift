@@ -3,6 +3,7 @@ import SwiftUI
 struct TVEpisodesView: View {
     let showID: Int
     let showName: String
+    let posterPath: String?
     let seasons: [RemoteTVSeasonSummary]
     let userID: String
 
@@ -12,9 +13,10 @@ struct TVEpisodesView: View {
     @State private var diaryEntryEpisodeIDs: Set<Int> = []
     @State private var selectedEpisodeForDetail: RemoteTVEpisode?
 
-    init(showID: Int, showName: String, seasons: [RemoteTVSeasonSummary], userID: String) {
+    init(showID: Int, showName: String, posterPath: String? = nil, seasons: [RemoteTVSeasonSummary], userID: String) {
         self.showID = showID
         self.showName = showName
+        self.posterPath = posterPath
         self.seasons = seasons.filter { $0.episodeCount > 0 }
         self.userID = userID
         _selectedSeasonNumber = State(initialValue: Self.initialSeason(from: seasons))
@@ -59,7 +61,9 @@ struct TVEpisodesView: View {
                             watched,
                             episodeID: episode.id,
                             userID: userID,
-                            showID: showID
+                            showID: showID,
+                            seasonNumber: episode.seasonNumber,
+                            episodeNumber: episode.episodeNumber
                         )
                         refreshProgress()
                     },
@@ -68,7 +72,9 @@ struct TVEpisodesView: View {
                             true,
                             episodeID: episode.id,
                             userID: userID,
-                            showID: showID
+                            showID: showID,
+                            seasonNumber: episode.seasonNumber,
+                            episodeNumber: episode.episodeNumber
                         )
                         refreshProgress()
                         refreshDiaryEntries()
@@ -172,7 +178,9 @@ struct TVEpisodesView: View {
                     !isWatched,
                     episodeID: episode.id,
                     userID: userID,
-                    showID: showID
+                    showID: showID,
+                    seasonNumber: episode.seasonNumber,
+                    episodeNumber: episode.episodeNumber
                 )
                 refreshProgress()
             } label: {
@@ -225,6 +233,23 @@ struct TVEpisodesView: View {
 
     private func refreshProgress() {
         watchedEpisodeIDs = progressService.watchedEpisodeIDs(userID: userID, showID: showID)
+        syncSeenStatusIfCompleted()
+    }
+
+    private func syncSeenStatusIfCompleted() {
+        let totalEpisodeCount = seasons
+            .filter { $0.seasonNumber > 0 }
+            .reduce(0) { $0 + $1.episodeCount }
+        guard totalEpisodeCount > 0, watchedEpisodeIDs.count >= totalEpisodeCount else { return }
+
+        TVShowLibraryService().set(
+            .seen,
+            isSet: true,
+            showID: showID,
+            userID: userID,
+            title: showName,
+            posterPath: posterPath
+        )
     }
 
     private func refreshDiaryEntries() {

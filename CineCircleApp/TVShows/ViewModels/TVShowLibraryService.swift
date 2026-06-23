@@ -28,10 +28,39 @@ struct TVShowLibraryService {
         title: String,
         posterPath: String?
     ) {
+        set(
+            flag,
+            isSet: !isSet(flag, showID: showID, userID: userID),
+            showID: showID,
+            userID: userID,
+            title: title,
+            posterPath: posterPath
+        )
+    }
+
+    func set(
+        _ flag: TVShowLibraryFlag,
+        isSet: Bool,
+        showID: Int,
+        userID: String,
+        title: String,
+        posterPath: String?
+    ) {
         var current = records(flag, userID: userID)
         if let index = current.firstIndex(where: { $0.id == showID }) {
-            current.remove(at: index)
-        } else {
+            if isSet {
+                let existing = current[index]
+                guard existing.title != title || existing.posterPath != posterPath else { return }
+                current[index] = TVShowLibraryRecord(
+                    id: showID,
+                    title: title,
+                    posterPath: posterPath,
+                    updatedAt: existing.updatedAt
+                )
+            } else {
+                current.remove(at: index)
+            }
+        } else if isSet {
             current.insert(
                 TVShowLibraryRecord(
                     id: showID,
@@ -41,7 +70,10 @@ struct TVShowLibraryService {
                 ),
                 at: 0
             )
+        } else {
+            return
         }
+
         save(current, flag: flag, userID: userID)
         NotificationCenter.default.post(
             name: .tvShowLibraryDidChange,
