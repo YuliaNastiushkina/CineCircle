@@ -98,7 +98,7 @@ struct TVEpisodesView: View {
         .pickerStyle(.menu)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal)
-        .padding(.top, 8)
+        .padding(.top, Parameters.pickerTopPadding)
     }
 
     private var seasonProgress: some View {
@@ -106,14 +106,14 @@ struct TVEpisodesView: View {
         let allWatched = !viewModel.episodes.isEmpty && watchedCount == viewModel.episodes.count
 
         return HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: Parameters.progressTextSpacing) {
                 Text("\(watchedCount) of \(viewModel.episodes.count) watched")
-                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 14))
+                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.progressFontSize))
                 ProgressView(value: Double(watchedCount), total: Double(max(viewModel.episodes.count, 1)))
                     .tint(AppUI.ColorPalette.accent)
             }
 
-            Button(allWatched ? "Clear" : "Mark all") {
+            Button(allWatched ? Parameters.clearLabel : Parameters.markAllLabel) {
                 let episodeIDs = viewModel.episodes.map(\.id)
                 progressService.setSeasonWatched(
                     !allWatched,
@@ -123,45 +123,45 @@ struct TVEpisodesView: View {
                 )
                 refreshProgress()
             }
-            .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 13))
+            .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.markAllFontSize))
         }
         .padding()
         .background(AppUI.ColorPalette.secondarySurface)
         .clipShape(RoundedRectangle(cornerRadius: AppUI.Radius.medium))
         .padding(.horizontal)
-        .padding(.bottom, 8)
+        .padding(.bottom, Parameters.progressBottomPadding)
     }
 
     private func episodeRow(_ episode: RemoteTVEpisode) -> some View {
         let isWatched = watchedEpisodeIDs.contains(episode.id)
         let hasDiaryEntry = diaryEntryEpisodeIDs.contains(episode.id)
 
-        return HStack(alignment: .top, spacing: 12) {
+        return HStack(alignment: .top, spacing: Parameters.rowSpacing) {
             Button {
                 selectedEpisodeForDetail = episode
             } label: {
-                HStack(alignment: .top, spacing: 12) {
+                HStack(alignment: .top, spacing: Parameters.rowSpacing) {
                     episodeImage(episode)
 
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: Parameters.episodeTextSpacing) {
                         Text("E\(episode.episodeNumber) · \(episode.name)")
-                            .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 15))
+                            .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.episodeTitleFontSize))
                             .foregroundStyle(.primary)
                             .multilineTextAlignment(.leading)
 
-                        HStack(spacing: 6) {
+                        HStack(spacing: Parameters.metaSpacing) {
                             if let runtime = episode.runtime {
                                 Text("\(runtime) min")
                             }
 
                             diaryStatusPill(hasDiaryEntry: hasDiaryEntry)
                         }
-                        .font(Font.custom(AppUI.FontName.poppins, size: 12))
+                        .font(Font.custom(AppUI.FontName.poppins, size: Parameters.metaFontSize))
                         .foregroundStyle(.secondary)
 
                         if !episode.overview.isEmpty {
                             Text(episode.overview)
-                                .font(Font.custom(AppUI.FontName.poppins, size: 12))
+                                .font(Font.custom(AppUI.FontName.poppins, size: Parameters.metaFontSize))
                                 .foregroundStyle(.secondary)
                                 .lineLimit(2)
                                 .multilineTextAlignment(.leading)
@@ -185,28 +185,28 @@ struct TVEpisodesView: View {
                 refreshProgress()
             } label: {
                 Image(systemName: isWatched ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 24))
+                    .font(.system(size: Parameters.checkmarkSize))
                     .foregroundStyle(isWatched ? AppUI.ColorPalette.accent : .secondary)
-                    .frame(width: 44, height: 44, alignment: .topTrailing)
+                    .frame(width: Parameters.checkmarkTapArea, height: Parameters.checkmarkTapArea, alignment: .topTrailing)
             }
             .buttonStyle(.plain)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, Parameters.rowVerticalPadding)
     }
 
     private func diaryStatusPill(hasDiaryEntry: Bool) -> some View {
-        HStack(spacing: 5) {
+        HStack(spacing: Parameters.pillSpacing) {
             Image(systemName: hasDiaryEntry ? "book.closed.fill" : "sparkles")
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: Parameters.pillIconSize, weight: .semibold))
 
-            Text(hasDiaryEntry ? "Diary" : "Reflect")
-                .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 11))
+            Text(hasDiaryEntry ? Parameters.diaryLabel : Parameters.reflectLabel)
+                .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.pillFontSize))
                 .lineLimit(1)
                 .fixedSize(horizontal: true, vertical: false)
         }
         .foregroundStyle(.black)
-        .padding(.horizontal, 9)
-        .padding(.vertical, 5)
+        .padding(.horizontal, Parameters.pillHorizontalPadding)
+        .padding(.vertical, Parameters.pillVerticalPadding)
         .background(AppUI.ColorPalette.accent.opacity(hasDiaryEntry ? 1 : 0.75))
         .clipShape(Capsule())
         .fixedSize(horizontal: true, vertical: false)
@@ -215,7 +215,7 @@ struct TVEpisodesView: View {
     private func episodeImage(_ episode: RemoteTVEpisode) -> some View {
         Group {
             if let path = episode.stillPath,
-               let url = URL(string: "https://image.tmdb.org/t/p/w300\(path)") {
+               let url = URL(string: "\(AppUI.TMDB.stillBase)\(path)") {
                 AsyncImage(url: url) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
@@ -226,8 +226,8 @@ struct TVEpisodesView: View {
                     .overlay(Image(systemName: "play.rectangle").foregroundStyle(.secondary))
             }
         }
-        .frame(width: 112, height: 63)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .frame(width: Parameters.stillWidth, height: Parameters.stillHeight)
+        .clipShape(RoundedRectangle(cornerRadius: Parameters.stillCornerRadius))
         .clipped()
     }
 
@@ -266,6 +266,34 @@ struct TVEpisodesView: View {
     }
 
     private let progressService = TVEpisodeProgressService()
+
+    private enum Parameters {
+        static let pickerTopPadding: CGFloat = 8
+        static let progressBottomPadding: CGFloat = 8
+        static let progressTextSpacing: CGFloat = 4
+        static let progressFontSize: CGFloat = 14
+        static let markAllFontSize: CGFloat = 13
+        static let clearLabel = "Clear"
+        static let markAllLabel = "Mark all"
+        static let rowSpacing: CGFloat = 12
+        static let rowVerticalPadding: CGFloat = 4
+        static let episodeTextSpacing: CGFloat = 6
+        static let episodeTitleFontSize: CGFloat = 15
+        static let metaSpacing: CGFloat = 6
+        static let metaFontSize: CGFloat = 12
+        static let checkmarkSize: CGFloat = 24
+        static let checkmarkTapArea: CGFloat = 44
+        static let pillSpacing: CGFloat = 5
+        static let pillIconSize: CGFloat = 11
+        static let pillFontSize: CGFloat = 11
+        static let pillHorizontalPadding: CGFloat = 9
+        static let pillVerticalPadding: CGFloat = 5
+        static let diaryLabel = "Diary"
+        static let reflectLabel = "Reflect"
+        static let stillWidth: CGFloat = 112
+        static let stillHeight: CGFloat = 63
+        static let stillCornerRadius: CGFloat = 10
+    }
 
     private static func initialSeason(from seasons: [RemoteTVSeasonSummary]) -> Int {
         seasons.first(where: { $0.seasonNumber > 0 && $0.episodeCount > 0 })?.seasonNumber
@@ -366,7 +394,7 @@ private struct TVEpisodeDetailView: View {
     private var episodeImage: some View {
         Group {
             if let path = episode.stillPath,
-               let url = URL(string: "https://image.tmdb.org/t/p/w780\(path)") {
+               let url = URL(string: "\(AppUI.TMDB.heroBase)\(path)") {
                 AsyncImage(url: url) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {

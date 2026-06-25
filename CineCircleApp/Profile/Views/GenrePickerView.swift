@@ -11,13 +11,13 @@ struct GenrePickerView: View {
                     Button {
                         toggleGenre(genre)
                     } label: {
-                        HStack(spacing: 12) {
+                        HStack(spacing: Parameters.rowSpacing) {
                             Image(systemName: genre.icon)
                                 .foregroundColor(.yellow)
-                                .frame(width: 24)
+                                .frame(width: Parameters.iconWidth)
 
                             Text(genre.displayName)
-                                .font(Font.custom("Poppins", size: 16))
+                                .font(Font.custom(AppUI.FontName.poppins, size: Parameters.fontSize))
                                 .foregroundColor(.primary)
 
                             Spacer()
@@ -30,10 +30,10 @@ struct GenrePickerView: View {
                     }
                 }
             }
-            .navigationTitle("Select Genres")
+            .navigationTitle(Parameters.title)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
+                    Button(Parameters.doneLabel) {
                         dismiss()
                     }
                 }
@@ -47,6 +47,14 @@ struct GenrePickerView: View {
         } else {
             selectedGenres.append(genre)
         }
+    }
+
+    private enum Parameters {
+        static let title = "Select Genres"
+        static let doneLabel = "Done"
+        static let fontSize: CGFloat = 16
+        static let rowSpacing: CGFloat = 12
+        static let iconWidth: CGFloat = 24
     }
 }
 

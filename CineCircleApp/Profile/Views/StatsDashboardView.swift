@@ -71,7 +71,7 @@ struct StatsDashboardView: View {
                 .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.emptyStateTitleSize))
                 .foregroundColor(.secondary)
 
-            Text("Start exploring movies to see your stats here")
+            Text(Parameters.emptyStateBody)
                 .font(Font.custom(AppUI.FontName.poppins, size: Parameters.emptyStateBodySize))
                 .foregroundColor(.secondary.opacity(Parameters.emptyStateBodyOpacity))
                 .multilineTextAlignment(.center)
@@ -93,6 +93,7 @@ struct StatsDashboardView: View {
         static let emptyStateBodySize: CGFloat = 12
         static let emptyStateBodyOpacity: Double = 0.8
         static let emptyStateVerticalPadding: CGFloat = 24
+        static let emptyStateBody = "Start exploring movies to see your stats here"
     }
 }
 

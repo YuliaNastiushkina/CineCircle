@@ -5,13 +5,19 @@ struct ProfileSignOutView: View {
 
     var body: some View {
         Button(role: .destructive, action: signOutAction) {
-            Text("Sign Out")
-                .font(Font.custom("Poppins-SemiBold", size: 16))
+            Text(Parameters.label)
+                .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.fontSize))
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.bordered)
         .controlSize(.large)
-        .padding(.top, 24)
+        .padding(.top, Parameters.topPadding)
+    }
+
+    private enum Parameters {
+        static let label = "Sign Out"
+        static let fontSize: CGFloat = 16
+        static let topPadding: CGFloat = 24
     }
 }
 

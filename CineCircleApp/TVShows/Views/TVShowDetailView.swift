@@ -319,7 +319,7 @@ private struct TVShowInfoView: View {
         VStack(alignment: .leading, spacing: Parameters.sectionContentSpacing) {
             SectionTitleView(title: "TV Show Info")
 
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: Parameters.infoRowSpacing) {
                 if !show.createdBy.isEmpty {
                     infoRow(title: "Created by", value: show.createdBy.map(\.name).joined(separator: ", "))
                 }
@@ -337,7 +337,7 @@ private struct TVShowInfoView: View {
                     infoRow(title: "Origin", value: show.originCountry.joined(separator: ", "))
                 }
             }
-            .padding(16)
+            .padding(Parameters.infoCardPadding)
             .frame(maxWidth: .infinity, alignment: .topLeading)
             .background(Color.secondary.opacity(0.04))
             .cornerRadius(AppUI.Radius.card)
@@ -365,12 +365,12 @@ private struct TVShowInfoView: View {
     }
 
     private func infoRow(title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: Parameters.infoLabelSpacing) {
             Text(title)
-                .font(Font.custom(AppUI.FontName.poppins, size: 14))
+                .font(Font.custom(AppUI.FontName.poppins, size: Parameters.metaFontSize))
                 .foregroundStyle(Color(white: 0.32))
             Text(value.isEmpty ? "—" : value)
-                .font(Font.custom(AppUI.FontName.poppins, size: 14))
+                .font(Font.custom(AppUI.FontName.poppins, size: Parameters.metaFontSize))
                 .foregroundStyle(.primary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -442,6 +442,8 @@ private struct TVShowInfoView: View {
         static let peopleSpacing: CGFloat = 10
         static let seasonSpacing: CGFloat = 12
         static let infoRowSpacing: CGFloat = 12
+        static let infoCardPadding: CGFloat = 16
+        static let infoLabelSpacing: CGFloat = 4
         static let chipHorizontalPadding: CGFloat = 10
         static let chipVerticalPadding: CGFloat = 6
         static let previewPersonCount = 10

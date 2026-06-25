@@ -374,7 +374,7 @@ private struct ProfileMoviePosterCard: View {
     @ViewBuilder
     private var poster: some View {
         if let posterPath = movie.posterPath,
-           let url = URL(string: "https://image.tmdb.org/t/p/w342\(posterPath)") {
+           let url = URL(string: "\(AppUI.TMDB.posterBase)\(posterPath)") {
             AsyncImage(url: url) { phase in
                 switch phase {
                 case .empty:
@@ -405,12 +405,12 @@ private struct ProfileMoviePosterCard: View {
     }
 
     private enum Parameters {
-        static let posterWidth: CGFloat = 100
-        static let posterHeight: CGFloat = 150
-        static let posterCornerRadius: CGFloat = 12
-        static let placeholderIconSize: CGFloat = 20
-        static let textSpacing: CGFloat = 8
-        static let titleFontSize: CGFloat = 12
+        static let posterWidth = AppUI.PosterSize.standardWidth
+        static let posterHeight = AppUI.PosterSize.standardHeight
+        static let posterCornerRadius = AppUI.PosterSize.cornerRadius
+        static let placeholderIconSize = AppUI.PosterSize.placeholderIconSize
+        static let textSpacing = AppUI.Spacing.small
+        static let titleFontSize = AppUI.FontSize.caption
         static let titleHeight: CGFloat = 32
         static let cardHeight: CGFloat = posterHeight + textSpacing + titleHeight
     }
@@ -420,10 +420,10 @@ private struct ProfileMediaPosterCard: View {
     let item: ProfileLibraryMediaItem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: Parameters.textSpacing) {
             Group {
                 if let posterPath = item.posterPath,
-                   let url = URL(string: "https://image.tmdb.org/t/p/w342\(posterPath)") {
+                   let url = URL(string: "\(AppUI.TMDB.posterBase)\(posterPath)") {
                     AsyncImage(url: url) { image in
                         image.resizable().scaledToFill()
                     } placeholder: {
@@ -433,22 +433,33 @@ private struct ProfileMediaPosterCard: View {
                     placeholder
                 }
             }
-            .frame(width: 100, height: 150)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .frame(width: Parameters.posterWidth, height: Parameters.posterHeight)
+            .clipShape(RoundedRectangle(cornerRadius: Parameters.posterCornerRadius))
             .clipped()
 
             Text(item.title)
-                .font(Font.custom(AppUI.FontName.poppins, size: 12))
+                .font(Font.custom(AppUI.FontName.poppins, size: Parameters.titleFontSize))
                 .foregroundStyle(.primary)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
-                .frame(width: 100, height: 32, alignment: .topLeading)
+                .frame(width: Parameters.posterWidth, height: Parameters.titleHeight, alignment: .topLeading)
         }
-        .frame(width: 100, height: 190, alignment: .topLeading)
+        .frame(width: Parameters.posterWidth, height: Parameters.cardHeight, alignment: .topLeading)
     }
 
     private var placeholder: some View {
-        PosterPlaceholderView(cornerRadius: 12, iconSize: 20)
+        PosterPlaceholderView(cornerRadius: Parameters.posterCornerRadius, iconSize: Parameters.placeholderIconSize)
+    }
+
+    private enum Parameters {
+        static let posterWidth = AppUI.PosterSize.standardWidth
+        static let posterHeight = AppUI.PosterSize.standardHeight
+        static let posterCornerRadius = AppUI.PosterSize.cornerRadius
+        static let placeholderIconSize = AppUI.PosterSize.placeholderIconSize
+        static let textSpacing = AppUI.Spacing.small
+        static let titleFontSize = AppUI.FontSize.caption
+        static let titleHeight: CGFloat = 32
+        static let cardHeight: CGFloat = 190
     }
 }
 
@@ -519,7 +530,7 @@ private struct ProfileTrackedTVShowCard: View {
     @ViewBuilder
     private var poster: some View {
         if let posterPath = show.posterPath,
-           let url = URL(string: "https://image.tmdb.org/t/p/w342\(posterPath)") {
+           let url = URL(string: "\(AppUI.TMDB.posterBase)\(posterPath)") {
             AsyncImage(url: url) { image in
                 image.resizable().scaledToFill()
             } placeholder: {
@@ -537,13 +548,13 @@ private struct ProfileTrackedTVShowCard: View {
     }
 
     private enum Parameters {
-        static let cardWidth: CGFloat = 100
-        static let posterHeight: CGFloat = 150
-        static let posterCornerRadius: CGFloat = 12
-        static let placeholderIconSize: CGFloat = 20
-        static let textSpacing: CGFloat = 8
+        static let cardWidth = AppUI.PosterSize.standardWidth
+        static let posterHeight = AppUI.PosterSize.standardHeight
+        static let posterCornerRadius = AppUI.PosterSize.cornerRadius
+        static let placeholderIconSize = AppUI.PosterSize.placeholderIconSize
+        static let textSpacing = AppUI.Spacing.small
         static let progressSpacing: CGFloat = 5
-        static let titleFontSize: CGFloat = 12
+        static let titleFontSize = AppUI.FontSize.caption
         static let captionFontSize: CGFloat = 10
         static let titleHeight: CGFloat = 32
         static let cardHeight: CGFloat = posterHeight + textSpacing + titleHeight + 28
@@ -566,17 +577,17 @@ private struct ProfileTrackedTVShowsListView: View {
                     NavigationLink {
                         TVShowDetailLoaderView(showID: show.id)
                     } label: {
-                        HStack(spacing: 14) {
+                        HStack(spacing: ListParameters.rowSpacing) {
                             poster(for: show)
 
-                            VStack(alignment: .leading, spacing: 7) {
+                            VStack(alignment: .leading, spacing: ListParameters.textSpacing) {
                                 Text(show.title)
-                                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 17))
+                                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: ListParameters.titleFontSize))
                                     .lineLimit(2)
 
                                 if let subtitle = show.subtitle {
                                     Text(subtitle)
-                                        .font(Font.custom(AppUI.FontName.poppins, size: 12))
+                                        .font(Font.custom(AppUI.FontName.poppins, size: ListParameters.subtitleFontSize))
                                         .foregroundStyle(.secondary)
                                 }
 
@@ -584,11 +595,11 @@ private struct ProfileTrackedTVShowsListView: View {
                                     .tint(AppUI.ColorPalette.accent)
 
                                 Text(show.progressText)
-                                    .font(Font.custom(AppUI.FontName.poppins, size: 12))
+                                    .font(Font.custom(AppUI.FontName.poppins, size: ListParameters.subtitleFontSize))
                                     .foregroundStyle(.secondary)
                             }
                         }
-                        .padding(.vertical, 4)
+                        .padding(.vertical, ListParameters.rowVerticalPadding)
                     }
                     .listRowSeparator(.hidden)
                 }
@@ -601,7 +612,7 @@ private struct ProfileTrackedTVShowsListView: View {
     private func poster(for show: ProfileTrackedTVShowItem) -> some View {
         Group {
             if let path = show.posterPath,
-               let url = URL(string: "https://image.tmdb.org/t/p/w342\(path)") {
+               let url = URL(string: "\(AppUI.TMDB.posterBase)\(path)") {
                 AsyncImage(url: url) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
@@ -611,13 +622,25 @@ private struct ProfileTrackedTVShowsListView: View {
                 placeholder
             }
         }
-        .frame(width: 72, height: 108)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .frame(width: ListParameters.posterWidth, height: ListParameters.posterHeight)
+        .clipShape(RoundedRectangle(cornerRadius: ListParameters.posterCornerRadius))
         .clipped()
     }
 
     private var placeholder: some View {
-        PosterPlaceholderView(cornerRadius: 12, iconSize: 20)
+        PosterPlaceholderView(cornerRadius: ListParameters.posterCornerRadius, iconSize: ListParameters.placeholderIconSize)
+    }
+
+    private enum ListParameters {
+        static let rowSpacing: CGFloat = 14
+        static let rowVerticalPadding = AppUI.Spacing.xxSmall
+        static let textSpacing: CGFloat = 7
+        static let titleFontSize = AppUI.FontSize.subheadline
+        static let subtitleFontSize = AppUI.FontSize.caption
+        static let posterWidth = AppUI.PosterSize.compactWidth
+        static let posterHeight = AppUI.PosterSize.compactHeight
+        static let posterCornerRadius = AppUI.PosterSize.cornerRadius
+        static let placeholderIconSize = AppUI.PosterSize.placeholderIconSize
     }
 }
 

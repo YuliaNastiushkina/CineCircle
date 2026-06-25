@@ -26,7 +26,7 @@ struct TVSeasonCardView: View {
     @ViewBuilder
     private var poster: some View {
         if let posterPath = season.posterPath,
-           let url = URL(string: "https://image.tmdb.org/t/p/w342\(posterPath)") {
+           let url = URL(string: "\(AppUI.TMDB.posterBase)\(posterPath)") {
             AsyncImage(url: url) { phase in
                 switch phase {
                 case .empty:
@@ -61,12 +61,12 @@ struct TVSeasonCardView: View {
     }
 
     private enum Parameters {
-        static let posterWidth: CGFloat = 100
-        static let posterHeight: CGFloat = 150
-        static let posterCornerRadius: CGFloat = 12
-        static let placeholderIconSize: CGFloat = 20
-        static let textSpacing: CGFloat = 4
-        static let titleFontSize: CGFloat = 12
+        static let posterWidth = AppUI.PosterSize.standardWidth
+        static let posterHeight = AppUI.PosterSize.standardHeight
+        static let posterCornerRadius = AppUI.PosterSize.cornerRadius
+        static let placeholderIconSize = AppUI.PosterSize.placeholderIconSize
+        static let textSpacing = AppUI.Spacing.xxSmall
+        static let titleFontSize = AppUI.FontSize.caption
         static let subtitleFontSize: CGFloat = 10
         static let cardHeight: CGFloat = 210
     }
@@ -78,17 +78,24 @@ struct TVShowSeasonSummaryView: View {
     let season: RemoteTVSeasonSummary
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: Parameters.spacing) {
             Text(showName)
-                .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 22))
+                .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.titleFontSize))
             TVSeasonCardView(season: season)
-            Text("Sign in to track episodes.")
-                .font(Font.custom(AppUI.FontName.poppins, size: 14))
+            Text(Parameters.signInPrompt)
+                .font(Font.custom(AppUI.FontName.poppins, size: Parameters.bodyFontSize))
                 .foregroundStyle(.secondary)
             Spacer()
         }
         .padding()
         .navigationTitle(season.name)
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private enum Parameters {
+        static let signInPrompt = "Sign in to track episodes."
+        static let spacing = AppUI.Spacing.large
+        static let titleFontSize = AppUI.FontSize.title2
+        static let bodyFontSize = AppUI.FontSize.body
     }
 }

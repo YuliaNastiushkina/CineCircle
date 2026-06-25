@@ -123,16 +123,16 @@ struct MoviesListView: View {
 
     private var genreFilter: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                filterButton(title: "All", filter: .all)
-                filterButton(title: "Popular", filter: .popular)
+            HStack(spacing: Parameters.filterSpacing) {
+                filterButton(title: Parameters.filterAll, filter: .all)
+                filterButton(title: Parameters.filterPopular, filter: .popular)
 
                 ForEach(orderedGenres) { genre in
                     filterButton(title: genre.displayName, filter: .genre(genre))
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+            .padding(.horizontal, Parameters.filterHorizontalPadding)
+            .padding(.vertical, Parameters.filterVerticalPadding)
         }
         .background(Color(.systemBackground))
     }
@@ -147,10 +147,10 @@ struct MoviesListView: View {
             }
         } label: {
             Text(title)
-                .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: 13))
+                .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.filterFontSize))
                 .foregroundColor(isSelected ? .black : .primary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .padding(.horizontal, Parameters.filterHorizontalChipPadding)
+                .padding(.vertical, Parameters.filterVerticalChipPadding)
                 .background(isSelected ? AppUI.ColorPalette.accent : AppUI.ColorPalette.secondarySurface)
                 .clipShape(Capsule())
         }
@@ -178,6 +178,17 @@ struct MoviesListView: View {
         request.sortDescriptors = []
         let results = (try? context.fetch(request)) ?? []
         viewModel.savedIDs = Set(results.map { Int($0.movieID) })
+    }
+
+    private enum Parameters {
+        static let filterAll = "All"
+        static let filterPopular = "Popular"
+        static let filterSpacing: CGFloat = 8
+        static let filterHorizontalPadding: CGFloat = 16
+        static let filterVerticalPadding: CGFloat = 10
+        static let filterFontSize: CGFloat = 13
+        static let filterHorizontalChipPadding: CGFloat = 14
+        static let filterVerticalChipPadding: CGFloat = 8
     }
 }
 
