@@ -5,6 +5,7 @@ struct ProfileHeaderView: View {
     let isEditing: Bool
     let profileImage: UIImage?
     let stats: MovieStats
+    let seenTVShowCount: Int
     let onProfileImageTap: () -> Void
 
     var body: some View {
@@ -72,18 +73,24 @@ struct ProfileHeaderView: View {
     // MARK: - Subtitle
 
     private var subtitle: String {
-        let watched = stats.totalWatched
-        if watched == 0 {
-            return "Welcome to CineCircle!"
-        } else {
-            let movieWord = watched == 1 ? "movie" : "movies"
-            return "\(watched) \(movieWord) watched"
+        let movies = stats.totalWatched
+        let shows = seenTVShowCount
+        switch (movies, shows) {
+        case (0, 0):
+            return Parameters.emptySubtitle
+        case let (movieCount, 0):
+            return "\(movieCount) \(movieCount == 1 ? "movie" : "movies") watched"
+        case let (0, showCount):
+            return "\(showCount) \(showCount == 1 ? "show" : "shows") watched"
+        case let (movieCount, showCount):
+            return "\(movieCount) \(movieCount == 1 ? "movie" : "movies") · \(showCount) \(showCount == 1 ? "show" : "shows") watched"
         }
     }
 
     // MARK: - Design Constants
 
     private enum Parameters {
+        static let emptySubtitle = "Welcome to CineCircle!"
         static let containerSpacing: CGFloat = 16
         static let textSpacing: CGFloat = 4
         static let verticalPadding: CGFloat = 20
@@ -104,6 +111,7 @@ struct ProfileHeaderView: View {
         isEditing: false,
         profileImage: nil,
         stats: MovieStats(totalWatched: 12, totalSaved: 5, totalNotes: 3),
+        seenTVShowCount: 4,
         onProfileImageTap: {}
     )
 }

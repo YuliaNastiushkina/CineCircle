@@ -113,6 +113,7 @@ struct ProfileView: View {
             isEditing: isEditing,
             profileImage: viewModel.profileImage,
             stats: viewModel.movieStats,
+            seenTVShowCount: viewModel.seenTVShows.count,
             onProfileImageTap: {
                 showImagePicker = true
             }
