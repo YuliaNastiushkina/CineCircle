@@ -41,6 +41,9 @@ CineCircle is an iOS app for discovering movies and TV shows, tracking watched t
 
 <img src="https://github.com/user-attachments/assets/fe86fe6e-284a-4d6c-80ed-54b2fc5cae02" alt="screen9" width="180"/>
 
+<img src="https://github.com/user-attachments/assets/8753562e-a7be-48e2-aba7-104ffc67a736" alt="screen10" width="180"/>
+
+
 </p>
 </details>
 
