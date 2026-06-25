@@ -32,6 +32,14 @@ enum AppUI {
         static let heroBase = "https://image.tmdb.org/t/p/w780"
     }
 
+    enum ExternalLinkBaseURL {
+        static let instagram = "https://www.instagram.com/"
+        static let facebook = "https://www.facebook.com/"
+        static let x = "https://x.com/"
+        static let tiktok = "https://www.tiktok.com/@"
+        static let imdbName = "https://www.imdb.com/name/"
+    }
+
     enum PosterSize {
         static let standardWidth: CGFloat = 100
         static let standardHeight: CGFloat = 150
