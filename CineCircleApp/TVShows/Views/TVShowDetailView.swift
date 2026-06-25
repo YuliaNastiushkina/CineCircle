@@ -94,10 +94,10 @@ private struct TVShowInfoView: View {
             }
 
             trailerSection
-            castSection
-            crewSection
             gallerySection
             seasonsSection
+            castSection
+            crewSection
             tvShowInfoSection
         }
         .padding(.horizontal)
