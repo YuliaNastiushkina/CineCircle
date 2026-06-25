@@ -49,7 +49,7 @@ struct MoviesListView: View {
                             viewModel.showSavedOnly.toggle()
                             if viewModel.showSavedOnly { loadSavedIDs() }
                         } label: {
-                            Label("Saved", systemImage: viewModel.showSavedOnly ? "bookmark.fill" : "bookmark")
+                            Label("Watchlist", systemImage: viewModel.showSavedOnly ? "bookmark.fill" : "bookmark")
                         }
 
                         Button {
@@ -101,7 +101,7 @@ struct MoviesListView: View {
         case .popular: "Popular Movies"
         case let .genre(genre): genre.displayName
         }
-        return viewModel.showSavedOnly ? "Saved \(title)" : title
+        return viewModel.showSavedOnly ? "Watchlist" : title
     }
 
     private var emptyStateTitle: String {
@@ -114,7 +114,7 @@ struct MoviesListView: View {
         case .popular: "Popular Movies"
         case let .genre(genre): "\(genre.displayName) Movies"
         }
-        return viewModel.showSavedOnly ? "No Saved \(title)" : "No \(title) Found"
+        return viewModel.showSavedOnly ? "No Watchlist Items" : "No \(title) Found"
     }
 
     private var orderedGenres: [MoviesGenre] {

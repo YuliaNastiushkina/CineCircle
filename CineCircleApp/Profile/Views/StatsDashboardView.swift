@@ -37,13 +37,13 @@ struct StatsDashboardView: View {
 
             if stats.totalSaved > 0 {
                 NavigationLink {
-                    ProfileMovieListView(title: "Saved", movieIDs: savedMovieIDs)
+                    ProfileMovieListView(title: "Watchlist", movieIDs: savedMovieIDs)
                 } label: {
-                    StatCard(title: "Saved", value: "\(stats.totalSaved)", icon: "bookmark.fill", iconColor: .orange)
+                    StatCard(title: "Watchlist", value: "\(stats.totalSaved)", icon: "bookmark.fill", iconColor: .orange)
                 }
                 .buttonStyle(.plain)
             } else {
-                StatCard(title: "Saved", value: "0", icon: "bookmark.fill", iconColor: .orange)
+                StatCard(title: "Watchlist", value: "0", icon: "bookmark.fill", iconColor: .orange)
             }
 
             if stats.totalNotes > 0 {

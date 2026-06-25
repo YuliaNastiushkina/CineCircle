@@ -25,7 +25,7 @@ struct ProfileLibrarySectionsView: View {
             trackedShowsSection
 
             mediaSection(
-                title: "Saved",
+                title: "Watchlist",
                 movies: displayedSavedMovies,
                 tvShows: savedTVShows,
                 emptyMessage: "Movies and TV shows you save will appear here."
