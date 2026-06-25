@@ -48,9 +48,9 @@ struct MediaDetailContainer<Header: View, Content: View, BottomInset: View>: Vie
                         content()
                             .padding(.top)
                     }
-                }
-                .safeAreaInset(edge: .bottom) {
-                    bottomInset()
+                    .safeAreaInset(edge: .bottom) {
+                        bottomInset()
+                    }
                 }
                 .interactiveDismissDisabled()
                 .presentationDragIndicator(.hidden)
