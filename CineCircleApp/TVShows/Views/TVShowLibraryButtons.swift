@@ -48,7 +48,7 @@ struct TVShowSeenButton: View {
     var body: some View {
         Button(action: toggle) {
             HStack {
-                Text(isSeen ? "Seen" : "Unseen")
+                Text(isSeen ? "Watched" : "Watch")
                 Image(systemName: "eye")
             }
             .font(Font.custom(AppUI.FontName.poppins, size: 16))

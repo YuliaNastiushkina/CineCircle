@@ -26,8 +26,8 @@ struct WatchStatusButton: View {
 
     private enum Parameters {
         static let textSize: CGFloat = 16
-        static let seenText = "Seen"
-        static let unseenText = "Unseen"
+        static let seenText = "Watched"
+        static let unseenText = "Watch"
     }
 
     private func loadWatchedStatus() {
