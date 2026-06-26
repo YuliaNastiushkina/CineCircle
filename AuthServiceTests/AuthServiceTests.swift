@@ -12,26 +12,22 @@ final class AuthServiceTests: XCTestCase {
     }
 
     func testCreateAnAccountSuccess() async throws {
-        // When
-        try await auth.createAnAccount(email: "test@example.com", password: "123456")
+        try await auth.createAnAccount(email: "test@example.com", password: "12345678")
 
-        // Then
-        XCTAssertEqual(auth.createdUsers["test@example.com"], "123456")
+        XCTAssertEqual(auth.createdUsers["test@example.com"], "12345678")
         XCTAssertEqual(auth.signedInUserEmail, "test@example.com")
         XCTAssertEqual(auth.lastEmail, "test@example.com")
-        XCTAssertEqual(auth.lastPassword, "123456")
+        XCTAssertEqual(auth.lastPassword, "12345678")
+        XCTAssertEqual(auth.currentUser?.uid, "mockUserID")
     }
 
     func testCreateAccountDuplicateUserThrows() async throws {
-        // Given
         auth.createdUsers["test@example.com"] = "existing"
 
         do {
-            // When
             try await auth.createAnAccount(email: "test@example.com", password: "newpassword")
             XCTFail("Expected error when creating a duplicate account")
         } catch {
-            // Then
             let nsError = error as NSError
             XCTAssertEqual(nsError.domain, "MockAuth")
             XCTAssertEqual(nsError.code, 409)
@@ -40,15 +36,12 @@ final class AuthServiceTests: XCTestCase {
     }
 
     func testCreateAccountReturnError() async throws {
-        // Given
         auth.shouldReturnError = true
 
         do {
-            // When
             try await auth.createAnAccount(email: "test@example.com", password: "newpassword")
             XCTFail("Expected forced error")
         } catch {
-            // Then
             let nsError = error as NSError
             XCTAssertEqual(nsError.domain, "TestError")
             XCTAssertEqual(nsError.code, 1)
@@ -57,27 +50,23 @@ final class AuthServiceTests: XCTestCase {
     }
 
     func testSignInSuccess() async throws {
-        // Given
-        auth.createdUsers["test@example.com"] = "123456"
+        auth.createdUsers["test@example.com"] = "12345678"
 
-        // When
-        try await auth.signIn(email: "test@example.com", password: "123456")
+        try await auth.signIn(email: "test@example.com", password: "12345678")
 
-        // Then
         XCTAssertEqual(auth.signedInUserEmail, "test@example.com")
         XCTAssertEqual(auth.lastEmail, "test@example.com")
-        XCTAssertEqual(auth.lastPassword, "123456")
+        XCTAssertEqual(auth.lastPassword, "12345678")
+        XCTAssertEqual(auth.currentUser?.isEmailVerified, true)
     }
 
     func testSignInWrongPasswordThrows() async throws {
-        // Given
-        auth.createdUsers["test@example.com"] = "123456"
+        auth.createdUsers["test@example.com"] = "12345678"
 
         do {
-            // When
             try await auth.signIn(email: "test@example.com", password: "qwerty")
+            XCTFail("Expected invalid credentials")
         } catch {
-            // Then
             let nsError = error as NSError
             XCTAssertEqual(nsError.domain, "MockAuth")
             XCTAssertEqual(nsError.code, 401)
@@ -86,12 +75,11 @@ final class AuthServiceTests: XCTestCase {
     }
 
     func testSignInForcedErrorThrows() async throws {
-        // Given
         auth.shouldReturnError = true
 
         do {
-            // When
-            try await auth.signIn(email: "test@example.com", password: "123456")
+            try await auth.signIn(email: "test@example.com", password: "12345678")
+            XCTFail("Expected forced error")
         } catch {
             let nsError = error as NSError
             XCTAssertEqual(nsError.domain, "TestError")
@@ -100,10 +88,49 @@ final class AuthServiceTests: XCTestCase {
         }
     }
 
+    func testPasswordResetRecordsEmail() async throws {
+        try await auth.sendPasswordReset(email: "test@example.com")
+
+        XCTAssertEqual(auth.passwordResetEmail, "test@example.com")
+    }
+
+    func testSendEmailVerificationRequiresCurrentUser() async throws {
+        do {
+            try await auth.sendEmailVerification()
+            XCTFail("Expected missing user error")
+        } catch {
+            XCTAssertEqual(error as? AuthServiceError, .noCurrentUser)
+        }
+    }
+
+    func testDeleteCurrentUserSuccess() async throws {
+        auth.currentUserMetadata = AuthenticatedUserMetadata(uid: "mockUserID", email: "test@example.com", isEmailVerified: true)
+
+        try await auth.deleteCurrentUser()
+
+        XCTAssertTrue(auth.deletedCurrentUser)
+        XCTAssertNil(auth.currentUser)
+    }
+
+    func testDeleteCurrentUserRequiresRecentLogin() async throws {
+        auth.shouldRequireRecentLogin = true
+
+        do {
+            try await auth.deleteCurrentUser()
+            XCTFail("Expected recent login error")
+        } catch {
+            XCTAssertEqual(error as? AuthServiceError, .requiresRecentLogin)
+        }
+    }
+
     func testSignOutResetsSignedUser() throws {
         auth.signedInUserEmail = "test@example.com"
+        auth.currentUserMetadata = AuthenticatedUserMetadata(uid: "mockUserID", email: "test@example.com", isEmailVerified: true)
+
         try auth.signOut()
+
         XCTAssertNil(auth.signedInUserEmail)
+        XCTAssertNil(auth.currentUser)
     }
 
     func testSignOutWhenAlreadySignedOutDoesNotThrow() {
