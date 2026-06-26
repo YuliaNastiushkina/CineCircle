@@ -5,6 +5,10 @@ enum ProfileUserDefaultsKeys {
     static let name = "user_name"
     static let favoriteGenres = "user_favorite_genres"
 
+    static func name(for userID: String) -> String {
+        "\(name)_\(userID)"
+    }
+
     static func favoriteGenres(for userID: String) -> String {
         "\(favoriteGenres)_\(userID)"
     }
