@@ -1,24 +1,36 @@
+import FirebaseAuth
 import SwiftUI
+
+enum VerificationEmailStatus: Equatable {
+    case success(String)
+    case failure(String)
+
+    var message: String {
+        switch self {
+        case let .success(message), let .failure(message):
+            message
+        }
+    }
+
+    var isFailure: Bool {
+        if case .failure = self { return true }
+        return false
+    }
+}
 
 @MainActor
 class ProfileViewModel: ObservableObject {
-    // MARK: Private interface
-
-    /// A unique key used to store the user's name in UserDefaults.
-    private let nameKey = ProfileUserDefaultsKeys.name
-    /// A user-specific key used to store favorite genres in UserDefaults.
+    private let nameKey: String
     private let genresKey: String
-    /// A unique key used to store the user's profile image in UserDefaults.
     private let profileImageKey: String
     private let authService: AuthServiceProtocol
+    private let statsService: MovieStatsService
+    private let watchedService: WatchedMovieService
+    private let savedService: SavedMovieService
+    private let localDataCleanupService: UserLocalDataCleanupService
 
-    /// The user's profile image data
     @Published var profileImageData: Data?
-
-    /// Movie statistics for the user
     @Published var movieStats = MovieStats()
-
-    /// Movie IDs for navigation from stat cards
     @Published var watchedMovieIDs: [Int] = []
     @Published var savedMovieIDs: [Int] = []
     @Published var watchedMovies: [ProfileMovieSnapshot] = []
@@ -27,52 +39,45 @@ class ProfileViewModel: ObservableObject {
     @Published var savedTVShows: [TVShowLibraryRecord] = []
     @Published var trackedTVShows: [TVShowProgressRecord] = []
     @Published var libraryRefreshToken = UUID()
+    @Published var errorMessage = ""
+    @Published var isDeletingAccount = false
+    @Published var needsReauthentication = false
+    @Published var isSendingVerificationEmail = false
+    @Published var verificationEmailStatus: VerificationEmailStatus?
+    @Published var accountEmail: String?
+    @Published var isEmailVerified = true
+    @Published var name: String = ""
+    @Published var favoriteGenres: [MoviesGenre] = []
 
-    private let statsService: MovieStatsService
-    private let watchedService: WatchedMovieService
-    private let savedService: SavedMovieService
-
-    // MARK: Internal interface
-
-    /// The ID of the currently authenticated user.
-    /// Used to associate stored profile data (e.g., name, favorite genres) with a specific user.
     let userId: String
 
-    /// Initializes a new instance of `ProfileViewModel`.
-    /// This sets up the view model with the specified user ID and authentication service.
-    /// - Parameter userId: The unique identifier for the user whose profile should be loaded and managed.
-    /// - Parameter authService: The authentication service used to perform sign-in and account creation.
     init(
         userId: String,
         authService: AuthServiceProtocol,
         statsService: MovieStatsService = .shared,
         watchedService: WatchedMovieService = .shared,
-        savedService: SavedMovieService = .shared
+        savedService: SavedMovieService = .shared,
+        localDataCleanupService: UserLocalDataCleanupService = .shared
     ) {
         self.userId = userId
         self.authService = authService
         self.statsService = statsService
         self.watchedService = watchedService
         self.savedService = savedService
+        self.localDataCleanupService = localDataCleanupService
+        nameKey = ProfileUserDefaultsKeys.name(for: userId)
         genresKey = ProfileUserDefaultsKeys.favoriteGenres(for: userId)
         profileImageKey = "profile_image_\(userId)"
     }
 
-    /// An error message displayed in the UI when logout fails or input is invalid.
-    @Published var errorMessage = ""
-
-    /// The user's name. Changes to this property will automatically update views.
-    @Published var name: String = ""
-    /// The user's selected favorite genres. Changes to this property will automatically update views.
-    @Published var favoriteGenres: [MoviesGenre] = []
-
-    // Store original values for cancel functionality
     private var originalName: String = ""
     private var originalGenres: [MoviesGenre] = []
     private var originalProfileImageData: Data?
 
-    /// Loads the user's profile data from UserDefaults. If no saved data is found, default values are used.
     func loadProfile() async {
+        refreshAuthMetadata()
+        migrateLegacyNameIfNeeded()
+
         name = UserDefaults.standard.string(forKey: nameKey) ?? ""
         let saved = UserDefaults.standard.stringArray(forKey: genresKey)
             ?? UserDefaults.standard.stringArray(forKey: ProfileUserDefaultsKeys.favoriteGenres)
@@ -82,37 +87,33 @@ class ProfileViewModel: ObservableObject {
         UserDefaults.standard.set(migratedValues, forKey: genresKey)
         profileImageData = UserDefaults.standard.data(forKey: profileImageKey)
         loadStats()
-        // Store original values for potential cancellation
         originalName = name
         originalGenres = favoriteGenres
         originalProfileImageData = profileImageData
     }
 
-    /// Reverts changes back to the original loaded values
     func revertChanges() {
         name = originalName
         favoriteGenres = originalGenres
         profileImageData = originalProfileImageData
     }
 
-    /// Saves the profile data to UserDefaults only if the name is not empty.
-    /// - Returns: A boolean indicating whether the save was successful.
     @discardableResult func saveProfile() -> Bool {
-        guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else {
             return false
         }
 
-        UserDefaults.standard.set(name, forKey: nameKey)
+        UserDefaults.standard.set(trimmedName, forKey: nameKey)
+        name = trimmedName
         saveFavoriteGenres()
 
-        // Save profile image if available
         if let imageData = profileImageData {
             UserDefaults.standard.set(imageData, forKey: profileImageKey)
         } else {
             UserDefaults.standard.removeObject(forKey: profileImageKey)
         }
 
-        // Update original values after successful save
         originalName = name
         originalGenres = favoriteGenres
         originalProfileImageData = profileImageData
@@ -120,7 +121,6 @@ class ProfileViewModel: ObservableObject {
         return true
     }
 
-    /// Saves favorite genres independently from the profile name.
     func saveFavoriteGenres() {
         let rawGenres = favoriteGenres.map(\.rawValue)
         UserDefaults.standard.set(rawGenres, forKey: genresKey)
@@ -132,10 +132,8 @@ class ProfileViewModel: ObservableObject {
         )
     }
 
-    /// Sets the profile image from a UIImage
     func setProfileImage(_ image: UIImage?) {
         if let image {
-            // Resize image to reasonable size to save storage
             let targetSize = CGSize(width: 200, height: 200)
             let resizedImage = image.resized(to: targetSize)
             profileImageData = resizedImage?.jpegData(compressionQuality: 0.8)
@@ -144,14 +142,48 @@ class ProfileViewModel: ObservableObject {
         }
     }
 
-    /// Gets the profile image as UIImage
     var profileImage: UIImage? {
         guard let data = profileImageData else { return nil }
         return UIImage(data: data)
     }
 
-    /// Refreshes movie stats and IDs from Core Data.
+    func refreshAccountStatus() async {
+        try? await authService.reloadCurrentUser()
+        refreshAuthMetadata()
+    }
+
+    func clearVerificationEmailStatus() {
+        verificationEmailStatus = nil
+    }
+
+    func resendEmailVerification() async {
+        guard !isSendingVerificationEmail else { return }
+        isSendingVerificationEmail = true
+        verificationEmailStatus = nil
+        defer { isSendingVerificationEmail = false }
+
+        do {
+            try? await authService.reloadCurrentUser()
+            refreshAuthMetadata()
+
+            guard !isEmailVerified else {
+                verificationEmailStatus = .success("Your email is already verified.")
+                errorMessage = ""
+                return
+            }
+
+            try await authService.sendEmailVerification()
+            verificationEmailStatus = .success("Verification email sent. Check your inbox.")
+            errorMessage = ""
+        } catch AuthServiceError.noCurrentUser {
+            verificationEmailStatus = .failure("We could not find an active account session. Please sign in again.")
+        } catch {
+            verificationEmailStatus = .failure(friendlyVerificationEmailMessage(for: error))
+        }
+    }
+
     func loadStats() {
+        refreshAuthMetadata()
         movieStats = statsService.calculateStats(for: userId)
         watchedMovieIDs = watchedService.allWatchedMovieIDs(for: userId)
         savedMovieIDs = savedService.allSavedMovieIDs(for: userId)
@@ -169,8 +201,105 @@ class ProfileViewModel: ObservableObject {
             try authService.signOut()
             errorMessage = ""
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = "We could not sign you out. Please try again."
         }
+    }
+
+    func deleteAccount() async {
+        guard !isDeletingAccount else { return }
+        isDeletingAccount = true
+        defer { isDeletingAccount = false }
+
+        do {
+            try await authService.deleteCurrentUser()
+            localDataCleanupService.deleteLocalData(for: userId)
+            needsReauthentication = false
+            errorMessage = ""
+        } catch AuthServiceError.requiresRecentLogin {
+            needsReauthentication = true
+            errorMessage = "Enter your password to confirm account deletion."
+        } catch AuthServiceError.noCurrentUser {
+            errorMessage = "We could not find an active account session. Please sign in again."
+        } catch {
+            errorMessage = "We could not delete your account. Please try again."
+        }
+    }
+
+    func reauthenticateAndDeleteAccount(password: String) async {
+        guard !password.isEmpty else {
+            errorMessage = "Enter your password to confirm account deletion."
+            needsReauthentication = true
+            return
+        }
+
+        guard !isDeletingAccount else { return }
+        isDeletingAccount = true
+        defer { isDeletingAccount = false }
+
+        do {
+            try await authService.reauthenticateCurrentUser(password: password)
+            try await authService.deleteCurrentUser()
+            localDataCleanupService.deleteLocalData(for: userId)
+            needsReauthentication = false
+            errorMessage = ""
+        } catch AuthServiceError.noCurrentUser {
+            errorMessage = "We could not find an active account session. Please sign in again."
+        } catch AuthServiceError.missingEmail {
+            errorMessage = "This account does not have an email address available for password confirmation."
+        } catch AuthServiceError.requiresRecentLogin {
+            needsReauthentication = true
+            errorMessage = "Enter your password again to confirm account deletion."
+        } catch {
+            errorMessage = friendlyAccountDeletionMessage(for: error)
+        }
+    }
+
+    var shouldShowEmailVerificationReminder: Bool {
+        accountEmail != nil && !isEmailVerified
+    }
+
+    private func friendlyVerificationEmailMessage(for error: Error) -> String {
+        let code = (error as NSError).code
+        switch code {
+        case AuthErrorCode.tooManyRequests.rawValue:
+            return "Too many verification emails were requested. Please wait a few minutes and try again."
+        case AuthErrorCode.networkError.rawValue:
+            return "Network error. Check your connection and try again."
+        default:
+            return "We could not send the verification email. Please try again."
+        }
+    }
+
+    private func friendlyAccountDeletionMessage(for error: Error) -> String {
+        let code = (error as NSError).code
+        switch code {
+        case AuthErrorCode.wrongPassword.rawValue,
+             AuthErrorCode.invalidCredential.rawValue:
+            needsReauthentication = true
+            return "The password is incorrect."
+        case AuthErrorCode.networkError.rawValue:
+            return "Network error. Check your connection and try again."
+        case AuthErrorCode.tooManyRequests.rawValue:
+            return "Too many attempts. Please wait a moment and try again."
+        default:
+            return "We could not delete your account. Please try again."
+        }
+    }
+
+    private func refreshAuthMetadata() {
+        accountEmail = authService.currentUser?.email
+        isEmailVerified = authService.currentUser?.isEmailVerified ?? true
+    }
+
+    private func migrateLegacyNameIfNeeded() {
+        guard UserDefaults.standard.string(forKey: nameKey) == nil,
+              let legacyName = UserDefaults.standard.string(forKey: ProfileUserDefaultsKeys.name),
+              !legacyName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return
+        }
+
+        UserDefaults.standard.set(legacyName, forKey: nameKey)
+        UserDefaults.standard.removeObject(forKey: ProfileUserDefaultsKeys.name)
     }
 }
 

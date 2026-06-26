@@ -9,6 +9,9 @@ struct ProfileView: View {
     @State private var showNameAlert = false
     @State private var showSaveConfirmation = false
     @State private var showImagePicker = false
+    @State private var showDeleteAccountConfirmation = false
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var deleteAccountPassword = ""
     @State private var selectedProfileImage: UIImage?
     @FocusState private var isNameFieldFocused: Bool
 
@@ -21,8 +24,6 @@ struct ProfileView: View {
         self.userId = userId
         _viewModel = StateObject(wrappedValue: ProfileViewModel(userId: userId, authService: FirebaseAuthService()))
     }
-
-    @Environment(\.authService) private var authService: AuthServiceProtocol
 
     var body: some View {
         NavigationStack {
@@ -47,13 +48,43 @@ struct ProfileView: View {
                 } message: {
                     Text("Please enter your name before saving your profile.")
                 }
+                .alert("Delete Account?", isPresented: $showDeleteAccountConfirmation) {
+                    Button("Cancel", role: .cancel) {}
+                    Button("Delete Account", role: .destructive) {
+                        Task {
+                            await viewModel.deleteAccount()
+                        }
+                    }
+                } message: {
+                    Text("This permanently deletes your CineCircle account and local profile, library, and diary data on this device.")
+                }
+                .alert("Confirm Account Deletion", isPresented: $viewModel.needsReauthentication) {
+                    SecureField("Password", text: $deleteAccountPassword)
+                    Button("Cancel", role: .cancel) {
+                        deleteAccountPassword = ""
+                        viewModel.needsReauthentication = false
+                    }
+                    Button("Delete Account", role: .destructive) {
+                        let password = deleteAccountPassword
+                        deleteAccountPassword = ""
+                        Task {
+                            await viewModel.reauthenticateAndDeleteAccount(password: password)
+                        }
+                    }
+                } message: {
+                    Text("For security, Firebase requires a recent sign-in before deleting an account. Enter your password to continue.")
+                }
                 .navigationTitle("Profile")
                 .navigationBarTitleDisplayMode(.large)
                 .task {
                     await viewModel.loadProfile()
+                    await viewModel.refreshAccountStatus()
                 }
-                .onAppear {
-                    viewModel.loadStats()
+                .onChange(of: scenePhase) { _, newPhase in
+                    guard newPhase == .active else { return }
+                    Task {
+                        await viewModel.refreshAccountStatus()
+                    }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: .userLibraryDidChange)) { _ in
                     viewModel.loadStats()
@@ -83,6 +114,7 @@ struct ProfileView: View {
         ScrollView {
             VStack(spacing: Parameters.sectionSpacing) {
                 profileHeaderSection
+                emailVerificationReminder
                 profileGenresSection
                 nameEditingSection
                 if !isEditing {
@@ -118,6 +150,11 @@ struct ProfileView: View {
                 showImagePicker = true
             }
         )
+    }
+
+    @ViewBuilder
+    private var emailVerificationReminder: some View {
+        EmailVerificationReminderView(viewModel: viewModel)
     }
 
     @ViewBuilder
@@ -161,10 +198,25 @@ struct ProfileView: View {
     @ViewBuilder
     private var signOutSection: some View {
         if !isEditing {
-            ProfileSignOutView {
-                Task {
-                    viewModel.signOut()
+            VStack(spacing: Parameters.accountSectionSpacing) {
+                if !viewModel.errorMessage.isEmpty {
+                    Text(viewModel.errorMessage)
+                        .font(Font.custom(AppUI.FontName.poppins, size: Parameters.accountMessageFontSize))
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
                 }
+
+                ProfileSignOutView(
+                    signOutAction: {
+                        Task {
+                            viewModel.signOut()
+                        }
+                    },
+                    deleteAccountAction: {
+                        showDeleteAccountConfirmation = true
+                    },
+                    isDeletingAccount: viewModel.isDeletingAccount
+                )
             }
             .transition(.scale.combined(with: .opacity))
         }
@@ -173,10 +225,6 @@ struct ProfileView: View {
     @ViewBuilder
     private var overlayViews: some View {
         Group {
-//            if !isEditing {
-//                QuickActionsView(userId: userId)
-//            }
-
             if showSaveConfirmation {
                 saveConfirmationToast
             }
@@ -279,6 +327,8 @@ struct ProfileView: View {
         static let horizontalPadding: CGFloat = 16
         static let topPadding: CGFloat = 20
         static let nameSectionSpacing: CGFloat = 12
+        static let accountSectionSpacing: CGFloat = 8
+        static let accountMessageFontSize: CGFloat = 13
         static let nameLabelFontSize: CGFloat = 16
         static let nameFieldFontSize: CGFloat = 16
         static let nameFieldVerticalPadding: CGFloat = 14
@@ -294,6 +344,92 @@ struct ProfileView: View {
         static let toolbarAnimationDuration: Double = 0.3
         static let toolbarButtonFontSize: CGFloat = 16
         static let nameFieldFocusDelay: Double = 0.1
+    }
+}
+
+private struct EmailVerificationReminderView: View {
+    @ObservedObject var viewModel: ProfileViewModel
+    @State private var statusDismissalTask: Task<Void, Never>?
+
+    var body: some View {
+        if viewModel.shouldShowEmailVerificationReminder {
+            HStack(alignment: .top, spacing: Parameters.spacing) {
+                Image(systemName: "envelope.badge")
+                    .foregroundColor(AppUI.ColorPalette.accent)
+                    .font(.system(size: Parameters.iconSize, weight: .semibold))
+
+                VStack(alignment: .leading, spacing: Parameters.textSpacing) {
+                    Text("Email not verified")
+                        .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.titleFontSize))
+                        .foregroundColor(.primary)
+
+                    Text("Check your inbox to verify \(viewModel.accountEmail ?? "your email"). This helps keep password reset and future account recovery secure.")
+                        .font(Font.custom(AppUI.FontName.poppins, size: Parameters.bodyFontSize))
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Button {
+                        Task {
+                            await viewModel.resendEmailVerification()
+                        }
+                    } label: {
+                        HStack(spacing: Parameters.buttonSpacing) {
+                            if viewModel.isSendingVerificationEmail {
+                                ProgressView()
+                            }
+                            Text("Resend verification email")
+                        }
+                        .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.buttonFontSize))
+                    }
+                    .disabled(viewModel.isSendingVerificationEmail)
+
+                    if let verificationEmailStatus = viewModel.verificationEmailStatus {
+                        Text(verificationEmailStatus.message)
+                            .font(Font.custom(AppUI.FontName.poppins, size: Parameters.bodyFontSize))
+                            .foregroundColor(verificationEmailStatus.isFailure ? .red : .secondary)
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                }
+
+                Spacer(minLength: 0)
+            }
+            .padding(Parameters.padding)
+            .background(AppUI.ColorPalette.softCardBackground)
+            .cornerRadius(AppUI.Radius.card)
+            .animation(.easeInOut(duration: Parameters.statusAnimationDuration), value: viewModel.verificationEmailStatus)
+            .onChange(of: viewModel.verificationEmailStatus) { _, status in
+                scheduleStatusDismissal(for: status)
+            }
+            .onDisappear {
+                statusDismissalTask?.cancel()
+            }
+        }
+    }
+
+    private func scheduleStatusDismissal(for status: VerificationEmailStatus?) {
+        statusDismissalTask?.cancel()
+        guard status != nil else { return }
+
+        statusDismissalTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(Parameters.statusDismissDelay))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeInOut(duration: Parameters.statusAnimationDuration)) {
+                viewModel.clearVerificationEmailStatus()
+            }
+        }
+    }
+
+    private enum Parameters {
+        static let spacing: CGFloat = 12
+        static let textSpacing: CGFloat = 4
+        static let iconSize: CGFloat = 18
+        static let titleFontSize: CGFloat = 14
+        static let bodyFontSize: CGFloat = 12
+        static let buttonFontSize: CGFloat = 12
+        static let buttonSpacing: CGFloat = 6
+        static let padding: CGFloat = 14
+        static let statusDismissDelay: TimeInterval = 8
+        static let statusAnimationDuration: TimeInterval = 0.25
     }
 }
 
