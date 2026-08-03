@@ -15,9 +15,9 @@ struct MovieDetailSpecsView: View {
                 .foregroundColor(.primary)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
 
-            infoRow(title: "Director", value: viewModel.detailsPresentation.directors)
-            infoRow(title: "Producer", value: viewModel.detailsPresentation.producers)
-            infoRow(title: "Screenwriter", value: viewModel.detailsPresentation.screenwriters)
+            personInfoRow(title: "Director", jobs: ["Director"])
+            personInfoRow(title: "Producer", jobs: ["Producer"])
+            personInfoRow(title: "Screenwriter", jobs: ["Writer", "Screenplay", "Story"])
             infoRow(title: "Production Co", value: viewModel.detailsPresentation.productionCompanies)
             infoRow(title: "Genre", value: viewModel.detailsPresentation.genres)
             infoRow(title: "Original Language", value: viewModel.detailsPresentation.originalLanguage)
@@ -46,6 +46,77 @@ struct MovieDetailSpecsView: View {
         }
     }
 
+    private func personInfoRow(title: String, jobs: [String]) -> some View {
+        let people = people(for: jobs)
+
+        return HStack(alignment: .top, spacing: Parameters.horizontalSpacing) {
+            VStack(alignment: .leading, spacing: Parameters.innerSpacing) {
+                Text(title)
+                    .font(Font.custom(AppUI.FontName.poppins, size: Parameters.labelFontSize))
+                    .foregroundStyle(Parameters.labelColor)
+
+                if people.isEmpty {
+                    Text(Parameters.emptyValuePlaceholder)
+                        .font(Font.custom(AppUI.FontName.poppins, size: Parameters.labelFontSize))
+                        .foregroundStyle(.primary)
+                } else {
+                    FlowLayout(spacing: 0) {
+                        ForEach(Array(people.enumerated()), id: \.element.id) { index, person in
+                            NavigationLink {
+                                CrewPersonDetailView(
+                                    personID: person.id,
+                                    name: person.name,
+                                    role: person.job,
+                                    profilePath: person.profilePath
+                                )
+                            } label: {
+                                Text(person.name + (index < people.count - 1 ? ", " : ""))
+                                    .font(Font.custom(AppUI.FontName.poppins, size: Parameters.labelFontSize))
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(Parameters.personLinkColor)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .frame(maxHeight: Parameters.peopleMaxHeight, alignment: .topLeading)
+                    .clipped()
+                }
+            }
+        }
+    }
+
+    private func people(for jobs: [String]) -> [MovieCrew] {
+        let targetJobs = Set(jobs)
+
+        return viewModel.crew
+            .filter { member in
+                Set(jobList(from: member.job)).isDisjoint(with: targetJobs) == false
+            }
+            .sorted { first, second in
+                let firstPriority = topPriorityIndex(for: first, in: jobs)
+                let secondPriority = topPriorityIndex(for: second, in: jobs)
+
+                if firstPriority == secondPriority {
+                    return first.name < second.name
+                }
+
+                return firstPriority < secondPriority
+            }
+    }
+
+    private func jobList(from value: String) -> [String] {
+        value
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+    }
+
+    private func topPriorityIndex(for member: MovieCrew, in jobs: [String]) -> Int {
+        jobList(from: member.job)
+            .compactMap { jobs.firstIndex(of: $0) }
+            .min() ?? Int.max
+    }
+
     private func formattedDate(_ input: String) -> String {
         let inputFormatter = DateFormatter()
         inputFormatter.dateFormat = Parameters.apiDateFormat
@@ -68,7 +139,9 @@ struct MovieDetailSpecsView: View {
         static let innerSpacing: CGFloat = 4
         static let containerPadding: CGFloat = 16
         static let labelFontSize: CGFloat = 14
+        static let peopleMaxHeight: CGFloat = 60
         static let labelColor = Color(white: 0.32)
+        static let personLinkColor = Color(white: 0.12)
         static let containerBackground = Color.secondary.opacity(0.04)
         static let emptyValuePlaceholder = "—"
         static let apiDateFormat = "yyyy-MM-dd"
