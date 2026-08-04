@@ -10,6 +10,7 @@
 		BA39491C2DF35DE600B7CB8B /* MovieDataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BA3949182DF35D5000B7CB8B /* MovieDataModel.xcdatamodeld */; };
 		BA5DF9B22DDFC9A8005E1397 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = BA5DF9B12DDFC9A8005E1397 /* FirebaseAuth */; };
 		BA5DF9B42DDFC9A8005E1397 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = BA5DF9B32DDFC9A8005E1397 /* FirebaseCore */; };
+		BAC46C883022327200D84C10 /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = BAC46C873022327200D84C10 /* FirebaseAI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -146,6 +147,7 @@
 			files = (
 				BA5DF9B42DDFC9A8005E1397 /* FirebaseCore in Frameworks */,
 				BA5DF9B22DDFC9A8005E1397 /* FirebaseAuth in Frameworks */,
+				BAC46C883022327200D84C10 /* FirebaseAI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -167,6 +169,7 @@
 				BA4289A12DCD1EAF008FECCD /* APIManagerTests */,
 				BAA0685B2DE77C9700A53CE7 /* AuthServiceTests */,
 				BAB46D8A2DF1FCCE00891FA8 /* CineCircleTests */,
+				BAC46C863022327200D84C10 /* Frameworks */,
 				BAACA5F02DC124BB002627F6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -180,6 +183,13 @@
 				BAB46D892DF1FCCE00891FA8 /* CineCircleTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		BAC46C863022327200D84C10 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -252,6 +262,7 @@
 			packageProductDependencies = (
 				BA5DF9B12DDFC9A8005E1397 /* FirebaseAuth */,
 				BA5DF9B32DDFC9A8005E1397 /* FirebaseCore */,
+				BAC46C873022327200D84C10 /* FirebaseAI */,
 			);
 			productName = FriendsFavoriteMovies;
 			productReference = BAACA5EF2DC124BB002627F6 /* CineCircle.app */;
@@ -820,6 +831,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BA5DF9B02DDFC9A8005E1397 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCore;
+		};
+		BAC46C873022327200D84C10 /* FirebaseAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BA5DF9B02DDFC9A8005E1397 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAI;
 		};
 /* End XCSwiftPackageProductDependency section */
 
