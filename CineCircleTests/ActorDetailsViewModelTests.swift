@@ -12,7 +12,10 @@ class ActorDetailsViewModelTests: XCTestCase {
                 name: "Jane Doe",
                 biography: "Some biography text",
                 birthday: "1980-02-01",
-                deathday: nil
+                deathday: nil,
+                placeOfBirth: "Toronto, Canada",
+                alsoKnownAs: ["J. Doe"],
+                homepage: nil
             )
         }
 
