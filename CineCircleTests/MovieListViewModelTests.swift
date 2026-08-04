@@ -319,6 +319,7 @@ class MovieListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.visibleRecommendationStartIndex, 0)
         XCTAssertNil(viewModel.recommendationExplanation)
         XCTAssertNil(viewModel.recommendationErrorMessage)
+        XCTAssertTrue(viewModel.isAIMode)
         XCTAssertTrue(viewModel.displayedMovies.isEmpty)
     }
 
