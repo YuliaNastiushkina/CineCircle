@@ -15,9 +15,21 @@ struct MoviesListView: View {
         NavigationStack {
             VStack(spacing: 0) {
                 genreFilter
+                MovieSearchControls(
+                    viewModel: viewModel,
+                    submitAIRecommendationPrompt: submitAIRecommendationPrompt
+                )
+                AIStatusMessageView(message: viewModel.recommendationErrorMessage)
+                AIResultsHeaderView(
+                    viewModel: viewModel,
+                    clearAction: viewModel.clearAIRecommendations
+                )
 
                 Group {
-                    if viewModel.isLoading, viewModel.movies.isEmpty {
+                    if viewModel.isLoadingRecommendations, viewModel.displayedMovies.isEmpty {
+                        ProgressView("Finding matches...")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else if viewModel.isLoading, viewModel.movies.isEmpty {
                         ProgressView("Loading...")
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else if viewModel.isSearching, viewModel.displayedMovies.isEmpty {
@@ -34,18 +46,25 @@ struct MoviesListView: View {
                             }
                             .listRowSeparator(.hidden)
                             .task {
-                                await viewModel.fetchNextPageIfNeeded(currentMovie: movie)
+                                if !viewModel.isAIMode {
+                                    await viewModel.fetchNextPageIfNeeded(currentMovie: movie)
+                                }
                             }
                         }
                         .listStyle(.plain)
                     }
                 }
+
+                AIPaginationControlsView(viewModel: viewModel)
             }
             .navigationTitle(navigationTitle)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack {
                         Button {
+                            if viewModel.isAIMode {
+                                viewModel.exitAIMode()
+                            }
                             viewModel.showSavedOnly.toggle()
                             if viewModel.showSavedOnly { loadSavedIDs() }
                         } label: {
@@ -55,7 +74,7 @@ struct MoviesListView: View {
                         Button {
                             viewModel.isSorted.toggle()
                         } label: {
-                            Label("Sort A–Z", systemImage: "arrow.up.arrow.down")
+                            Label("Sort A-Z", systemImage: "arrow.up.arrow.down")
                         }
                     }
                 }
@@ -65,7 +84,6 @@ struct MoviesListView: View {
                 }
             }
         }
-        .searchable(text: $viewModel.filterText, prompt: "Search movies")
         .onChange(of: viewModel.filterText) { _, _ in
             viewModel.scheduleSearch()
         }
@@ -96,6 +114,10 @@ struct MoviesListView: View {
     // MARK: - Private interface
 
     private var navigationTitle: String {
+        if viewModel.isAIMode {
+            return "AI Picks"
+        }
+
         let title: String = switch viewModel.selectedFilter {
         case .all: "Movies"
         case .popular: "Popular Movies"
@@ -105,6 +127,12 @@ struct MoviesListView: View {
     }
 
     private var emptyStateTitle: String {
+        if viewModel.isAIMode {
+            return viewModel.aiPromptText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? "What should we find?"
+                : "No AI Matches Found"
+        }
+
         if !viewModel.filterText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return "No Movies Found"
         }
@@ -123,16 +151,16 @@ struct MoviesListView: View {
 
     private var genreFilter: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Parameters.filterSpacing) {
-                filterButton(title: Parameters.filterAll, filter: .all)
-                filterButton(title: Parameters.filterPopular, filter: .popular)
+            HStack(spacing: MoviesListLayout.filterSpacing) {
+                filterButton(title: MoviesListLayout.filterAll, filter: .all)
+                filterButton(title: MoviesListLayout.filterPopular, filter: .popular)
 
                 ForEach(orderedGenres) { genre in
                     filterButton(title: genre.displayName, filter: .genre(genre))
                 }
             }
-            .padding(.horizontal, Parameters.filterHorizontalPadding)
-            .padding(.vertical, Parameters.filterVerticalPadding)
+            .padding(.horizontal, MoviesListLayout.filterHorizontalPadding)
+            .padding(.vertical, MoviesListLayout.filterVerticalPadding)
         }
         .background(Color(.systemBackground))
     }
@@ -141,21 +169,32 @@ struct MoviesListView: View {
         let isSelected = viewModel.selectedFilter == filter
 
         return Button {
+            if viewModel.isAIMode {
+                viewModel.exitAIMode()
+            }
             guard viewModel.selectedFilter != filter else { return }
             Task {
                 await viewModel.selectFilter(filter)
             }
         } label: {
             Text(title)
-                .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: Parameters.filterFontSize))
+                .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: MoviesListLayout.filterFontSize))
                 .foregroundColor(isSelected ? .black : .primary)
-                .padding(.horizontal, Parameters.filterHorizontalChipPadding)
-                .padding(.vertical, Parameters.filterVerticalChipPadding)
+                .padding(.horizontal, MoviesListLayout.filterHorizontalChipPadding)
+                .padding(.vertical, MoviesListLayout.filterVerticalChipPadding)
                 .background(isSelected ? AppUI.ColorPalette.accent : AppUI.ColorPalette.secondarySurface)
                 .clipShape(Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func submitAIRecommendationPrompt() {
+        guard !viewModel.aiPromptText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+
+        Task {
+            await viewModel.submitAIRecommendationPrompt()
+        }
     }
 
     private func loadFavoriteGenres() {
@@ -179,16 +218,234 @@ struct MoviesListView: View {
         let results = (try? context.fetch(request)) ?? []
         viewModel.savedIDs = Set(results.map { Int($0.movieID) })
     }
+}
 
-    private enum Parameters {
-        static let filterAll = "All"
-        static let filterPopular = "Popular"
-        static let filterSpacing: CGFloat = 8
-        static let filterHorizontalPadding: CGFloat = 16
-        static let filterVerticalPadding: CGFloat = 10
-        static let filterFontSize: CGFloat = 13
-        static let filterHorizontalChipPadding: CGFloat = 14
-        static let filterVerticalChipPadding: CGFloat = 8
+private struct MovieSearchControls: View {
+    @Bindable var viewModel: MovieListViewModel
+
+    let submitAIRecommendationPrompt: () -> Void
+
+    var body: some View {
+        VStack(spacing: MoviesListLayout.searchVerticalSpacing) {
+            if viewModel.isAIMode {
+                aiPromptBar
+                aiSuggestionChips
+            } else {
+                normalSearchBar
+            }
+        }
+        .padding(.horizontal, MoviesListLayout.searchHorizontalPadding)
+        .padding(.bottom, MoviesListLayout.searchBottomPadding)
+        .background(Color(.systemBackground))
+    }
+
+    private var normalSearchBar: some View {
+        HStack(spacing: MoviesListLayout.searchControlSpacing) {
+            HStack(spacing: MoviesListLayout.searchIconSpacing) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(.secondary)
+
+                TextField("Search movies", text: $viewModel.filterText)
+                    .font(Font.custom(AppUI.FontName.poppins, size: MoviesListLayout.searchFontSize))
+                    .submitLabel(.search)
+                    .onSubmit {
+                        viewModel.scheduleSearch()
+                    }
+            }
+            .padding(.horizontal, MoviesListLayout.searchFieldHorizontalPadding)
+            .frame(height: MoviesListLayout.searchFieldHeight)
+            .background(AppUI.ColorPalette.secondarySurface)
+            .clipShape(Capsule())
+
+            Button {
+                viewModel.enterAIMode()
+            } label: {
+                Label("AI", systemImage: "sparkles")
+                    .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: MoviesListLayout.aiButtonFontSize))
+                    .labelStyle(.titleAndIcon)
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, MoviesListLayout.aiButtonHorizontalPadding)
+                    .frame(height: MoviesListLayout.searchFieldHeight)
+                    .background(AppUI.ColorPalette.accent)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var aiPromptBar: some View {
+        HStack(spacing: MoviesListLayout.searchControlSpacing) {
+            HStack(spacing: MoviesListLayout.searchIconSpacing) {
+                Image(systemName: "sparkles")
+                    .foregroundStyle(AppUI.ColorPalette.accent)
+
+                TextField("Describe the movie you want", text: $viewModel.aiPromptText)
+                    .font(Font.custom(AppUI.FontName.poppins, size: MoviesListLayout.searchFontSize))
+                    .submitLabel(.search)
+                    .disabled(viewModel.isLoadingRecommendations)
+                    .onSubmit(submitAIRecommendationPrompt)
+            }
+            .padding(.horizontal, MoviesListLayout.searchFieldHorizontalPadding)
+            .frame(height: MoviesListLayout.searchFieldHeight)
+            .background(AppUI.ColorPalette.secondarySurface)
+            .clipShape(Capsule())
+
+            Button(action: submitAIRecommendationPrompt) {
+                Image(systemName: viewModel.isLoadingRecommendations ? "hourglass" : "paperplane.fill")
+                    .font(.system(size: MoviesListLayout.aiIconButtonSize, weight: .semibold))
+                    .foregroundStyle(.black)
+                    .frame(width: MoviesListLayout.aiIconButtonFrame, height: MoviesListLayout.searchFieldHeight)
+                    .background(AppUI.ColorPalette.accent)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .disabled(viewModel.isLoadingRecommendations || viewModel.aiPromptText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+            Button {
+                viewModel.exitAIMode()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: MoviesListLayout.aiIconButtonSize, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .frame(width: MoviesListLayout.aiIconButtonFrame, height: MoviesListLayout.searchFieldHeight)
+                    .background(AppUI.ColorPalette.secondarySurface)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    @ViewBuilder
+    private var aiSuggestionChips: some View {
+        if viewModel.visibleRecommendationMovies.isEmpty, !viewModel.isLoadingRecommendations {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: MoviesListLayout.aiSuggestionSpacing) {
+                    ForEach(MoviesListLayout.aiSuggestionPrompts, id: \.self) { prompt in
+                        Button {
+                            viewModel.aiPromptText = prompt
+                            submitAIRecommendationPrompt()
+                        } label: {
+                            Text(prompt)
+                                .font(Font.custom(AppUI.FontName.poppins, size: MoviesListLayout.aiSuggestionFontSize))
+                                .foregroundStyle(.primary)
+                                .padding(.horizontal, MoviesListLayout.aiSuggestionHorizontalPadding)
+                                .padding(.vertical, MoviesListLayout.aiSuggestionVerticalPadding)
+                                .background(AppUI.ColorPalette.secondarySurface)
+                                .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct AIStatusMessageView: View {
+    let message: String?
+
+    var body: some View {
+        if let message {
+            HStack(spacing: MoviesListLayout.statusMessageSpacing) {
+                Image(systemName: "exclamationmark.circle")
+                    .foregroundStyle(.secondary)
+
+                Text(message)
+                    .font(Font.custom(AppUI.FontName.poppins, size: MoviesListLayout.statusMessageFontSize))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, MoviesListLayout.searchHorizontalPadding)
+            .padding(.bottom, MoviesListLayout.statusMessageBottomPadding)
+            .background(Color(.systemBackground))
+        }
+    }
+}
+
+private struct AIResultsHeaderView: View {
+    let viewModel: MovieListViewModel
+    let clearAction: () -> Void
+
+    var body: some View {
+        if viewModel.isAIMode, !viewModel.rankedRecommendationMovies.isEmpty {
+            VStack(alignment: .leading, spacing: MoviesListLayout.resultsHeaderSpacing) {
+                HStack {
+                    Text("AI Picks")
+                        .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: MoviesListLayout.resultsTitleFontSize))
+
+                    Spacer()
+
+                    Button(action: clearAction) {
+                        Label("Clear", systemImage: "trash")
+                            .font(Font.custom(AppUI.FontName.poppins, size: MoviesListLayout.resultsActionFontSize))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                }
+
+                if let explanation = viewModel.recommendationExplanation {
+                    Text(explanation)
+                        .font(Font.custom(AppUI.FontName.poppins, size: MoviesListLayout.resultsExplanationFontSize))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+            }
+            .padding(.horizontal, MoviesListLayout.searchHorizontalPadding)
+            .padding(.bottom, MoviesListLayout.resultsHeaderBottomPadding)
+            .background(Color(.systemBackground))
+        }
+    }
+}
+
+private struct AIPaginationControlsView: View {
+    let viewModel: MovieListViewModel
+
+    var body: some View {
+        if viewModel.isAIMode, !viewModel.rankedRecommendationMovies.isEmpty {
+            HStack(spacing: MoviesListLayout.paginationSpacing) {
+                Button {
+                    viewModel.showPreviousRecommendations()
+                } label: {
+                    Label("Previous 5", systemImage: "chevron.left")
+                        .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: MoviesListLayout.paginationFontSize))
+                }
+                .buttonStyle(.bordered)
+                .disabled(!viewModel.canShowPreviousRecommendations)
+
+                Spacer()
+
+                Text(recommendationRangeText)
+                    .font(Font.custom(AppUI.FontName.poppins, size: MoviesListLayout.paginationFontSize))
+                    .foregroundStyle(.secondary)
+
+                Spacer()
+
+                Button {
+                    viewModel.showNextRecommendations()
+                } label: {
+                    Label("Next 5", systemImage: "chevron.right")
+                        .font(Font.custom(AppUI.FontName.poppinsSemiBold, size: MoviesListLayout.paginationFontSize))
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(AppUI.ColorPalette.accent)
+                .foregroundStyle(.black)
+                .disabled(!viewModel.canShowNextRecommendations)
+            }
+            .padding(.horizontal, MoviesListLayout.searchHorizontalPadding)
+            .padding(.vertical, MoviesListLayout.paginationVerticalPadding)
+            .background(Color(.systemBackground))
+        }
+    }
+
+    private var recommendationRangeText: String {
+        let start = viewModel.visibleRecommendationStartIndex + 1
+        let end = min(
+            viewModel.visibleRecommendationStartIndex + viewModel.visibleRecommendationLimit,
+            viewModel.rankedRecommendationMovies.count
+        )
+        return "\(start)-\(end) of \(viewModel.rankedRecommendationMovies.count)"
     }
 }
 
@@ -260,6 +517,54 @@ private struct MovieListRow: View {
             // Keep the row usable with the basic list data if detail loading fails.
         }
     }
+}
+
+private enum MoviesListLayout {
+    static let filterAll = "All"
+    static let filterPopular = "Popular"
+    static let filterSpacing: CGFloat = 8
+    static let filterHorizontalPadding: CGFloat = 16
+    static let filterVerticalPadding: CGFloat = 10
+    static let filterFontSize: CGFloat = 13
+    static let filterHorizontalChipPadding: CGFloat = 14
+    static let filterVerticalChipPadding: CGFloat = 8
+
+    static let searchHorizontalPadding: CGFloat = 16
+    static let searchBottomPadding: CGFloat = 10
+    static let searchVerticalSpacing: CGFloat = 8
+    static let searchControlSpacing: CGFloat = 8
+    static let searchIconSpacing: CGFloat = 8
+    static let searchFieldHeight: CGFloat = 42
+    static let searchFieldHorizontalPadding: CGFloat = 14
+    static let searchFontSize: CGFloat = 14
+
+    static let aiButtonFontSize: CGFloat = 13
+    static let aiButtonHorizontalPadding: CGFloat = 14
+    static let aiIconButtonSize: CGFloat = 14
+    static let aiIconButtonFrame: CGFloat = 42
+    static let aiSuggestionSpacing: CGFloat = 8
+    static let aiSuggestionFontSize: CGFloat = 12
+    static let aiSuggestionHorizontalPadding: CGFloat = 12
+    static let aiSuggestionVerticalPadding: CGFloat = 7
+    static let aiSuggestionPrompts = [
+        "Comedy treasure adventure",
+        "Feel-good after breakup",
+        "Dark mystery with great acting",
+    ]
+
+    static let statusMessageSpacing: CGFloat = 8
+    static let statusMessageFontSize: CGFloat = 12
+    static let statusMessageBottomPadding: CGFloat = 8
+
+    static let resultsHeaderSpacing: CGFloat = 4
+    static let resultsTitleFontSize: CGFloat = 16
+    static let resultsActionFontSize: CGFloat = 12
+    static let resultsExplanationFontSize: CGFloat = 12
+    static let resultsHeaderBottomPadding: CGFloat = 8
+
+    static let paginationSpacing: CGFloat = 8
+    static let paginationFontSize: CGFloat = 12
+    static let paginationVerticalPadding: CGFloat = 10
 }
 
 #Preview {
