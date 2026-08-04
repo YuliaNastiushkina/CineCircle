@@ -22,7 +22,7 @@ struct MoviesListView: View {
                 AIStatusMessageView(message: viewModel.recommendationErrorMessage)
                 AIResultsHeaderView(
                     viewModel: viewModel,
-                    clearAction: viewModel.clearAIRecommendations
+                    clearAction: viewModel.exitAIMode
                 )
 
                 Group {

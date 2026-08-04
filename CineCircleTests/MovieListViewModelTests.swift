@@ -301,6 +301,56 @@ class MovieListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.recommendationErrorMessage, MovieRecommendationError.emptyPrompt.localizedDescription)
     }
 
+    func testClearAIRecommendationsResetsPromptResultsPaginationAndMessages() async {
+        let recommendedMovies = (1...7).map { makeMovie(id: $0, title: "Movie \($0)") }
+        let viewModel = makeRecommendationViewModel(
+            intentService: MockRecommendationIntentService(result: .success(MovieRecommendationIntent(searchQueries: ["query"], explanation: "Matches."))),
+            movieService: MockRecommendationMovieService(result: .success(recommendedMovies))
+        )
+        viewModel.aiPromptText = "family adventure"
+        await viewModel.submitAIRecommendationPrompt()
+        viewModel.showNextRecommendations()
+        viewModel.recommendationErrorMessage = "Temporary warning"
+
+        viewModel.clearAIRecommendations()
+
+        XCTAssertTrue(viewModel.aiPromptText.isEmpty)
+        XCTAssertTrue(viewModel.rankedRecommendationMovies.isEmpty)
+        XCTAssertEqual(viewModel.visibleRecommendationStartIndex, 0)
+        XCTAssertNil(viewModel.recommendationExplanation)
+        XCTAssertNil(viewModel.recommendationErrorMessage)
+        XCTAssertTrue(viewModel.displayedMovies.isEmpty)
+    }
+
+    func testScheduleSearchDoesNothingInAIMode() {
+        let searchMovie = makeMovie(id: 1, title: "Search Result")
+        let viewModel = MovieListViewModel(
+            client: MockAPIClient { _, _ in MovieResponse(results: [searchMovie], page: 1, totalResults: 1, totalPages: 1) }
+        )
+        viewModel.enterAIMode()
+        viewModel.filterText = "query"
+
+        viewModel.scheduleSearch()
+
+        XCTAssertTrue(viewModel.searchResults.isEmpty)
+        XCTAssertFalse(viewModel.isSearching)
+        XCTAssertTrue(viewModel.displayedMovies.isEmpty)
+    }
+
+    func testSubmitAIRecommendationPromptShowsFallbackErrorWhenFallbackAlsoFails() async {
+        let viewModel = makeRecommendationViewModel(
+            intentService: MockRecommendationIntentService(result: .failure(MovieRecommendationError.malformedResponse)),
+            fallbackIntentService: MockRecommendationIntentService(result: .failure(MovieRecommendationError.invalidIntent))
+        )
+        viewModel.aiPromptText = "find something specific"
+
+        await viewModel.submitAIRecommendationPrompt()
+
+        XCTAssertTrue(viewModel.rankedRecommendationMovies.isEmpty)
+        XCTAssertNil(viewModel.recommendationExplanation)
+        XCTAssertEqual(viewModel.recommendationErrorMessage, MovieRecommendationError.invalidIntent.localizedDescription)
+    }
+
     private func makeRecommendationViewModel(
         intentService: MovieRecommendationServiceProtocol = MockRecommendationIntentService(result: .success(MovieRecommendationIntent(searchQueries: ["query"]))),
         fallbackIntentService: MovieRecommendationServiceProtocol = MockRecommendationIntentService(result: .success(MovieRecommendationIntent(searchQueries: ["fallback"]))),
