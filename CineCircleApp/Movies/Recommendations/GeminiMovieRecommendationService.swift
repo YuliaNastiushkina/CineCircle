@@ -5,7 +5,7 @@ import Foundation
 struct GeminiMovieRecommendationService: MovieRecommendationServiceProtocol {
     private let modelName: String
 
-    init(modelName: String = "gemini-2.5-flash-lite") {
+    init(modelName: String = "gemini-3.5-flash-lite") {
         self.modelName = modelName
     }
 
@@ -15,7 +15,7 @@ struct GeminiMovieRecommendationService: MovieRecommendationServiceProtocol {
             throw MovieRecommendationError.emptyPrompt
         }
 
-        let model = FirebaseAI.firebaseAI().generativeModel(
+        let model = FirebaseAI.firebaseAI(backend: .googleAI()).generativeModel(
             modelName: modelName,
             generationConfig: GenerationConfig(
                 temperature: 0.2,
