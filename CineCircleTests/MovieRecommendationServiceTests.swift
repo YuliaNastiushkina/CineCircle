@@ -110,4 +110,112 @@ final class MovieRecommendationServiceTests: XCTestCase {
         XCTAssertTrue(intent.genres.isEmpty)
         XCTAssertEqual(intent.searchQueries, ["quiet winter story"])
     }
+
+    func testTMDBRecommendationServiceUsesSearchAndDiscoverQueries() async throws {
+        var requests: [(path: String, query: [String: String])] = []
+        let client = MockAPIClient { path, query in
+            requests.append((path, query))
+            return MovieResponse(results: [], page: 1, totalResults: 0, totalPages: 1)
+        }
+        let service = TMDBMovieRecommendationMovieService(client: client)
+        let intent = MovieRecommendationIntent(
+            genres: [.comedy, .adventure],
+            searchQueries: ["pirate comedy", "treasure hunt"]
+        )
+
+        _ = try await service.rankedMovies(for: intent)
+
+        XCTAssertEqual(requests.map(\.path), ["search/movie", "search/movie", "discover/movie"])
+        XCTAssertEqual(requests[0].query["query"], "pirate comedy")
+        XCTAssertEqual(requests[1].query["query"], "treasure hunt")
+        XCTAssertEqual(requests[2].query["with_genres"], "35,12")
+        XCTAssertEqual(requests[2].query["sort_by"], "popularity.desc")
+    }
+
+    func testTMDBRecommendationServiceDeduplicatesAndRanksBestMatchFirst() async throws {
+        let genericComedy = makeMovie(
+            id: 1,
+            title: "Generic Comedy",
+            overview: "Friends have a funny weekend.",
+            voteAverage: 7.2,
+            voteCount: 500,
+            genreIDs: [MoviesGenre.comedy.id]
+        )
+        let pirateAdventure = makeMovie(
+            id: 2,
+            title: "Pirate Treasure Comedy",
+            overview: "A funny pirate crew hunts for treasure across the sea.",
+            posterPath: "/poster.jpg",
+            voteAverage: 7.8,
+            voteCount: 900,
+            genreIDs: [MoviesGenre.comedy.id, MoviesGenre.adventure.id]
+        )
+        let lowSignalMovie = makeMovie(
+            id: 3,
+            title: "Quiet Drama",
+            overview: "A slow drama.",
+            voteAverage: 9.0,
+            voteCount: 5,
+            genreIDs: [MoviesGenre.drama.id]
+        )
+
+        let client = MockAPIClient { path, query in
+            if path == "search/movie", query["query"] == "pirate comedy" {
+                return MovieResponse(results: [genericComedy, pirateAdventure], page: 1, totalResults: 2, totalPages: 1)
+            }
+
+            if path == "search/movie", query["query"] == "treasure hunt" {
+                return MovieResponse(results: [pirateAdventure, lowSignalMovie], page: 1, totalResults: 2, totalPages: 1)
+            }
+
+            return MovieResponse(results: [genericComedy], page: 1, totalResults: 1, totalPages: 1)
+        }
+        let service = TMDBMovieRecommendationMovieService(client: client)
+        let intent = MovieRecommendationIntent(
+            genres: [.comedy, .adventure],
+            themes: ["pirates", "treasure hunt"],
+            searchQueries: ["pirate comedy", "treasure hunt"]
+        )
+
+        let movies = try await service.rankedMovies(for: intent)
+
+        XCTAssertEqual(movies.map(\.id), [2, 1, 3])
+    }
+
+    func testTMDBRecommendationServiceRespectsCandidateLimit() async throws {
+        let movies = (1...5).map { id in
+            makeMovie(id: id, title: "Movie \(id)", overview: "Comedy", voteAverage: 7, voteCount: 100, genreIDs: [MoviesGenre.comedy.id])
+        }
+        let client = MockAPIClient { _, _ in
+            MovieResponse(results: movies, page: 1, totalResults: movies.count, totalPages: 1)
+        }
+        let service = TMDBMovieRecommendationMovieService(client: client, candidateLimit: 3)
+        let intent = MovieRecommendationIntent(genres: [.comedy], searchQueries: ["comedy"])
+
+        let rankedMovies = try await service.rankedMovies(for: intent)
+
+        XCTAssertEqual(rankedMovies.count, 3)
+    }
+
+    private func makeMovie(
+        id: Int,
+        title: String,
+        overview: String,
+        posterPath: String? = nil,
+        voteAverage: Double,
+        voteCount: Int,
+        genreIDs: [Int]
+    ) -> RemoteMovie {
+        RemoteMovie(
+            id: id,
+            title: title,
+            overview: overview,
+            posterPath: posterPath,
+            voteAverage: voteAverage,
+            voteCount: voteCount,
+            releaseDate: "2024-01-01",
+            originalLanguage: "en",
+            genreIDs: genreIDs
+        )
+    }
 }
