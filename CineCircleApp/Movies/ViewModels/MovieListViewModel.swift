@@ -180,6 +180,7 @@ final class MovieListViewModel {
 
     /// Clears current AI prompt, result, and pagination state.
     func clearAIRecommendations() {
+        invalidateActiveRecommendationRequest()
         aiPromptText = ""
         rankedRecommendationMovies = []
         recommendationExplanation = nil
@@ -283,6 +284,11 @@ final class MovieListViewModel {
 
     private var searchQuery: String {
         filterText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func invalidateActiveRecommendationRequest() {
+        activeRecommendationRequestID = UUID()
+        isLoadingRecommendations = false
     }
 
     private func loadFallbackRecommendations(prompt: String, requestID: UUID) async {

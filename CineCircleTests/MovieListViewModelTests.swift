@@ -259,6 +259,25 @@ class MovieListViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.recommendationErrorMessage)
     }
 
+    func testExitAIModeIgnoresLateRecommendationResponse() async {
+        let recommendationMovie = makeMovie(id: 2, title: "Late AI Movie")
+        let viewModel = makeRecommendationViewModel(
+            movieService: DelayedRecommendationMovieService(movies: [recommendationMovie], delayNanoseconds: 80_000_000)
+        )
+        viewModel.movies = [makeMovie(id: 1, title: "Catalog Movie")]
+        viewModel.aiPromptText = "pirates"
+
+        let submitTask = Task { await viewModel.submitAIRecommendationPrompt() }
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        viewModel.exitAIMode()
+        await submitTask.value
+
+        XCTAssertFalse(viewModel.isAIMode)
+        XCTAssertFalse(viewModel.isLoadingRecommendations)
+        XCTAssertTrue(viewModel.rankedRecommendationMovies.isEmpty)
+        XCTAssertEqual(viewModel.displayedMovies.map(\.id), [1])
+    }
+
     func testRecommendationPaginationMovesBetweenBatches() async {
         let recommendedMovies = (1...7).map { makeMovie(id: $0, title: "Movie \($0)") }
         let viewModel = makeRecommendationViewModel(
@@ -393,5 +412,15 @@ private struct MockRecommendationMovieService: MovieRecommendationMovieServicePr
 
     func rankedMovies(for _: MovieRecommendationIntent) async throws -> [RemoteMovie] {
         try result.get()
+    }
+}
+
+private struct DelayedRecommendationMovieService: MovieRecommendationMovieServiceProtocol {
+    let movies: [RemoteMovie]
+    let delayNanoseconds: UInt64
+
+    func rankedMovies(for _: MovieRecommendationIntent) async throws -> [RemoteMovie] {
+        try await Task.sleep(nanoseconds: delayNanoseconds)
+        return movies
     }
 }
