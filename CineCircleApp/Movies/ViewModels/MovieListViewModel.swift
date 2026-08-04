@@ -23,6 +23,7 @@ final class MovieListViewModel {
     private(set) var rankedRecommendationMovies: [RemoteMovie] = []
     private(set) var visibleRecommendationStartIndex = 0
     let visibleRecommendationLimit = 5
+    let maxVisibleRecommendationBatches = 3
     var recommendationExplanation: String?
     var recommendationErrorMessage: String?
     private(set) var isLoading = false
@@ -63,7 +64,15 @@ final class MovieListViewModel {
     }
 
     var canShowNextRecommendations: Bool {
-        visibleRecommendationStartIndex + visibleRecommendationLimit < rankedRecommendationMovies.count
+        let nextStartIndex = visibleRecommendationStartIndex + visibleRecommendationLimit
+        let nextBatchIndex = nextStartIndex / visibleRecommendationLimit
+        return nextStartIndex < rankedRecommendationMovies.count && nextBatchIndex < maxVisibleRecommendationBatches
+    }
+
+    var shouldSuggestRefiningAIRequest: Bool {
+        let hasMoreUnshownMovies = visibleRecommendationStartIndex + visibleRecommendationLimit < rankedRecommendationMovies.count
+        let currentBatchIndex = visibleRecommendationStartIndex / visibleRecommendationLimit
+        return hasMoreUnshownMovies && currentBatchIndex >= maxVisibleRecommendationBatches - 1
     }
 
     var canShowPreviousRecommendations: Bool {

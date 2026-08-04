@@ -295,6 +295,24 @@ class MovieListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.displayedMovies.map(\.id), [1, 2, 3, 4, 5])
     }
 
+    func testRecommendationPaginationStopsAfterMaximumVisibleBatches() async {
+        let recommendedMovies = (1...20).map { makeMovie(id: $0, title: "Movie \($0)") }
+        let viewModel = makeRecommendationViewModel(
+            movieService: MockRecommendationMovieService(result: .success(recommendedMovies))
+        )
+        viewModel.aiPromptText = "movies"
+        await viewModel.submitAIRecommendationPrompt()
+
+        viewModel.showNextRecommendations()
+        viewModel.showNextRecommendations()
+        XCTAssertEqual(viewModel.displayedMovies.map(\.id), [11, 12, 13, 14, 15])
+        XCTAssertFalse(viewModel.canShowNextRecommendations)
+        XCTAssertTrue(viewModel.shouldSuggestRefiningAIRequest)
+
+        viewModel.showNextRecommendations()
+        XCTAssertEqual(viewModel.displayedMovies.map(\.id), [11, 12, 13, 14, 15])
+    }
+
     func testSubmitAIRecommendationPromptFallsBackWhenIntentServiceFails() async {
         let fallbackMovie = makeMovie(id: 9, title: "Fallback Movie")
         let viewModel = makeRecommendationViewModel(
