@@ -20,6 +20,8 @@ struct RemoteMovie: Codable, Identifiable {
     var originalLanguage: String
     /// Genre identifiers returned by TMDB for list endpoints.
     var genreIDs: [Int]
+    /// TMDB popularity signal used as a tie-breaker for similarly relevant recommendations.
+    var popularity: Double? = nil
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -31,5 +33,6 @@ struct RemoteMovie: Codable, Identifiable {
         case releaseDate = "release_date"
         case originalLanguage = "original_language"
         case genreIDs = "genre_ids"
+        case popularity
     }
 }

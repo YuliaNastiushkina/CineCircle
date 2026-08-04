@@ -323,6 +323,72 @@ final class MovieRecommendationServiceTests: XCTestCase {
         XCTAssertEqual(rankedMovies.count, 3)
     }
 
+    func testTMDBRecommendationServiceUsesPopularityForCloseRelevanceMatches() async throws {
+        let lesserKnownComedy = makeMovie(
+            id: 1,
+            title: "Small Comedy",
+            overview: "A funny comedy about friends.",
+            voteAverage: 7.0,
+            voteCount: 25,
+            genreIDs: [MoviesGenre.comedy.id],
+            popularity: 8
+        )
+        let popularComedy = makeMovie(
+            id: 2,
+            title: "Popular Comedy",
+            overview: "A funny comedy about friends.",
+            voteAverage: 7.8,
+            voteCount: 9000,
+            genreIDs: [MoviesGenre.comedy.id],
+            popularity: 140
+        )
+        let client = MockAPIClient { _, _ in
+            MovieResponse(results: [lesserKnownComedy, popularComedy], page: 1, totalResults: 2, totalPages: 1)
+        }
+        let service = TMDBMovieRecommendationMovieService(client: client)
+        let intent = MovieRecommendationIntent(genres: [.comedy], searchQueries: ["funny comedy"])
+
+        let rankedMovies = try await service.rankedMovies(for: intent)
+
+        XCTAssertEqual(rankedMovies.map(\.id), [2, 1])
+    }
+
+    func testTMDBRecommendationServiceKeepsStrongRelevanceAbovePopularity() async throws {
+        let popularGenericAdventure = makeMovie(
+            id: 1,
+            title: "Popular Adventure",
+            overview: "A famous expedition crosses the wilderness.",
+            voteAverage: 8.2,
+            voteCount: 12000,
+            genreIDs: [MoviesGenre.adventure.id]
+        )
+        let specificTreasureAdventure = makeMovie(
+            id: 2,
+            title: "Hidden Treasure Map",
+            overview: "An adventurer follows clues to a lost relic and hidden treasure.",
+            voteAverage: 6.8,
+            voteCount: 120,
+            genreIDs: [MoviesGenre.adventure.id]
+        )
+        let client = MockAPIClient { path, _ in
+            if path == "search/keyword" {
+                return MovieKeywordResponse(results: [])
+            }
+
+            return MovieResponse(results: [popularGenericAdventure, specificTreasureAdventure], page: 1, totalResults: 2, totalPages: 1)
+        }
+        let service = TMDBMovieRecommendationMovieService(client: client)
+        let intent = MovieRecommendationIntent(
+            genres: [.adventure],
+            searchQueries: [],
+            mustMatchConcepts: ["treasure hunt"]
+        )
+
+        let rankedMovies = try await service.rankedMovies(for: intent)
+
+        XCTAssertEqual(rankedMovies.map(\.id), [2, 1])
+    }
+
     func testScorerRewardsMultipleThemeMatchesOverGenericPopularity() {
         let scorer = MovieRecommendationScorer()
         let intent = MovieRecommendationIntent(
@@ -425,7 +491,8 @@ final class MovieRecommendationServiceTests: XCTestCase {
         posterPath: String? = nil,
         voteAverage: Double,
         voteCount: Int,
-        genreIDs: [Int]
+        genreIDs: [Int],
+        popularity: Double? = nil
     ) -> RemoteMovie {
         RemoteMovie(
             id: id,
@@ -436,7 +503,8 @@ final class MovieRecommendationServiceTests: XCTestCase {
             voteCount: voteCount,
             releaseDate: "2024-01-01",
             originalLanguage: "en",
-            genreIDs: genreIDs
+            genreIDs: genreIDs,
+            popularity: popularity
         )
     }
 }

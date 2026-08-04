@@ -241,6 +241,17 @@ private struct CandidateCollector {
             .sorted { lhs, rhs in
                 let lhsScore = scorer.score(lhs.movie, intent: intent, appearanceCount: lhs.appearanceCount)
                 let rhsScore = scorer.score(rhs.movie, intent: intent, appearanceCount: rhs.appearanceCount)
+                let scoreDifference = abs(lhsScore - rhsScore)
+
+                if scoreDifference > Self.relevanceTieThreshold {
+                    return lhsScore > rhsScore
+                }
+
+                let lhsQualityScore = qualityTieBreakerScore(for: lhs.movie)
+                let rhsQualityScore = qualityTieBreakerScore(for: rhs.movie)
+                if lhsQualityScore != rhsQualityScore {
+                    return lhsQualityScore > rhsQualityScore
+                }
 
                 if lhsScore != rhsScore {
                     return lhsScore > rhsScore
@@ -253,6 +264,15 @@ private struct CandidateCollector {
                 return lhs.movie.title.localizedCaseInsensitiveCompare(rhs.movie.title) == .orderedAscending
             }
             .map(\.movie)
+    }
+
+    private static let relevanceTieThreshold = 18.0
+
+    private func qualityTieBreakerScore(for movie: RemoteMovie) -> Double {
+        let popularityScore = min(log10(max(movie.popularity ?? 0, 0) + 1) / 4, 1)
+        let voteConfidence = min(log10(Double(max(movie.voteCount, 0)) + 1) / 5, 1)
+        let ratingScore = min(max(movie.voteAverage, 0) / 10, 1)
+        return popularityScore * 0.5 + voteConfidence * 0.35 + ratingScore * 0.15
     }
 
     private func isUsable(_ movie: RemoteMovie) -> Bool {
