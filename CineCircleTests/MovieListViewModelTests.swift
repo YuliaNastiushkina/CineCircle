@@ -199,4 +199,148 @@ class MovieListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.displayedMovies.map(\.id), [7])
         XCTAssertFalse(viewModel.isSearching)
     }
+
+    func testEnterAIModeDoesNotEraseNormalMovies() {
+        let movie = makeMovie(id: 1, title: "Catalog Movie")
+        let viewModel = MovieListViewModel()
+        viewModel.movies = [movie]
+        viewModel.filterText = "catalog"
+        viewModel.searchResults = [movie]
+
+        viewModel.enterAIMode()
+
+        XCTAssertTrue(viewModel.isAIMode)
+        XCTAssertEqual(viewModel.movies.map(\.id), [1])
+        XCTAssertTrue(viewModel.filterText.isEmpty)
+        XCTAssertTrue(viewModel.searchResults.isEmpty)
+        XCTAssertTrue(viewModel.displayedMovies.isEmpty)
+    }
+
+    func testExitAIModeRestoresNormalListBehavior() async {
+        let catalogMovie = makeMovie(id: 1, title: "Catalog Movie")
+        let recommendationMovie = makeMovie(id: 2, title: "AI Movie")
+        let viewModel = makeRecommendationViewModel(
+            movieService: MockRecommendationMovieService(result: .success([recommendationMovie]))
+        )
+        viewModel.movies = [catalogMovie]
+        viewModel.aiPromptText = "pirates"
+        await viewModel.submitAIRecommendationPrompt()
+
+        XCTAssertEqual(viewModel.displayedMovies.map(\.id), [2])
+
+        viewModel.exitAIMode()
+
+        XCTAssertFalse(viewModel.isAIMode)
+        XCTAssertTrue(viewModel.aiPromptText.isEmpty)
+        XCTAssertTrue(viewModel.rankedRecommendationMovies.isEmpty)
+        XCTAssertEqual(viewModel.displayedMovies.map(\.id), [1])
+    }
+
+    func testSubmitAIRecommendationPromptStoresFirstFiveRecommendations() async {
+        let recommendedMovies = (1...7).map { makeMovie(id: $0, title: "Movie \($0)") }
+        let intent = MovieRecommendationIntent(
+            genres: [.adventure],
+            searchQueries: ["pirate adventure"],
+            explanation: "Adventure matches."
+        )
+        let viewModel = makeRecommendationViewModel(
+            intentService: MockRecommendationIntentService(result: .success(intent)),
+            movieService: MockRecommendationMovieService(result: .success(recommendedMovies))
+        )
+        viewModel.aiPromptText = "pirates"
+
+        await viewModel.submitAIRecommendationPrompt()
+
+        XCTAssertTrue(viewModel.isAIMode)
+        XCTAssertFalse(viewModel.isLoadingRecommendations)
+        XCTAssertEqual(viewModel.rankedRecommendationMovies.map(\.id), Array(1...7))
+        XCTAssertEqual(viewModel.displayedMovies.map(\.id), [1, 2, 3, 4, 5])
+        XCTAssertEqual(viewModel.recommendationExplanation, "Adventure matches.")
+        XCTAssertNil(viewModel.recommendationErrorMessage)
+    }
+
+    func testRecommendationPaginationMovesBetweenBatches() async {
+        let recommendedMovies = (1...7).map { makeMovie(id: $0, title: "Movie \($0)") }
+        let viewModel = makeRecommendationViewModel(
+            movieService: MockRecommendationMovieService(result: .success(recommendedMovies))
+        )
+        viewModel.aiPromptText = "movies"
+        await viewModel.submitAIRecommendationPrompt()
+
+        viewModel.showNextRecommendations()
+        XCTAssertEqual(viewModel.displayedMovies.map(\.id), [6, 7])
+        XCTAssertTrue(viewModel.canShowPreviousRecommendations)
+        XCTAssertFalse(viewModel.canShowNextRecommendations)
+
+        viewModel.showPreviousRecommendations()
+        XCTAssertEqual(viewModel.displayedMovies.map(\.id), [1, 2, 3, 4, 5])
+    }
+
+    func testSubmitAIRecommendationPromptFallsBackWhenIntentServiceFails() async {
+        let fallbackMovie = makeMovie(id: 9, title: "Fallback Movie")
+        let viewModel = makeRecommendationViewModel(
+            intentService: MockRecommendationIntentService(result: .failure(MovieRecommendationError.malformedResponse)),
+            fallbackIntentService: MockRecommendationIntentService(result: .success(MovieRecommendationIntent(searchQueries: ["fallback"]))),
+            movieService: MockRecommendationMovieService(result: .success([fallbackMovie]))
+        )
+        viewModel.aiPromptText = "fallback please"
+
+        await viewModel.submitAIRecommendationPrompt()
+
+        XCTAssertEqual(viewModel.displayedMovies.map(\.id), [9])
+        XCTAssertEqual(viewModel.recommendationErrorMessage, "AI suggestions are unavailable. Showing search results instead.")
+    }
+
+    func testSubmitAIRecommendationPromptValidatesEmptyPrompt() async {
+        let viewModel = makeRecommendationViewModel()
+        viewModel.aiPromptText = "   "
+
+        await viewModel.submitAIRecommendationPrompt()
+
+        XCTAssertTrue(viewModel.rankedRecommendationMovies.isEmpty)
+        XCTAssertEqual(viewModel.recommendationErrorMessage, MovieRecommendationError.emptyPrompt.localizedDescription)
+    }
+
+    private func makeRecommendationViewModel(
+        intentService: MovieRecommendationServiceProtocol = MockRecommendationIntentService(result: .success(MovieRecommendationIntent(searchQueries: ["query"]))),
+        fallbackIntentService: MovieRecommendationServiceProtocol = MockRecommendationIntentService(result: .success(MovieRecommendationIntent(searchQueries: ["fallback"]))),
+        movieService: MovieRecommendationMovieServiceProtocol = MockRecommendationMovieService(result: .success([]))
+    ) -> MovieListViewModel {
+        MovieListViewModel(
+            client: MockAPIClient { _, _ in MovieResponse(results: [], page: 1, totalResults: 0, totalPages: 1) },
+            recommendationIntentService: intentService,
+            fallbackRecommendationIntentService: fallbackIntentService,
+            recommendationMovieService: movieService
+        )
+    }
+
+    private func makeMovie(id: Int, title: String) -> RemoteMovie {
+        RemoteMovie(
+            id: id,
+            title: title,
+            overview: "Overview",
+            posterPath: nil,
+            voteAverage: 7,
+            voteCount: 100,
+            releaseDate: "2024-01-01",
+            originalLanguage: "en",
+            genreIDs: []
+        )
+    }
+}
+
+private struct MockRecommendationIntentService: MovieRecommendationServiceProtocol {
+    let result: Result<MovieRecommendationIntent, Error>
+
+    func recommendationIntent(for _: String) async throws -> MovieRecommendationIntent {
+        try result.get()
+    }
+}
+
+private struct MockRecommendationMovieService: MovieRecommendationMovieServiceProtocol {
+    let result: Result<[RemoteMovie], Error>
+
+    func rankedMovies(for _: MovieRecommendationIntent) async throws -> [RemoteMovie] {
+        try result.get()
+    }
 }

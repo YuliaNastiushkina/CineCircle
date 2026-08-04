@@ -18,8 +18,16 @@ final class MovieListViewModel {
     var showSavedOnly = false
     var savedIDs: Set<Int> = []
     var selectedFilter: MovieListFilter = .all
+    var isAIMode = false
+    var aiPromptText = ""
+    private(set) var rankedRecommendationMovies: [RemoteMovie] = []
+    private(set) var visibleRecommendationStartIndex = 0
+    let visibleRecommendationLimit = 5
+    var recommendationExplanation: String?
+    var recommendationErrorMessage: String?
     private(set) var isLoading = false
     private(set) var isSearching = false
+    private(set) var isLoadingRecommendations = false
 
     var selectedGenre: MoviesGenre? {
         guard case let .genre(genre) = selectedFilter else { return nil }
@@ -27,6 +35,10 @@ final class MovieListViewModel {
     }
 
     var displayedMovies: [RemoteMovie] {
+        if isAIMode {
+            return visibleRecommendationMovies
+        }
+
         let query = searchQuery
         let savedMovies = showSavedOnly ? movies.filter { savedIDs.contains($0.id) } : movies
         let baseMovies: [RemoteMovie] = if query.isEmpty {
@@ -44,8 +56,30 @@ final class MovieListViewModel {
         return sorted
     }
 
-    init(client: APIClientProtocol = APIClient()) {
+    var visibleRecommendationMovies: [RemoteMovie] {
+        guard visibleRecommendationStartIndex < rankedRecommendationMovies.count else { return [] }
+        let endIndex = min(visibleRecommendationStartIndex + visibleRecommendationLimit, rankedRecommendationMovies.count)
+        return Array(rankedRecommendationMovies[visibleRecommendationStartIndex..<endIndex])
+    }
+
+    var canShowNextRecommendations: Bool {
+        visibleRecommendationStartIndex + visibleRecommendationLimit < rankedRecommendationMovies.count
+    }
+
+    var canShowPreviousRecommendations: Bool {
+        visibleRecommendationStartIndex > 0
+    }
+
+    init(
+        client: APIClientProtocol = APIClient(),
+        recommendationIntentService: MovieRecommendationServiceProtocol = GeminiMovieRecommendationService(),
+        fallbackRecommendationIntentService: MovieRecommendationServiceProtocol = FallbackMovieRecommendationService(),
+        recommendationMovieService: MovieRecommendationMovieServiceProtocol = TMDBMovieRecommendationMovieService()
+    ) {
         self.client = client
+        self.recommendationIntentService = recommendationIntentService
+        self.fallbackRecommendationIntentService = fallbackRecommendationIntentService
+        self.recommendationMovieService = recommendationMovieService
     }
 
     /// Loads TMDB's broad movie catalog, ordered by popularity.
@@ -95,6 +129,7 @@ final class MovieListViewModel {
     }
 
     func scheduleSearch() {
+        guard !isAIMode else { return }
         searchTask?.cancel()
 
         let query = searchQuery
@@ -127,6 +162,81 @@ final class MovieListViewModel {
         }
     }
 
+    /// Enters AI prompt mode without clearing the currently loaded movie catalog.
+    func enterAIMode() {
+        isAIMode = true
+        filterText = ""
+        searchTask?.cancel()
+        searchResults = []
+        isSearching = false
+        recommendationErrorMessage = nil
+    }
+
+    /// Leaves AI prompt mode and clears recommendation-only state.
+    func exitAIMode() {
+        isAIMode = false
+        clearAIRecommendations()
+    }
+
+    /// Clears current AI prompt, result, and pagination state.
+    func clearAIRecommendations() {
+        aiPromptText = ""
+        rankedRecommendationMovies = []
+        recommendationExplanation = nil
+        recommendationErrorMessage = nil
+        resetRecommendationPagination()
+    }
+
+    /// Generates recommendation intent and ranked TMDB movies for the current AI prompt.
+    func submitAIRecommendationPrompt() async {
+        let prompt = aiPromptText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !prompt.isEmpty else {
+            recommendationErrorMessage = MovieRecommendationError.emptyPrompt.localizedDescription
+            rankedRecommendationMovies = []
+            resetRecommendationPagination()
+            return
+        }
+
+        isAIMode = true
+        isLoadingRecommendations = true
+        recommendationErrorMessage = nil
+        let requestID = UUID()
+        activeRecommendationRequestID = requestID
+
+        defer {
+            if activeRecommendationRequestID == requestID {
+                isLoadingRecommendations = false
+            }
+        }
+
+        do {
+            let intent = try await recommendationIntentService.recommendationIntent(for: prompt)
+            let movies = try await recommendationMovieService.rankedMovies(for: intent)
+            guard activeRecommendationRequestID == requestID else { return }
+            rankedRecommendationMovies = movies
+            recommendationExplanation = intent.explanation
+            resetRecommendationPagination()
+        } catch is CancellationError {
+            return
+        } catch {
+            await loadFallbackRecommendations(prompt: prompt, requestID: requestID)
+        }
+    }
+
+    func showNextRecommendations() {
+        guard canShowNextRecommendations else { return }
+        visibleRecommendationStartIndex += visibleRecommendationLimit
+    }
+
+    func showPreviousRecommendations() {
+        guard canShowPreviousRecommendations else { return }
+        visibleRecommendationStartIndex = max(0, visibleRecommendationStartIndex - visibleRecommendationLimit)
+    }
+
+    func resetRecommendationPagination() {
+        visibleRecommendationStartIndex = 0
+    }
+
     /// Loads the next page for the active catalog filter or active search query.
     func fetchNextPageIfNeeded(currentMovie: RemoteMovie) async {
         if !searchQuery.isEmpty, !showSavedOnly {
@@ -157,6 +267,9 @@ final class MovieListViewModel {
     }
 
     private let client: APIClientProtocol
+    private let recommendationIntentService: MovieRecommendationServiceProtocol
+    private let fallbackRecommendationIntentService: MovieRecommendationServiceProtocol
+    private let recommendationMovieService: MovieRecommendationMovieServiceProtocol
     private(set) var currentPage = 1
     private(set) var totalPages = 1
     private var isFetching = false
@@ -166,9 +279,30 @@ final class MovieListViewModel {
     private var searchPage = 1
     private var searchTotalPages = 1
     private var isFetchingSearch = false
+    private var activeRecommendationRequestID = UUID()
 
     private var searchQuery: String {
         filterText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private func loadFallbackRecommendations(prompt: String, requestID: UUID) async {
+        do {
+            let fallbackIntent = try await fallbackRecommendationIntentService.recommendationIntent(for: prompt)
+            let movies = try await recommendationMovieService.rankedMovies(for: fallbackIntent)
+            guard activeRecommendationRequestID == requestID else { return }
+            rankedRecommendationMovies = movies
+            recommendationExplanation = fallbackIntent.explanation
+            recommendationErrorMessage = "AI suggestions are unavailable. Showing search results instead."
+            resetRecommendationPagination()
+        } catch is CancellationError {
+            return
+        } catch {
+            guard activeRecommendationRequestID == requestID else { return }
+            rankedRecommendationMovies = []
+            recommendationExplanation = nil
+            recommendationErrorMessage = error.localizedDescription
+            resetRecommendationPagination()
+        }
     }
 
     private func fetchPage(_ page: Int, filter: MovieListFilter) async throws -> MovieResponse {
