@@ -20,6 +20,7 @@ final class MovieListViewModel {
     var selectedFilter: MovieListFilter = .all
     var isAIMode = false
     var aiPromptText = ""
+    private(set) var aiSuggestionPrompts = MovieRecommendationPromptSuggestions.initial
     private(set) var rankedRecommendationMovies: [RemoteMovie] = []
     private(set) var visibleRecommendationStartIndex = 0
     let visibleRecommendationLimit = 5
@@ -77,6 +78,14 @@ final class MovieListViewModel {
 
     var canShowPreviousRecommendations: Bool {
         visibleRecommendationStartIndex > 0
+    }
+
+    var shouldShowAISuggestionPrompts: Bool {
+        visibleRecommendationMovies.isEmpty && !isLoadingRecommendations
+    }
+
+    var canSubmitAIRecommendationPrompt: Bool {
+        !aiPromptText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isLoadingRecommendations
     }
 
     init(
@@ -173,6 +182,7 @@ final class MovieListViewModel {
 
     /// Enters AI prompt mode without clearing the currently loaded movie catalog.
     func enterAIMode() {
+        aiSuggestionPrompts = MovieRecommendationPromptSuggestions.next(excluding: aiSuggestionPrompts)
         isAIMode = true
         filterText = ""
         searchTask?.cancel()
