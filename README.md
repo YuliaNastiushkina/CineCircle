@@ -2,27 +2,50 @@
 
 ## Description
 
-The repository contains the source code of the CineCircle application.  
-CineCircle is an iOS app for discovering movies and TV shows, tracking watched titles and episodes, saving favorites, and writing personal notes. Explore genres, view cast details, and manage your media library from one profile.
+The repository contains the source code of the CineCircle application.
+
+CineCircle is an iOS app for discovering movies and TV shows, tracking watched titles and episodes, saving favorites, and writing personal notes. The app also includes AI-powered movie discovery: describe what you want to watch, get a focused set of recommendations, and ask for more picks when nothing feels right.
+
+Explore genres, view cast details, and manage your media library from one profile.
+
+## Features
+
+- Discover movies and TV shows by genre and popularity
+- Search movies and view detailed cast, crew, trailers, and galleries
+- Track watched movies and TV episodes
+- Save favorites and manage a personal media library
+- Write personal notes and diary entries
+- Get AI-powered movie recommendations from a natural language prompt
 
 ## 🛠️ Tech Stack
 - **SwiftUI** — user interface framework  
 - **SwiftData** — local persistence  
 - **Firebase Authentication** — user sign-in and registration  
-- **External APIs (TMDB)** — movie data source  
+- **TMDB API** — movie and TV data source
+- **Gemini API** — AI-powered movie recommendation intent generation
 - **MVVM** — architectural pattern  
-- **Swift Package Manager (SPM)** — dependency management  
+- **Swift Package Manager (SPM)** — dependency management
+- **XCTest** — unit tests covering [ViewModel logic / API layer / etc.]
 - **GYB + `.env`** — secure API keys configuration
 ## 📱 Screenshots
 
 ### Main Screen
 <p align="center">
-    <img src="https://github.com/user-attachments/assets/3f0d06b6-7e82-4b3d-99f9-46c665e9f8c8" alt="screen1" width="220">
+    <img src="https://github.com/user-attachments/assets/488813d2-6e6e-4a5e-bc58-ed4ae1e7846f" alt="screen1" width="220"/>
     <img src="https://github.com/user-attachments/assets/7ddcbb9b-1876-4556-a9c8-0598df7cc7ed" alt="screen2" width="220">
 </p>
 
+### AI Movie Discovery
+Describe what you want to watch and receive curated movie picks.
+
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/5b88ad14-7bd6-4f4c-aa44-3d7b39b71c42" width="260" controls></video>
+</div>
+
+<br />
+
 <details>
-    <summary><strong>▶️ View more screens inside the app</strong></summary>
+    <summary><h3> 🍿 View more screens inside the app</h3></summary>
 
 <br>
     
@@ -43,9 +66,14 @@ CineCircle is an iOS app for discovering movies and TV shows, tracking watched t
 
 <img src="https://github.com/user-attachments/assets/8753562e-a7be-48e2-aba7-104ffc67a736" alt="screen10" width="180"/>
 
+<img src="https://github.com/user-attachments/assets/55df29e2-af49-46b7-8f93-a63f93692f02" alt="screen11" width="180"/>
+
+<img src="https://github.com/user-attachments/assets/7c39fbab-2e70-4bcd-a2cb-d00a0cd137c3" alt="screen12" width="180"/>
 
 </p>
 </details>
+
+--------------------------------------
 
 ### The app is under active development.
 
