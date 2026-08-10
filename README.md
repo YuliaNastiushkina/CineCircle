@@ -180,6 +180,10 @@ This will generate APIKeys.swift based on the obfuscated value of your API key.
 ✅ You’re Ready!
 </details>
 
+## License
+
+[PolyForm Noncommercial License 1.0.0](LICENSE) — free to use, modify, and distribute for noncommercial purposes. Commercial use is not permitted without separate permission.
+
 ## Authors
 
 | Name | Github Contact |
